@@ -45,7 +45,7 @@ const Navbar = () => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "center", fontWeight: "bold" }}>
-            SRIFIN ASSET MANAGEMENT
+            SRIFIN 
           </Typography>
           <IconButton color="inherit" onClick={(e) => setAnchorEl(e.currentTarget)}>
             <AccountCircleIcon sx={{ fontSize: 30 }} />

@@ -39,7 +39,7 @@ const Login = () => {
                 localStorage.setItem("token", data.token)
                 // setMessage("Login successful ✅");
                 // console.log('success logged response ok')
-                navigate("/dashboard");
+                navigate("/Dashboardmain");
             } else {
                 toast.error("Login failed! Please check your credentials.");
                 // setMessage(data.message || "Login failed ❌");

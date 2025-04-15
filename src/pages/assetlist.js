@@ -35,7 +35,7 @@ const AssetList = () => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:5000/api/assetlist/details/${category}/${type}`)
+      .get(`http://localhost:500/api/assetlist/details/${category}/${type}`)
       .then((response) => {
         setAssets(response.data);
         setFilteredAssets(response.data);

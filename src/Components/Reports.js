@@ -5,6 +5,7 @@ import {
   Typography, List, ListItem, ListItemText, CircularProgress
 } from '@mui/material';
 import dayjs from 'dayjs';
+import Navbar from "../pages/Navbar";
 
 const Reports = () => {
   const [fromDate, setFromDate] = useState('2023-01-01');
@@ -96,6 +97,8 @@ const Reports = () => {
   };
 
   return (
+    <>
+    <Navbar />
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 800, margin: '20px auto', padding: 2, border: '1px solid #ccc', borderRadius: 2, boxShadow: 'inset 0 0 10px rgba(0, 0, 0, 0.3)' }}>
       <Typography variant="h6" sx={{ color: '#0056b3', fontWeight: '600', fontSize: '20px', marginBottom: '20px', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '2px solid #0056b3', paddingBottom: '10px' }}>
         Generate Report
@@ -154,6 +157,7 @@ const Reports = () => {
         </List>
       )}
     </Box>
+    </>
   );
 };
 

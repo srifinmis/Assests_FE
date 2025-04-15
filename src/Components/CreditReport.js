@@ -12,7 +12,7 @@ import {
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { APIURL,DROPDOWN_REFRESH_INTERVAL } from "../configuration";
-import $ from "jquery";
+import Navbar from "../pages/Navbar";
 import dayjs from "dayjs";
 
 const CreditReport = () => {
@@ -139,105 +139,107 @@ const CreditReport = () => {
   };
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Box
-        sx={{
-          maxWidth: 700,
-          margin: "20px auto",
-          padding: 3,
-          border: "1px solid #ccc",
-          borderRadius: 2,
-          boxShadow: 3,
-        }}
-      >
-        <Typography
-          variant="h6"
+    <>
+      <Navbar />
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <Box
           sx={{
-            color: "#0056b3",
-            fontWeight: "600",
-            fontSize: "20px",
-            marginBottom: "20px",
-            textAlign: "center",
-            textTransform: "uppercase",
-            letterSpacing: "1px",
-            borderBottom: "2px solid #0056b3",
-            paddingBottom: "10px",
+            maxWidth: 700,
+            margin: "20px auto",
+            padding: 3,
+            border: "1px solid #ccc",
+            borderRadius: 2,
+            boxShadow: 3,
           }}
         >
-          Credit Report
-        </Typography>
-
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={6}>
-            <Autocomplete
-              options={getBranches()}
-              loading={loadingDropdowns}
-              value={branch}
-              onChange={(e, newValue) => setBranch(newValue)}
-              renderInput={(params) => (
-                <TextField {...params} label="Branch" variant="outlined" fullWidth />
-              )}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Autocomplete
-              options={getCreditStatusOptions()}
-              value={creditStatus}
-              onChange={(e, newValue) => setCreditStatus(newValue)}
-              renderInput={(params) => (
-                <TextField {...params} label="Credit App Status" variant="outlined" fullWidth />
-              )}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <DatePicker
-              label="From Date"
-              value={fromDate}
-              onChange={(newValue) => {
-                setFromDate(newValue);
-                // Reset toDate if it's earlier than new fromDate
-                if (toDate && dayjs(newValue).isAfter(dayjs(toDate))) {
-                  setToDate(null);
-                }
-              }}
-              renderInput={(params) => <TextField fullWidth {...params} />}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <DatePicker
-              label="To Date"
-              value={toDate}
-              minDate={fromDate}
-              onChange={(newValue) => setToDate(newValue)}
-              renderInput={(params) => <TextField fullWidth {...params} />}
-            />
-          </Grid>
-        </Grid>
-
-        <Button
-          variant="contained"
-          onClick={generateReport}
-          disabled={loading}
-          sx={{ marginTop: 3, display: "block", marginX: "auto" }}
-        >
-          {loading ? <CircularProgress size={24} /> : "Generate Report"}
-        </Button>
-
-        {downloadLink && (
-          <Typography variant="body2" sx={{ marginTop: "20px", textAlign: "center" }}>
-            Your Excel report is ready!{" "}
-            <a href={downloadLink} download="CreditReport.xlsx">
-              Click here to download
-            </a>
+          <Typography
+            variant="h6"
+            sx={{
+              color: "#0056b3",
+              fontWeight: "600",
+              fontSize: "20px",
+              marginBottom: "20px",
+              textAlign: "center",
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+              borderBottom: "2px solid #0056b3",
+              paddingBottom: "10px",
+            }}
+          >
+            Credit Report
           </Typography>
-        )}
-      </Box>
-    </LocalizationProvider>
+  
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <Autocomplete
+                options={getBranches()}
+                loading={loadingDropdowns}
+                value={branch}
+                onChange={(e, newValue) => setBranch(newValue)}
+                renderInput={(params) => (
+                  <TextField {...params} label="Branch" variant="outlined" fullWidth />
+                )}
+              />
+            </Grid>
+  
+            <Grid item xs={12} md={6}>
+              <Autocomplete
+                options={getCreditStatusOptions()}
+                value={creditStatus}
+                onChange={(e, newValue) => setCreditStatus(newValue)}
+                renderInput={(params) => (
+                  <TextField {...params} label="Credit App Status" variant="outlined" fullWidth />
+                )}
+              />
+            </Grid>
+  
+            <Grid item xs={12} md={6}>
+              <DatePicker
+                label="From Date"
+                value={fromDate}
+                onChange={(newValue) => {
+                  setFromDate(newValue);
+                  if (toDate && dayjs(newValue).isAfter(dayjs(toDate))) {
+                    setToDate(null);
+                  }
+                }}
+                renderInput={(params) => <TextField fullWidth {...params} />}
+              />
+            </Grid>
+  
+            <Grid item xs={12} md={6}>
+              <DatePicker
+                label="To Date"
+                value={toDate}
+                minDate={fromDate}
+                onChange={(newValue) => setToDate(newValue)}
+                renderInput={(params) => <TextField fullWidth {...params} />}
+              />
+            </Grid>
+          </Grid>
+  
+          <Button
+            variant="contained"
+            onClick={generateReport}
+            disabled={loading}
+            sx={{ marginTop: 3, display: "block", marginX: "auto" }}
+          >
+            {loading ? <CircularProgress size={24} /> : "Generate Report"}
+          </Button>
+  
+          {downloadLink && (
+            <Typography variant="body2" sx={{ marginTop: "20px", textAlign: "center" }}>
+              Your Excel report is ready!{" "}
+              <a href={downloadLink} download="CreditReport.xlsx">
+                Click here to download
+              </a>
+            </Typography>
+          )}
+        </Box>
+      </LocalizationProvider>
+    </>
   );
-};
+}  
 
 
 export default CreditReport;

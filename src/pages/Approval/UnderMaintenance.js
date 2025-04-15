@@ -10,6 +10,7 @@ import axios from "axios";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import SearchIcon from "@mui/icons-material/Search";
 import InfoOutlined from "@mui/icons-material/InfoOutlined"; // Importing the InfoOutlined icon
+import {  APIURL_Assests } from "../../configuration";
 
 const MaintenanceApproval = () => {
   const [assetData, setAssetData] = useState([]);

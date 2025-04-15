@@ -10,6 +10,7 @@ import {
   Autocomplete,
 } from "@mui/material";
 import { APIURL ,DROPDOWN_REFRESH_INTERVAL} from "../configuration";
+import Navbar from "../pages/Navbar";
 
 const EmployeeMasterReport = () => {
   const [cluster, setCluster] = useState(null);
@@ -181,6 +182,8 @@ const EmployeeMasterReport = () => {
   };
 
   return (
+    <>
+    <Navbar />
     <Box sx={{ maxWidth: 700, margin: "20px auto", padding: 3, border: "1px solid #ccc", borderRadius: 2, boxShadow: 3 }}>
       <Typography
         variant="h6"
@@ -266,6 +269,7 @@ const EmployeeMasterReport = () => {
         </Typography>
       )}
     </Box>
+     </>
   );
 };
 

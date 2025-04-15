@@ -10,6 +10,7 @@ import {
   Autocomplete,
 } from "@mui/material";
 import { APIURL,DROPDOWN_REFRESH_INTERVAL } from "../configuration";
+import Navbar from "../pages/Navbar";
 
 
 const DeathReport = () => {
@@ -185,6 +186,8 @@ const DeathReport = () => {
   };
 
   return (
+    <>
+    <Navbar />
     <Box
       sx={{
         maxWidth: 600,
@@ -268,6 +271,7 @@ const DeathReport = () => {
         </Typography>
       )}
     </Box>
+    </>
   );
 };
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { APIURL } from '../configuration';
+import Navbar from "../pages/Navbar";
 import {
   Box,
   Button,

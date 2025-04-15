@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 import { Box, Button, TextField, Grid, Typography, CircularProgress, Autocomplete } from "@mui/material";
 import { APIURL ,DROPDOWN_REFRESH_INTERVAL} from "../configuration";
 import $ from "jquery";
+import Navbar from "../pages/Navbar";
 
 const LoanDetailsReport = () => {
   const [zone, setZone] = useState(null);
@@ -176,6 +177,8 @@ const LoanDetailsReport = () => {
   };
 
   return (
+    <>
+    <Navbar />
       <Box sx={{ maxWidth: 600, margin: "20px auto", padding: 3, border: "1px solid #ccc", borderRadius: 2, boxShadow: 3 }}>
         <Typography
           variant="h6"
@@ -256,6 +259,7 @@ const LoanDetailsReport = () => {
           </Typography>
         )}
       </Box>
+      </>
     );
   };
 export default LoanDetailsReport;

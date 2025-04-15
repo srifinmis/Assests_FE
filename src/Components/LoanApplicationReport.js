@@ -12,7 +12,7 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import * as XLSX from "xlsx";
 import { APIURL,DROPDOWN_REFRESH_INTERVAL} from "../configuration";
-import $ from "jquery";
+import Navbar from "../pages/Navbar";
 
 const LoanApplicationReport = () => {
   const [branches, setBranches] = useState([]);
@@ -143,6 +143,8 @@ const LoanApplicationReport = () => {
   };
 
   return (
+    <>
+    <Navbar />
     <Box
       sx={{
         maxWidth: 600,
@@ -228,6 +230,7 @@ const LoanApplicationReport = () => {
         </Typography>
       )}
     </Box>
+    </>
   );
 };
 

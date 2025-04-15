@@ -1,8 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Grid, Card, CardContent, Typography } from "@mui/material";
+import Navbar from "../pages/Navbar";
 
-const Dashboard = ({ isDropped }) => {
+const Dashboardreports = ({ isDropped }) => {
   const navigate = useNavigate();
 
   const reports = [
@@ -19,6 +20,8 @@ const Dashboard = ({ isDropped }) => {
   ];
 
   return (
+    <>
+    <Navbar />
     <Box
       sx={{
         marginTop: "70px",
@@ -63,6 +66,7 @@ const Dashboard = ({ isDropped }) => {
         ))}
       </Grid>
     </Box>
+    </>
   );
 };
 
@@ -78,4 +82,4 @@ const cardStyle = {
   },
 };
 
-export default Dashboard;
+export default Dashboardreports;

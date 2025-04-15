@@ -10,8 +10,7 @@ import {
   Autocomplete,
 } from "@mui/material";
 import { APIURL,DROPDOWN_REFRESH_INTERVAL } from "../configuration";
-import $ from "jquery";
-
+import Navbar from "../pages/Navbar";
 const ForeClosureReport = () => {
   const [region, setRegion] = useState(null);
   const [branch, setBranch] = useState(null);
@@ -163,6 +162,8 @@ const ForeClosureReport = () => {
   };
 
   return (
+    <>
+    <Navbar />
     <Box sx={{ maxWidth: 600, margin: "20px auto", padding: 3, border: "1px solid #ccc", borderRadius: 2, boxShadow: 3 }}>
       <Typography
         variant="h6"
@@ -221,6 +222,7 @@ const ForeClosureReport = () => {
         </Typography>
       )}
     </Box>
+    </>
   );
 };
 

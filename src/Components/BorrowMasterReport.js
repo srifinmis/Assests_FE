@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { Box, Button, TextField, Grid, Typography, CircularProgress, Autocomplete } from "@mui/material";
 import { APIURL ,DROPDOWN_REFRESH_INTERVAL} from "../configuration";
+import Navbar from "../pages/Navbar";
 
 const BorrowerMasterReport = () => {
   const [branch, setBranch] = useState(null);
@@ -108,6 +109,8 @@ const BorrowerMasterReport = () => {
   };
 
   return (
+    <>
+    <Navbar />
     <Box sx={{ maxWidth: 500, margin: "20px auto", padding: 3, border: "1px solid #ccc", borderRadius: 2, boxShadow: 3 }}>
       <Typography
         variant="h6"
@@ -153,6 +156,7 @@ const BorrowerMasterReport = () => {
         </Typography>
       )}
     </Box>
+    </>
   );
 };
 

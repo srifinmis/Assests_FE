@@ -57,7 +57,7 @@ const Login = () => {
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("user", JSON.stringify(data.user || {})); // Optional: Store user data
         setMessage("Login successful ✅");
-        navigate("/DashBoard");
+        navigate("/DashBoardmain");
       } else {
         setMessage(data.message || "Login failed ❌");
       }

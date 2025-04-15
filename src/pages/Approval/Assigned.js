@@ -10,6 +10,7 @@ import axios from "axios";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import SearchIcon from "@mui/icons-material/Search";
 import InfoOutlined from "@mui/icons-material/InfoOutlined"; // Importing the InfoOutlined icon
+import {  APIURL_Assests } from "../../configuration";
 
 const AssignApproval = () => {
   const [assetData, setAssetData] = useState([]);
@@ -33,7 +34,7 @@ const AssignApproval = () => {
   const fetchAssignedAssetData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/approval/free-assign-assets");
+      const res = await axios.get(` ${APIURL_Assests}/approval/free-assign-assets`);
       if (Array.isArray(res.data)) {
         setAssetData(res.data);
         setFilteredAssetData(res.data);
