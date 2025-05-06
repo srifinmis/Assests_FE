@@ -1,4 +1,3 @@
-//src/pages/AssignAsset.js
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
@@ -19,7 +18,7 @@ import {
 } from "@mui/material";
 
 const AssignAsset = () => {
-  const { assetId, category, type } = useParams();
+  const { encodedAssetId } = useParams();
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -27,8 +26,8 @@ const AssignAsset = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [assigning, setAssigning] = useState(false);
-  const [successDialog, setSuccessDialog] = useState(false); // State for success dialog
-  const [errorDialog, setErrorDialog] = useState(false); // State for error dialog
+  const [successDialog, setSuccessDialog] = useState(false);
+  const [errorDialog, setErrorDialog] = useState(false);
 
   const tokenlocal = localStorage.getItem("token");
 
@@ -36,15 +35,17 @@ const AssignAsset = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        const encodedAssetIds = encodeURIComponent(encodedAssetId); // Encoding the assetId
+
         const [assetRes, usersRes] = await Promise.all([
-          axios.get(`http://localhost:5000/api/assignasset/details/${assetId}`, {
+          axios.get(`http://localhost:5000/api/assignasset/details/${encodedAssetIds}`, {
             headers: { Authorization: `Bearer ${tokenlocal}` },
           }),
           axios.get("http://localhost:5000/api/assignasset/users", {
             headers: { Authorization: `Bearer ${tokenlocal}` },
           }),
         ]);
-
+ 
         if (assetRes.data && typeof assetRes.data === "object") {
           setAsset(assetRes.data);
         } else {
@@ -64,7 +65,7 @@ const AssignAsset = () => {
     };
 
     fetchData();
-  }, [assetId, category, type, tokenlocal]);
+  }, [encodedAssetId, tokenlocal]);
 
   const handleAssign = async (e) => {
     e.preventDefault();
@@ -86,7 +87,7 @@ const AssignAsset = () => {
       }
   
       const payload = {
-        asset_id: assetId,
+        asset_id: encodedAssetId,
         assigned_to: selectedUser.emp_id,
         requested_by: loggedInUser.emp_id,
       };
@@ -134,7 +135,7 @@ const AssignAsset = () => {
       <Box sx={{ maxWidth: 500, margin: "auto", mt: 5 }}>
         <Paper sx={{ p: 4, borderRadius: 3 }} elevation={4}>
           <Typography variant="h5" fontWeight="bold" mb={2} color="#1976D2">
-            Assign Asset - {assetId}
+            Assign Asset - {encodedAssetId}
           </Typography>
 
           <Typography variant="body1" mb={2}>

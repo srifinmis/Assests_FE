@@ -10,9 +10,7 @@ import axios from "axios";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import SearchIcon from "@mui/icons-material/Search";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { Download as DownloadIcon, Close as CloseIcon, InfoOutlined } from "@mui/icons-material";
-import {  APIURL_Assests } from "../../configuration";
-
+import { Close as CloseIcon, InfoOutlined } from "@mui/icons-material";
 
 const InvoicePage = () => {
   const [poData, setPoData] = useState([]);
@@ -99,7 +97,6 @@ const InvoicePage = () => {
     }
 
     setActionLoading(true); // Start loading
-    console.log("remarks:",  poRemarks);
 
     try {
       const loggedInUser = JSON.parse(localStorage.getItem("user"));
@@ -111,7 +108,6 @@ const InvoicePage = () => {
       }));
 
       const extractedRemark = remarksList.length > 0 ? remarksList[0].remarks : "";
-      console.log("remarks:",  action);
 
       await axios.post(apiUrl, {
         assignmentIds: selectedPOs,
@@ -253,15 +249,21 @@ const InvoicePage = () => {
                       <TableCell>
                         <IconButton
                           onClick={() => {
-                            setSelectedAssets(po.assets || []);
                             setSelectedPONum(po.po_num);
+                            if (po.asset_creation_at === 'invoice') {
+                              setSelectedAssets(po.assets || []);
+                            } else if (po.asset_creation_at === 'payment') {
+                              fetchPOs(po.po_num).then((assetsAtPayment) => {
+                                setSelectedAssets(assetsAtPayment || []);
+                              });
+                            }
                             setOpenDialog(true);
                           }}
                           aria-label="Preview PDF"
                         >
                           <VisibilityIcon />
                         </IconButton>
-                      </TableCell>
+                      </TableCell> 
                       <TableCell>
                         <TextField
                           size="small"
@@ -276,105 +278,82 @@ const InvoicePage = () => {
               </TableBody>
             </Table>
             <Dialog
-                          open={openDialog}
-                          onClose={() => setOpenDialog(false)}
-                          fullWidth
-                          maxWidth="lg"
-                          scroll="paper"
-                          PaperProps={{
-                            sx: { borderRadius: 3, p: { xs: 1, sm: 2 } },
-                          }}
-                        >
-                          <DialogTitle
-                            sx={{
-                              fontWeight: 600,
-                              fontSize: { xs: "1rem", sm: "1.25rem" },
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              pb: 1,
-                            }}
-                          >
-                            <Box display="flex" alignItems="center">
-                              Asset Details for PO: <Box ml={1} color="primary.main">{selectedPONum}</Box>
-                            </Box>
-                            <IconButton onClick={() => setOpenDialog(false)} size="small">
-                              <CloseIcon />
-                            </IconButton>
-                          </DialogTitle>
-            
-                          <DialogContent dividers sx={{ px: 2, py: 1 }}>
-                            {selectedAssets.length > 0 ? (
-                              <>
-                                <TableContainer sx={{ maxHeight: 420 }}>
-                                  <Table stickyHeader size="small">
-                                    <TableHead>
-                                      <TableRow>
-                                        <TableCell sx={{ fontWeight: "bold" }}>Asset ID</TableCell>
-                                        <TableCell sx={{ fontWeight: "bold" }}>Type</TableCell>
-                                        <TableCell sx={{ fontWeight: "bold" }}>Brand</TableCell>
-                                        <TableCell sx={{ fontWeight: "bold" }}>Model</TableCell>
-                                        <TableCell sx={{ fontWeight: "bold" }}>Serial Number</TableCell>
-                                        <TableCell sx={{ fontWeight: "bold" }}>PO Number</TableCell>
-                                        <TableCell sx={{ fontWeight: "bold" }}>Base Location</TableCell>
-                                        <TableCell sx={{ fontWeight: "bold" }}>State</TableCell>
-                                      </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                      {selectedAssets.map((asset, index) => (
-                                        <TableRow key={index}>
-                                          <TableCell>{asset.asset_id}</TableCell>
-                                          <TableCell>{asset.asset_type}</TableCell>
-                                          <TableCell>{asset.brand}</TableCell>
-                                          <TableCell>{asset.model}</TableCell>
-                                          <TableCell>{asset.imei_num}</TableCell>
-                                          <TableCell>{asset.po_num}</TableCell>
-                                          <TableCell>{asset.base_location}</TableCell>
-                                          <TableCell>{asset.state}</TableCell>
-                                        </TableRow>
-                                      ))}
-                                    </TableBody>
-                                  </Table>
-                                </TableContainer>
-                              </>
-                            ) : (
-                              <Box
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="center"
-                                flexDirection="column"
-                                sx={{ py: 6, color: "text.secondary" }}
-                              >
-                                <InfoOutlined fontSize="large" />
-                                <Typography variant="body1" sx={{ mt: 1 }}>
-                                  No asset details available for this PO.
-                                </Typography>
-                              </Box>
-                            )}
-                          </DialogContent>
-            
-                          {/* <DialogActions sx={{ justifyContent: "space-between", px: 3, py: 2 }}>
-                            <Button
-                              startIcon={<DownloadIcon />}
-                              variant="outlined"
-                              color="primary"
-                              disabled={!selectedAssets.length}
-                              onClick={() => {
-                                // You can implement export to CSV or PDF logic here
-                                console.log("Download asset list or PDF for PO:", selectedPONum);
-                              }}
-                            >
-                              Download
-                            </Button>
-                            <Button
-                              onClick={() => setOpenDialog(false)}
-                              variant="contained"
-                              color="primary"
-                            >
-                              Close
-                            </Button>
-                          </DialogActions> */}
-                        </Dialog>
+              open={openDialog}
+              onClose={() => setOpenDialog(false)}
+              fullWidth
+              maxWidth="lg"
+              scroll="paper"
+              PaperProps={{
+              sx: { borderRadius: 3, p: { xs: 1, sm: 2 } },
+              }}
+            >
+              <DialogTitle
+                sx={{
+                  fontWeight: 600,
+                  fontSize: { xs: "1rem", sm: "1.25rem" },
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  pb: 1,
+                }}
+                >
+                <Box display="flex" alignItems="center">
+                  Asset Details for PO: <Box ml={1} color="primary.main">{selectedPONum}</Box>
+                </Box>
+                <IconButton onClick={() => setOpenDialog(false)} size="small">
+                  <CloseIcon />
+                </IconButton>
+              </DialogTitle>
+              <DialogContent dividers sx={{ px: 2, py: 1 }}>
+              {selectedAssets.length > 0 ? (
+                <>
+                <TableContainer sx={{ maxHeight: 420 }}>
+                  <Table stickyHeader size="small">
+                  <TableHead>
+                    <TableRow>
+                    <TableCell sx={{ fontWeight: "bold" }}>Asset ID</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Type</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Brand</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Model</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Serial Number</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>PO Number</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Base Location</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>State</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {selectedAssets.map((asset, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{asset.asset_id}</TableCell>
+                      <TableCell>{asset.asset_type}</TableCell>
+                      <TableCell>{asset.brand}</TableCell>
+                      <TableCell>{asset.model}</TableCell>
+                      <TableCell>{asset.imei_num}</TableCell>
+                      <TableCell>{asset.po_num}</TableCell>
+                      <TableCell>{asset.base_location}</TableCell>
+                      <TableCell>{asset.state}</TableCell>
+                    </TableRow>
+                    ))}
+                  </TableBody>
+                  </Table>
+                </TableContainer>
+                </>
+              ) : (
+                <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                flexDirection="column"
+                sx={{ py: 6, color: "text.secondary" }}
+                >
+                <InfoOutlined fontSize="large" />
+                <Typography variant="body1" sx={{ mt: 1 }}>
+                  No asset details available for this PO.
+                </Typography>
+                </Box>
+              )}
+              </DialogContent>
+            </Dialog>
           </TableContainer>
         )}
 

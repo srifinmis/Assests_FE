@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 
 const MaintenanceAsset = () => {
-  const { assetId } = useParams();
+  const { encodedAssetId } = useParams();
   const navigate = useNavigate();
   const [asset, setAsset] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,8 +26,10 @@ const MaintenanceAsset = () => {
   const [openPopup, setOpenPopup] = useState(false); // ✅ State for popup
 
   useEffect(() => {
+    const encodedAssetIds = encodeURIComponent(encodedAssetId); // Encoding the assetId
+
     axios
-      .get(`http://localhost:5000/api/assignasset/details/${assetId}`)
+      .get(`http://localhost:5000/api/assignasset/details/${encodedAssetIds}`)
       .then((response) => {
         setAsset(response.data);
         setLoading(false);
@@ -36,7 +38,7 @@ const MaintenanceAsset = () => {
         setError("Failed to fetch asset details.");
         setLoading(false);
       });
-  }, [assetId]);
+  }, [encodedAssetId]);
 
   const handleMoveToMaintenance = async () => {
     if (isProcessing) return;
@@ -60,7 +62,7 @@ const MaintenanceAsset = () => {
 
     try {
       const response = await axios.post("http://localhost:5000/api/maintenanceasset/maintenance", {
-        asset_id: assetId,
+        asset_id: encodedAssetId,
         requested_by: requestedBy,
       });
 

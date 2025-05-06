@@ -10,8 +10,7 @@ import axios from "axios";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import SearchIcon from "@mui/icons-material/Search";
 import InfoOutlined from "@mui/icons-material/InfoOutlined"; // Importing the InfoOutlined icon
-import {  APIURL_Assests } from "../../configuration";
-
+ 
 const AssignApproval = () => {
   const [assetData, setAssetData] = useState([]);
   const [filteredAssetData, setFilteredAssetData] = useState([]);
@@ -23,42 +22,47 @@ const AssignApproval = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [error, setError] = useState(null);
   const [remarkErrors, setRemarkErrors] = useState({});
-  const [confirmationOpen, setConfirmationOpen] = useState(false); // for the confirmation modal/dialog
-  const [confirmAction, setConfirmAction] = useState(null); // stores the action to confirm (approve/reject)
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     fetchAssignedAssetData();
   }, []);
 
+  useEffect(() => {
+    setFilteredAssetData(assetData);
+  }, [assetData]);
+
   const fetchAssignedAssetData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(` ${APIURL_Assests}/approval/free-assign-assets`);
+      const res = await axios.get("http://localhost:5000/api/approval/free-assign-assets");
       if (Array.isArray(res.data)) {
         setAssetData(res.data);
-        setFilteredAssetData(res.data);
       } else {
-        throw new Error("Fetched data is not an array.");
-      }
+        throw new Error("Invalid response data");
+      } 
     } catch (err) {
-      setError("");
+      console.error(err);
+      setError(""); 
     } finally {
-      setLoading(false);
+      setLoading(false); 
     }
   };
 
   const handleSearch = (e) => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
-    const filteredData = assetData.filter(asset =>
+    const filtered = assetData.filter((asset) =>
       String(asset.asset_id).toLowerCase().includes(query) ||
       asset?.asset?.brand.toLowerCase().includes(query) ||
       asset?.asset?.model.toLowerCase().includes(query) ||
       asset?.system?.emp_id.toLowerCase().includes(query) ||
       asset?.system?.emp_name.toLowerCase().includes(query)
     );
-    setFilteredAssetData(filteredData);
+    setFilteredAssetData(filtered);
   };
 
   const handleCheckboxChange = (requestNum) => {
@@ -66,99 +70,113 @@ const AssignApproval = () => {
       ...prev,
       [requestNum]: !prev[requestNum],
     }));
-
     if (selectedAssets[requestNum]) {
-      setRemarks((prev) => {
-        const newRemarks = { ...prev };
-        delete newRemarks[requestNum];
-        return newRemarks;
-      });
-    }
-  };
-
-  const handleRemarkChange = (requestNum, value) => {
-    setRemarks((prev) => ({ ...prev, [requestNum]: value }));
-    if (remarkErrors[requestNum]) {
-      setRemarkErrors((prev) => ({ ...prev, [requestNum]: "" })); // Clear error
+      const updatedRemarks = { ...remarks };
+      delete updatedRemarks[requestNum];
+      setRemarks(updatedRemarks);
     }
   };
 
   const handleSelectAllChange = (e) => {
-    const checked = e.target.checked;
-    const newSelection = {};
-    filteredAssetData.forEach((asset) => {
-      newSelection[asset.request_num] = checked;
+    const isChecked = e.target.checked;
+    const currentPageItems = filteredAssetData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    
+    const updatedSelections = { ...selectedAssets };
+  
+    currentPageItems.forEach(item => {
+      updatedSelections[item.request_num] = isChecked;
+      if (!isChecked) delete remarks[item.request_num];
     });
-    setSelectedAssets(newSelection);
-    if (!checked) setRemarks({}); // Clear remarks when deselecting all
+  
+    if (!isChecked) {
+      setRemarks({});
+    }
+  
+    setSelectedAssets(updatedSelections);
+  };
+  
+  const handleRemarkChange = (id, value) => {
+    setRemarks(prev => ({ ...prev, [id]: value }));
+    if (remarkErrors[id]) {
+      setRemarkErrors(prev => {
+        const updated = { ...prev };
+        delete updated[id];
+        return updated;
+      });
+    }
   };
 
-  const handlePageChange = (_, newPage) => setPage(newPage);
+  const openConfirmationDialog = (actionType) => {
+    setConfirmAction(actionType);
+    setConfirmationOpen(true);
+  };
 
+  const handleConfirmAction = async () => {
+    setActionLoading(true);
+    const selectedIds = Object.keys(selectedAssets).filter(id => selectedAssets[id]);
+  
+    if (confirmAction === "reject") {
+      const missingRemarks = selectedIds.filter(id => !remarks[id]?.trim());
+      if (missingRemarks.length > 0) {
+        const errors = {};
+        missingRemarks.forEach(id => {
+          errors[id] = "Remark is required for rejection.";
+        });
+        setRemarkErrors(errors);
+        setSnackbar({
+          open: true,
+          message: "Remarks are mandatory for rejection.",
+          severity: "warning",
+        });
+        setActionLoading(false);
+        return;
+      }
+    }
+  
+    try {
+      const loggedInUser = JSON.parse(localStorage.getItem("user"));
+      const extractedRemark = Object.values(remarks)[0]; // Get the first value
+  
+      await axios.post("http://localhost:5000/api/approval/action", {
+        requestNums: selectedIds,
+        action: confirmAction,
+        approved_by: loggedInUser.emp_id,
+        remarks: confirmAction === "rejected" ? extractedRemark : "",
+      });
+  
+      setSnackbar({
+        open: true,
+        message: `Assets ${confirmAction === "approved" ? "accepted" : "rejected"} successfully!`,
+        severity: "success",
+      });
+  
+      // Refresh the data
+      fetchAssignedAssetData(); 
+      setSelectedAssets([]);
+      setRemarks({});
+      setRemarkErrors({});
+      setConfirmationOpen(false);
+    } catch (error) {
+      console.error("Approval error:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to update asset approval status.",
+        severity: "error",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };  
+
+  const handlePageChange = (_, newPage) => setPage(newPage);
   const handleRowsPerPageChange = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
-  const handleConfirmAction = async () => {
-    const selectedAssetIds = Object.keys(selectedAssets).filter(id => selectedAssets[id]);
-    if (selectedAssetIds.length === 0) return;
-  
-    const newRemarkErrors = validateRemarks(selectedAssetIds);
-    if (Object.keys(newRemarkErrors).length > 0) {
-      setRemarkErrors(newRemarkErrors);
-      return;
-    }
-  
-    await updateAssetStatus(selectedAssetIds);
-    setSelectedAssets({});  // Clear selected assets
-    setRemarks({});  // Clear remarks
-    setRemarkErrors({});  // Clear remark errors
-    setConfirmationOpen(false);
-    setSnackbar({
-      open: true,
-      message: `${confirmAction === "approved" ? "Approved" : "Rejected"} successfully!`,
-      severity: "success",
-    });
-  };
-  
-  const validateRemarks = (selectedAssetIds) => {
-    let newRemarkErrors = {};
-    selectedAssetIds.forEach(id => {
-      if (confirmAction === "rejected" && !remarks[id]?.trim()) {
-        newRemarkErrors[id] = "Remarks are required for rejection.";
-      }
-    });
-    return newRemarkErrors;
-  };
-  
-
-  
-
-  const updateAssetStatus = async (selectedAssetIds) => {
-    try {
-      const loggedInUser = JSON.parse(localStorage.getItem("user"));
-      const extractedRemark = Object.values(remarks)[0]; // Get the first value
-      const apiUrl = confirmAction === "approved" ? "http://localhost:5000/api/approval/approve" : "http://localhost:5000/api/approval/reject";
-      
-      await axios.post(apiUrl, {
-        requestNums: selectedAssetIds,
-        approved_by: loggedInUser.emp_id,
-        remarks: confirmAction === "rejected" ? extractedRemark : "",
-    });
-      
-      fetchAssignedAssetData(); // Refresh the asset list after action
-      // Optionally, add success feedback (Snackbar)
-    } catch (error) {
-      console.error("Error during API call:", error);
-      setError("Failed to update asset status.");
-    }
-  };
-  
-  const handleAction = (action) => {
-    setConfirmAction(action);
-    setConfirmationOpen(true);
-  };
+  const allSelected = filteredAssetData
+    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+    .every((asset) => selectedAssets[asset.request_num]);
 
   return (
     <>
@@ -206,7 +224,9 @@ const AssignApproval = () => {
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#a2b0cc", color: "white" }}>
-                  <TableCell><Checkbox onChange={handleSelectAllChange} /></TableCell>
+                <TableCell>
+                    <Checkbox checked={allSelected} onChange={handleSelectAllChange} />
+                  </TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Request NO.</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Asset ID</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Asset Type</TableCell>
@@ -259,18 +279,18 @@ const AssignApproval = () => {
                         <TextField
                           size="small"
                           placeholder="Enter remark..."
-                          value={remarks[asset.asset_id] || ""}
+                          value={remarks[asset.request_num] || ""}  // Ensure request_num is used
                           onChange={(e) => {
-                            handleRemarkChange(asset.asset_id, e.target.value);
-                            setRemarkErrors((prev) => ({ ...prev, [asset.asset_id]: "" }));
+                            handleRemarkChange(asset.request_num, e.target.value);
+                            setRemarkErrors((prev) => ({ ...prev, [asset.request_num]: "" }));
                           }}
-                          disabled={!selectedAssets[asset.asset_id]}
+                          disabled={!selectedAssets[asset.request_num]}
                           fullWidth
-                          error={!!remarkErrors[asset.asset_id]}
-                          helperText={remarkErrors[asset.asset_id]}
+                          error={!!remarkErrors[asset.request_num]}
+                          helperText={remarkErrors[asset.request_num]}
                         />
-                      </TableCell>
-                    </TableRow>
+                      </TableCell>                        
+                     </TableRow>
                   ))}
               </TableBody>
             </Table>
@@ -290,14 +310,14 @@ const AssignApproval = () => {
             <Button 
               variant="contained" 
               sx={{ backgroundColor: "#1976D2", width: { xs: "100%", sm: "auto" } }} 
-              onClick={() => handleAction("approved")}
+              onClick={() => openConfirmationDialog("approved")}
               disabled={Object.keys(selectedAssets).length === 0}>
               Approve
             </Button>
             <Button 
               variant="contained" 
               sx={{ backgroundColor: "#D32F2F", width: { xs: "100%", sm: "auto" } }} 
-              onClick={() => handleAction("rejected")}
+              onClick={() => openConfirmationDialog("rejected")}
               disabled={Object.keys(selectedAssets).length === 0}>
               Reject
             </Button>
@@ -315,7 +335,9 @@ const AssignApproval = () => {
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setConfirmationOpen(false)} color="primary">Cancel</Button>
-              <Button onClick={handleConfirmAction} color="primary">Confirm</Button>
+              <Button onClick={handleConfirmAction} color="primary" disabled={actionLoading}>
+                {actionLoading ? <CircularProgress size={24} /> : "Confirm"}
+              </Button>
             </DialogActions>
           </Dialog>
           <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })}>

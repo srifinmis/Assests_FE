@@ -11,8 +11,6 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import SearchIcon from "@mui/icons-material/Search";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { Download as DownloadIcon, Close as CloseIcon, InfoOutlined } from "@mui/icons-material";
-import {  APIURL_Assests } from "../../configuration";
-
 
 const PaymentPage = () => {
   const [poData, setPoData] = useState([]);
@@ -254,8 +252,18 @@ const PaymentPage = () => {
                       <TableCell>
                         <IconButton
                           onClick={() => {
-                            setSelectedAssets(po.assets || []);
                             setSelectedPONum(po.po_num);
+
+                            if (po.asset_creation_at === 'invoice') {
+                              // Show preview with assets created at invoice stage
+                              fetchPOs(po.po_num).then((assetsAtPayment) => {
+                                setSelectedAssets(assetsAtPayment || []);
+                              });
+                            } else if (po.asset_creation_at === 'payment') {
+                              // Show preview with assets as is (created at payment)
+                              setSelectedAssets(po.assets || []);
+                            }
+
                             setOpenDialog(true);
                           }}
                           aria-label="Preview PDF"
@@ -263,7 +271,6 @@ const PaymentPage = () => {
                           <VisibilityIcon />
                         </IconButton>
                       </TableCell>
-
                       <TableCell>
                         <TextField
                           size="small"
@@ -354,28 +361,6 @@ const PaymentPage = () => {
                   </Box>
                 )}
               </DialogContent>
-
-              {/* <DialogActions sx={{ justifyContent: "space-between", px: 3, py: 2 }}>
-                <Button
-                  startIcon={<DownloadIcon />}
-                  variant="outlined"
-                  color="primary"
-                  disabled={!selectedAssets.length}
-                  onClick={() => {
-                    // You can implement export to CSV or PDF logic here
-                    console.log("Download asset list or PDF for PO:", selectedPONum);
-                  }}
-                >
-                  Download
-                </Button>
-                <Button
-                  onClick={() => setOpenDialog(false)}
-                  variant="contained"
-                  color="primary"
-                >
-                  Close
-                </Button>
-              </DialogActions> */}
             </Dialog>
           </TableContainer>
         )}
@@ -397,7 +382,7 @@ const PaymentPage = () => {
               disabled={selectedPOs.length === 0}
               onClick={() => openConfirmationDialog("approve")}
             >
-              Approve Invoice
+              Approve payment
             </Button>
             <Button
               variant="contained"
@@ -405,7 +390,7 @@ const PaymentPage = () => {
               disabled={selectedPOs.length === 0}
               onClick={() => openConfirmationDialog("reject")}
             >
-              Reject Invoice
+              Reject payment
             </Button>
           </Box>
         </Box>

@@ -7,16 +7,42 @@ import {
   Box,
   InputAdornment,
 } from "@mui/material";
-import { Link } from "react-router-dom";
-import MailOutlineIcon from "@mui/icons-material/MailOutline";
-import Logo from "../assets/srifin_final.svg"; // Your Logo
+import { Link, useNavigate } from "react-router-dom"; // <-- Import here
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import Logo from "../assets/srifin_final.svg";
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState("");
+  const [empId, setEmpId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); // <-- Hook
 
-  const handleResetPassword = () => {
-    console.log("Password reset email sent to:", email);
-    alert("If this email is registered, a password reset link has been sent.");
+  const handleResetPassword = async () => {
+    if (!empId) {
+      alert("Please enter your employee ID.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch("http://localhost:5000/api/forgot/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emp_id: empId }),
+      });
+      const result = await response.json();
+
+      if (response.ok) {
+        alert(result.message || "If this Employee ID exists, a reset link was sent.");
+        navigate("/"); // <-- Redirect after success
+      } else {
+        alert(result.message || "Something went wrong.");
+      }
+    } catch (err) {
+      console.error("Error sending reset link:", err);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -76,7 +102,7 @@ const ForgotPassword = () => {
               variant="h6"
               sx={{ fontSize: "16px", fontWeight: "400", color: "#555" }}
             >
-              Enter your email to receive a reset link.
+              Enter your employee ID to reset your password.
             </Typography>
           </Box>
 
@@ -109,17 +135,17 @@ const ForgotPassword = () => {
               Reset Password
             </Typography>
 
-            {/* Email Input Field */}
+            {/* Employee ID Input Field */}
             <TextField
-              label="Enter your email"
+              label="Enter your Employee ID"
               variant="outlined"
               fullWidth
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={empId}
+              onChange={(e) => setEmpId(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <MailOutlineIcon sx={{ color: "#4A90E2" }} />
+                    <AccountCircleIcon sx={{ color: "#3A78C9" }} />
                   </InputAdornment>
                 ),
               }}
@@ -143,8 +169,9 @@ const ForgotPassword = () => {
                 },
               }}
               onClick={handleResetPassword}
+              disabled={loading}
             >
-              Send Reset Link
+              {loading ? "Sending..." : "Send Reset Link"}
             </Button>
 
             {/* Back to Login Link */}

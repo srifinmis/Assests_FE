@@ -20,8 +20,27 @@ const DashBoard = () => {
   const isTotalAssetsPage = location.pathname.includes("/total-assets");
 
   useEffect(() => {
+    const rawStates = localStorage.getItem("statesAssigned");
+    let statesAssigned = [];
+  
+    try {
+      const parsed = JSON.parse(rawStates);
+      // Ensure it's always an array
+      if (Array.isArray(parsed)) {
+        statesAssigned = parsed;
+      } else if (typeof parsed === "string") {
+        statesAssigned = [parsed]; // Convert single string to array
+      }
+    } catch (err) {
+      console.error("Invalid statesAssigned in localStorage:", rawStates);
+    }
+  
     axios
-      .get("http://localhost:5000/api/dashboard/summary")
+      .get("http://localhost:5000/api/dashboard/summary", {
+        headers: {
+          statesAssigned: statesAssigned.join(","), // Safe to call join now
+        },
+      })
       .then((response) => {
         setAssets(response.data);
         setLoading(false);
@@ -31,8 +50,8 @@ const DashBoard = () => {
         setError("Failed to load assets");
         setLoading(false);
       });
-  }, []);
-
+  }, []);  
+  
   return (
     <Box sx={{ minHeight: "100vh", backgroundColor: "#F8F9FA", display: "flex", flexDirection: "column" }}>
       <Navbar setSidebarOpen={setSidebarOpen} />

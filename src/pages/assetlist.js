@@ -30,17 +30,23 @@ const AssetList = () => {
   const [filteredAssets, setFilteredAssets] = useState([]); // For search functionality
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [searchQuery, setSearchQuery] = useState(""); // Search state
+  const [searchQuery, setSearchQuery] = useState(""); 
+  const [allowedModules, setAllowedModules] = useState([]); 
   const navigate = useNavigate();
 
   useEffect(() => {
+    const storedAllowedModules = JSON.parse(localStorage.getItem("allowedModules") || "[]");
+    setAllowedModules(storedAllowedModules);
+
     axios
-      .get(`http://localhost:500/api/assetlist/details/${category}/${type}`)
+      .get(`http://localhost:5000/api/assetlist/details/${category}/${type}`)
       .then((response) => {
+        console.log("Fetched asset data:", response.data); // ✅ Add this line to log the data
         setAssets(response.data);
         setFilteredAssets(response.data);
         setLoading(false);
       })
+
       .catch((error) => {
         console.error("Error fetching asset details:", error);
         setError("Failed to load assets.");
@@ -49,13 +55,14 @@ const AssetList = () => {
   }, [category, type]);
 
   const handleAction = (assetId, action) => {
+    const encodedAssetId = encodeURIComponent(assetId); // Encoding the assetId
     console.log(`Performing action: ${action} on Asset ID: ${assetId}`);
     if (action === "Assign") {
-      navigate(`/assign-asset/${assetId}`);
+      navigate(`/assign-asset/${encodedAssetId}`);
     } else if (action === "Free Pool") {
-      navigate(`/free-asset/${assetId}`);
+      navigate(`/free-asset/${encodedAssetId}`);
     } else if (action === "Maintenance") {
-      navigate(`/undermaintenance-asset/${assetId}`);
+      navigate(`/undermaintenance-asset/${encodedAssetId}`);
     }
   };
 
@@ -111,6 +118,8 @@ const AssetList = () => {
     );
 
   const showActions = ["assigned", "free-pool", "maintenance"].includes(category);
+  const isApprovalModule = allowedModules.includes("IT-APPROVAL");
+  const isAdmin = allowedModules.includes("IT-NEW ASSETS");
 
   return (
     <>
@@ -248,7 +257,7 @@ const AssetList = () => {
                         variant="contained"
                         sx={{ backgroundColor: "#388E3C", color: "white", "&:hover": { backgroundColor: "#1B5E20" }, mr: 1 }}
                         onClick={() => handleAction(asset_id, "Free Pool")}
-                        disabled={assignment_status === "In Progress"} 
+                        disabled={(isApprovalModule && !isAdmin) || assignment_status === "In Progress"}
 
                       >
                         Free Pool
@@ -264,8 +273,8 @@ const AssetList = () => {
                             "&:hover": { backgroundColor: "#0D47A1" }
                           }}
                           onClick={() => handleAction(asset_id, "Assign")}
-                          disabled={assignment_status === "In Progress"} // Disable when status is "In Progress"
-                        >
+                          disabled={(isApprovalModule && !isAdmin) || assignment_status === "In Progress"}
+                          >
                           Assign
                         </Button>
                         <Button
@@ -276,8 +285,8 @@ const AssetList = () => {
                             "&:hover": { backgroundColor: "#E65100" }
                           }}
                           onClick={() => handleAction(asset_id, "Maintenance")}
-                          disabled={assignment_status === "In Progress"} // Disable when status is "In Progress"
-                        >
+                          disabled={(isApprovalModule && !isAdmin) || assignment_status === "In Progress"}
+                          >
                           Maintenance
                         </Button>
                       </Box>
@@ -288,8 +297,8 @@ const AssetList = () => {
                         variant="contained"
                         sx={{ backgroundColor: "#388E3C", color: "white", "&:hover": { backgroundColor: "#1B5E20" } }}
                         onClick={() => handleAction(asset_id, "Free Pool")}
-                        disabled={assignment_status === "In Progress"} // Disable when status is "In Progress"
-                      >
+                        disabled={(isApprovalModule && !isAdmin) || assignment_status === "In Progress"}
+                        >
                         Free Pool
                       </Button>
                     )}

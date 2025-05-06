@@ -225,7 +225,7 @@ useEffect(() => {
     setLineItems([{ asset_name: "", quantity: 1, unit_price: 0 }]);
     setTotals({ subtotal: 0, gstAmount: 0, grandTotal: 0 });
   };
-
+  
   const handleGeneratePreview = async () => {
     if (!validateForm()) return;
   
@@ -237,19 +237,14 @@ useEffect(() => {
       status: "Preview",
       asset_creation: assetCreationOption,  
     };
-  console.log("data:", data);
+
     try {
       setLoading(true);
-      console.log("📦 Sending previewdata:", data);
-  
-      // Make API call expecting PDF blob
+ 
       const response = await axios.post("http://localhost:5000/api/CreatePO/preview", data, {
         responseType: 'blob'
       });
-  
-      console.log("✅ Response received:", response);
-  
-      // Create blob and URL for PDF preview
+    
       const blob = new Blob([response.data], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
   
@@ -271,13 +266,13 @@ useEffect(() => {
     setLoading(true);
     const loggedInUser = JSON.parse(localStorage.getItem("user")) || {};
     const requestedBy = loggedInUser.emp_id;
-
+  
     if (!requestedBy) {
       setError("User not logged in. Please log in and try again.");
       setLoading(false);
       return;
     }
-
+  
     const data = {
       ...poDetails,
       ...formData,
@@ -286,20 +281,19 @@ useEffect(() => {
       requested_by: requestedBy,
       asset_creation: assetCreationOption,  
     };
-
+  
     try {
-      console.log("submitdata:",data);
-      const response = await axios.post("http://localhost:5000/api/CreatePO/request_po", data, { responseType: 'blob' });
-
-      if (response.data.success) {
+      const response = await axios.post("http://localhost:5000/api/CreatePO/request_po", data);
+      if (response.data.success==="true") {
         setMessage({ open: true, text: "PO sent for approval successfully!", severity: "success" });
-
+  
         if (response.data.emailStatus === "sent") {
           setMessage({ open: true, text: "Email sent successfully!", severity: "success" });
         } else {
           setMessage({ open: true, text: "PO sent, but email failed to send.", severity: "warning" });
         }
-
+        resetForm();
+        await fetchNextPONumber();  
         setOpenPreview(false);
       } else {
         setMessage({ open: true, text: "Failed to send PO for approval.", severity: "error" });
@@ -307,13 +301,11 @@ useEffect(() => {
     } catch (error) {
       console.error("Error sending PO for approval:", error);
       setMessage({ open: true, text: "Error sending PO for approval.", severity: "error" });
-      resetForm();
-      await fetchNextPONumber();
     } finally {
       setLoading(false);
     }
   };
-
+  
   return (
     <>
       <Navbar />

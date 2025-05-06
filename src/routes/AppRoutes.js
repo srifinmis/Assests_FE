@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Login from "../pages/Login";
 import Dashboardmain from "../DashBoardmain";
 import ForgotPassword from "../pages/ForgotPassword";
+import ResetPass from "../pages/Reset_Pass";
 import DashBoard from "../pages/DashBoard";
 import AssetList from "../pages/assetlist";
 import AssignAsset from "../pages/AssignAsset";
@@ -18,13 +19,17 @@ import FreePoolApproval from "../pages/Approval/FreePool";
 import POApproval from "../pages/Approval/PurchaseOrder";
 import InvoiceApproval from "../pages/Approval/Invoice";
 import PaymentApproval from "../pages/Approval/Payment";
+import BulkApproval from "../pages/Approval/bulk_upload"
 
 // New Asset
 import CreatePO from "../pages/New_Asset/Create_PO";
 import UploadInvoice from "../pages/New_Asset/Upload_Invoice";
 import UploadReciept from "../pages/New_Asset/Upload_Reciept";
-import CreateAsset from "../pages/New_Asset/Create_New_Asset";
-import NewAsset from "../pages/New_Asset/New_Asset";
+import AssetDepreciation from "../pages/New_Asset/AssetDepreciation";
+
+//bulk upload
+import BulkUpload from "../pages/BulkUpload"
+import RoleBase from "../pages/RoleBase/RoleBasedaccessmain"
 
 // Reports
 import BorrowerMasterReport from "../Components/BorrowMasterReport";
@@ -52,6 +57,7 @@ const AppRoutes = () => {
         {/* Public Routes */}
         <Route path="/" element={<Login />} />
         <Route path="/ForgotPassword" element={<ForgotPassword />} />
+        <Route path="/ResetPassword" element={<ResetPass />} />
 
         {/* Protected Routes */}
         <Route
@@ -64,9 +70,9 @@ const AppRoutes = () => {
                 <Route path="/components/dashboardreports" element={<Dashboardreports />} />
                 <Route path="/DashBoard" element={<DashBoard />} />
                 <Route path="/:category/:type" element={<AssetList />} />
-                <Route path="/assign-asset/:assetId" element={<AssignAsset />} />
-                <Route path="/free-asset/:assetId" element={<FreeAsset />} />
-                <Route path="/undermaintenance-asset/:assetId" element={<MaintenanceAsset />} />
+                <Route path="/assign-asset/:encodedAssetId" element={<AssignAsset />} />
+                <Route path="/free-asset/:encodedAssetId" element={<FreeAsset />} />
+                <Route path="/undermaintenance-asset/:encodedAssetId" element={<MaintenanceAsset />} />
 
                 {/* Approval Routes */}
                 <Route path="/approval/assigned" element={<AssignApproval />} />
@@ -75,13 +81,17 @@ const AppRoutes = () => {
                 <Route path="/approval/po" element={<POApproval />} />
                 <Route path="/approval/invoice" element={<InvoiceApproval />} />
                 <Route path="/approval/payment" element={<PaymentApproval />} />
+                <Route path="/approval/bulk" element={<BulkApproval />} /> 
 
                 {/* New Asset Routes */}
                 <Route path="/new-assets/create-po" element={<CreatePO />} />
                 <Route path="/new-assets/upload-invoice" element={<UploadInvoice />} />
                 <Route path="/new-assets/upload-reciept" element={<UploadReciept />} />
-                <Route path="/new-assets/create-new-asset" element={<CreateAsset />} />
-                <Route path="/new-assets/new-asset" element={<NewAsset />} />
+                <Route path="/new-assets/assetdepreciation" element={<AssetDepreciation />} />
+
+                {/* BulkUpload and RoleBase Routes */}
+                <Route path="/BulkUpload" element={<BulkUpload />} />
+                <Route path="/user_roles" element={<RoleBase />} />
 
                 {/* Reports Routes */}
                 <Route path="/components/BorrowMasterReport" element={<BorrowerMasterReport />} />
@@ -92,6 +102,7 @@ const AppRoutes = () => {
                 <Route path="/components/ForeClouserReport" element={<ForeclosureReport />} />
                 <Route path="/components/LoanDetailsReport" element={<LoanDetailsReport />} />
                 <Route path="/components/LUCReport" element={<LUCReport />} />
+
 
                 {/* CIC Routes */}
                 <Route path="/components/Reports" element={<CICReports />} />

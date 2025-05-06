@@ -1,4 +1,3 @@
-//login_frontend/src/pages/Login.js
 import React, { useState } from "react";
 import {
   TextField,
@@ -52,18 +51,28 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // sessionStorage.setItem("accessRole", JSON.stringify(data.accessRole));
+        // Storing token and user data
         localStorage.setItem("token", data.token); // ✅ Store token
         localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("user", JSON.stringify(data.user || {})); // Optional: Store user data
+        localStorage.setItem("user", JSON.stringify(data.user || {})); 
+        localStorage.setItem("allowedModules", JSON.stringify(data.allowedModules || [])); // ✅ Storing allowed modules
+        localStorage.setItem("statesAssigned",JSON.stringify( data.statesAssigned || [])); // ✅ Store state_assigned in localStorage
+
         setMessage("Login successful ✅");
-        navigate("/DashBoardmain");
+
+        // Redirect based on modules or roles (optional)
+        if (data.allowedModules.includes("Admin")) {
+          navigate("/admin-dashboard");
+        } else {
+          navigate("/DashBoard");
+        }
       } else {
+        // Error handling with detailed message from the backend
         setMessage(data.message || "Login failed ❌");
       }
     } catch (error) {
       console.error("Login error:", error);
-      setMessage("Error connecting to the server ⚠️");
+      setMessage(error.message || "Error connecting to the server ⚠️");
     } finally {
       setLoading(false);
     }
@@ -193,37 +202,41 @@ const Login = () => {
             />
 
             {/* Remember Me & Forgot Password */}
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", mb: 3 }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
               <FormControlLabel
-                control={<Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />}
+                control={<Checkbox checked={rememberMe} onChange={() => setRememberMe(!rememberMe)} />}
                 label="Remember me"
               />
-              <Link to="/ForgotPassword" style={{ textDecoration: "none", color: "#3A78C9", fontWeight: "500" }}>
+              <Link to="/forgot-password" style={{ color: "#1c5789", fontSize: "12px" }}>
                 <MailOutlineIcon sx={{ mr: 1, fontSize: "20px" }} /> Forgot Password?
               </Link>
             </Box>
 
             {/* Login Button */}
             <Button
-              fullWidth
               variant="contained"
+              color="primary"
+              fullWidth
+              onClick={handleLogin}
               disabled={loading}
               sx={{
                 mb: 2,
-                borderRadius: "25px",
-                padding: "12px",
-                fontSize: "16px",
-                fontWeight: "bold",
                 textTransform: "none",
-                background: "linear-gradient(45deg, #3A78C9, #2A5F9E)",
-                "&:hover": { background: "linear-gradient(45deg, #29538A, #1E3A68)" },
+                backgroundColor: "#1c5789",
+                "&:hover": {
+                  backgroundColor: "#154A6A",
+                },
               }}
-              onClick={handleLogin}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : "LOGIN"}
+              {loading ? <CircularProgress size={24} color="inherit" /> : "Login"}
             </Button>
 
-            {message && <Typography color="error">{message}</Typography>}
+            {/* Message */}
+            {message && (
+              <Typography variant="body2" sx={{ color: "red", fontSize: "14px" }}>
+                {message}
+              </Typography>
+            )}
           </Box>
         </Box>
       </Container>
@@ -231,4 +244,4 @@ const Login = () => {
   );
 };
 
-export default Login; 
+export default Login;

@@ -9,20 +9,28 @@ import {
   Button,
   CircularProgress,
   Paper,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 
 const RemoveAsset = () => {
-  const { assetId } = useParams(); 
+  const { encodedAssetId } = useParams();
   const navigate = useNavigate();
   const [asset, setAsset] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [openPopup, setOpenPopup] = useState(false); // ✅ State for popup
 
   useEffect(() => {
+    const encodedAssetIds = encodeURIComponent(encodedAssetId);  
+
     axios
-      .get(`http://localhost:5000/api/assignasset/details/${assetId}`)
-      .then((response) => {
+    .get(`http://localhost:5000/api/assignasset/details/${encodedAssetIds}`)
+    .then((response) => {
         setAsset(response.data);
         setLoading(false);
       })
@@ -30,12 +38,26 @@ const RemoveAsset = () => {
         setError("Failed to fetch asset details.");
         setLoading(false);
       });
-  }, [assetId]);
+  }, [encodedAssetId]);
 
   const handleMoveToFreePool = async () => {
     if (isProcessing) return;
     setIsProcessing(true);
     setError(""); 
+    if (!asset) {
+      setError("Asset details are not available.");
+      setIsProcessing(false);
+      return;
+    }
+
+    const loggedInUser = JSON.parse(localStorage.getItem("user")) || {};
+    const requestedBy = loggedInUser.emp_id;
+
+    if (!requestedBy) {
+      setError("User not logged in. Please log in and try again.");
+      setIsProcessing(false);
+      return;
+    }
 
     try {
       const loggedInUser = JSON.parse(localStorage.getItem("user")); // Retrieve logged-in user details
@@ -44,22 +66,34 @@ const RemoveAsset = () => {
       }
 
       const response = await axios.post("http://localhost:5000/api/freepoolasset/freepool", {
-        asset_id: assetId,
-        requested_by: loggedInUser.emp_id,
+        asset_id: encodedAssetId,
+        requested_by: requestedBy,
       });
 
-      if (response.status === 200) {
-        alert("Asset moved to Free Pool successfully!");
-        setTimeout(() => navigate("/DashBoard"), 1500);
+      if (response.status === 200 && response.data.message) {
+        setOpenPopup(true); // ✅ Open the popup
+
+        // ✅ Update UI immediately
+        setAsset((prevAsset) => ({
+          ...prevAsset,
+          assignment_status: "Under Maintenance",
+          emp_name: "N/A",
+          emp_id: "",
+        }));
       } else {
-        throw new Error(response.data.message || "Unexpected error");
-      }
+        throw new Error(response.data.error || "Unexpected error");
+      }            
     } catch (err) {
       console.error("Error moving asset:", err);
-      setError(`Failed to move asset: ${err.response?.data?.message || err.message}`);
+      setError(`Failed to move asset: ${err.response?.data?.error || err.message}`);
     } finally {
       setIsProcessing(false);
     }
+  };      
+      
+  const handleClosePopup = () => {
+    setOpenPopup(false);
+    navigate("/DashBoard"); // ✅ Navigate after closing popup
   };
 
   if (loading)
@@ -111,6 +145,20 @@ const RemoveAsset = () => {
           </Button>
         </Paper>
       </Box>
+      {/* ✅ Success Message Popup */}
+      <Dialog open={openPopup} onClose={handleClosePopup}>
+        <DialogTitle>Success</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Asset has been successfully moved to <strong>Free Pool</strong>.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClosePopup} color="primary" variant="contained">
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

@@ -4,14 +4,13 @@ import {
   Table, TableHead, TableBody, TableRow, TableCell, TableContainer,
   Button, TextField, Checkbox, Container, Typography, CircularProgress,
   Snackbar, Alert, TablePagination, Paper, IconButton, Tooltip, Box, InputAdornment,
-  Dialog, DialogActions, DialogContent, DialogTitle,
+  Dialog, DialogActions, DialogContent, DialogTitle, 
 } from "@mui/material";
 import axios from "axios";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import SearchIcon from "@mui/icons-material/Search";
-import InfoOutlined from "@mui/icons-material/InfoOutlined"; // Importing the InfoOutlined icon
-import {  APIURL_Assests } from "../../configuration";
-
+import InfoOutlined from "@mui/icons-material/InfoOutlined"; 
+ 
 const MaintenanceApproval = () => {
   const [assetData, setAssetData] = useState([]);
   const [filteredAssetData, setFilteredAssetData] = useState([]);
@@ -23,8 +22,8 @@ const MaintenanceApproval = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [error, setError] = useState(null);
   const [remarkErrors, setRemarkErrors] = useState({});
-  const [confirmationOpen, setConfirmationOpen] = useState(false); // for the confirmation modal/dialog
-  const [confirmAction, setConfirmAction] = useState(null); // stores the action to confirm (approve/reject)
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -32,34 +31,38 @@ const MaintenanceApproval = () => {
     fetchAssignedAssetData();
   }, []);
 
+  useEffect(() => {
+    setFilteredAssetData(assetData);
+  }, [assetData]);
+
   const fetchAssignedAssetData = async () => {
     setLoading(true);
     try {
       const res = await axios.get("http://localhost:5000/api/underapproval/free-under-assets");
       if (Array.isArray(res.data)) {
         setAssetData(res.data);
-        setFilteredAssetData(res.data);
+        setFilteredAssetData(res.data);     
       } else {
-        throw new Error("Fetched data is not an array.");
+        throw new Error("Invalid response data");
       }
     } catch (err) {
       setError("");
     } finally {
-      setLoading(false);
+      setLoading(false); 
     }
   };
-  
+
   const handleSearch = (e) => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
-    const filteredData = assetData.filter(asset =>
+    const filtered = assetData.filter((asset) =>
       String(asset.asset_id).toLowerCase().includes(query) ||
       asset?.asset?.brand.toLowerCase().includes(query) ||
       asset?.asset?.model.toLowerCase().includes(query) ||
       asset?.system?.emp_id.toLowerCase().includes(query) ||
       asset?.system?.emp_name.toLowerCase().includes(query)
     );
-    setFilteredAssetData(filteredData);
+    setFilteredAssetData(filtered);
   };
 
   const handleCheckboxChange = (requestNum) => {
@@ -67,121 +70,121 @@ const MaintenanceApproval = () => {
       ...prev,
       [requestNum]: !prev[requestNum],
     }));
-
     if (selectedAssets[requestNum]) {
-      setRemarks((prev) => {
-        const newRemarks = { ...prev };
-        delete newRemarks[requestNum];
-        return newRemarks;
-      });
+      const updatedRemarks = { ...remarks };
+      delete updatedRemarks[requestNum];
+      setRemarks(updatedRemarks);
     }
-  };
-
-  const handleRemarkChange = (requestNum, value) => {
-    setRemarks((prev) => ({ ...prev, [requestNum]: value }));
-    if (remarkErrors[requestNum]) {
-      setRemarkErrors((prev) => ({ ...prev, [requestNum]: "" })); // Clear error
-    }
-  };
+  };  
 
   const handleSelectAllChange = (e) => {
-    const checked = e.target.checked;
+    const isChecked = e.target.checked;
+    const currentPageItems = filteredAssetData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     
-    if (checked) {
-      // Select all assets
-      const newSelection = {};
-      filteredAssetData.forEach((asset) => {
-        newSelection[asset.request_num] = true;
-      });
-      setSelectedAssets(newSelection);
-    } else {
-      // Deselect all assets
-      setSelectedAssets({});
-      setRemarks({}); // Clear remarks when deselecting all
+    const updatedSelections = { ...selectedAssets };
+  
+    currentPageItems.forEach(item => {
+      updatedSelections[item.request_num] = isChecked;
+      if (!isChecked) delete remarks[item.request_num];
+    });
+  
+    if (!isChecked) {
+      setRemarks({});
     }
+  
+    setSelectedAssets(updatedSelections);
   };
   
-  
-  const handlePageChange = (_, newPage) => setPage(newPage);
+  const handleRemarkChange = (id, value) => {
+    setRemarks(prev => ({ ...prev, [id]: value }));
+    if (remarkErrors[id]) {
+      setRemarkErrors(prev => {
+        const updated = { ...prev };
+        delete updated[id];
+        return updated;
+      });
+    }
+  };
 
-  const handleRowsPerPageChange = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+  const openConfirmationDialog = (actionType) => {
+    setConfirmAction(actionType);
+    setConfirmationOpen(true);
   };
 
   const handleConfirmAction = async () => {
     setActionLoading(true);
-    try {
-      const selectedAssetIds = Object.keys(selectedAssets).filter(id => selectedAssets[id]);
-      if (selectedAssetIds.length === 0) return;
-  
-      const newRemarkErrors = validateRemarks(selectedAssetIds);
-      if (Object.keys(newRemarkErrors).length > 0) {
-        setRemarkErrors(newRemarkErrors);
+    const selectedIds = Object.keys(selectedAssets).filter(id => selectedAssets[id]);
+
+    if (confirmAction === "reject") {
+      const missingRemarks = selectedIds.filter(id => !remarks[id]?.trim());
+      if (missingRemarks.length > 0) {
+        const errors = {};
+        missingRemarks.forEach(id => {
+          errors[id] = "Remark is required for rejection.";
+        });
+        setRemarkErrors(errors);
+        setSnackbar({
+          open: true,
+          message: "Remarks are mandatory for rejection.",
+          severity: "warning",
+        });
         setActionLoading(false);
         return;
       }
-  
-      await updateAssetStatus(selectedAssetIds);
-      setSelectedAssets({});
+    }
+
+    try {
+      const loggedInUser = JSON.parse(localStorage.getItem("user"));
+      console.log("action",confirmAction)
+      const extractedRemark = Object.values(remarks)[0]; // Get the first value
+      console.log("action",extractedRemark)
+
+      await axios.post("http://localhost:5000/api/underapproval/action", {
+        requestNums: selectedIds,
+        action: confirmAction,
+        approved_by: loggedInUser.emp_id,
+        remarks: confirmAction === "rejected" ? extractedRemark : "",
+      });
+
+      setSnackbar({
+        open: true,
+        message: `Assets ${confirmAction === "approved" ? "accepeted" : "rejected"} successfully!`,
+        severity: "success",
+      });
+
+      fetchAssignedAssetData();
+      setSelectedAssets([]);
       setRemarks({});
       setRemarkErrors({});
       setConfirmationOpen(false);
-      setSnackbar({
-        open: true,
-        message: `${confirmAction === "approved" ? "Approved" : "Rejected"} successfully!`,
-        severity: "success",
-      });
     } catch (error) {
+      console.error("Approval error:", error);
       setSnackbar({
         open: true,
-        message: "Error processing request.",
+        message: "Failed to update asset approval status.",
         severity: "error",
       });
     } finally {
       setActionLoading(false);
     }
   };
-  
-  const validateRemarks = (selectedAssetIds) => {
-    let newRemarkErrors = {};
-    selectedAssetIds.forEach(id => {
-      if (confirmAction === "rejected" && !remarks[id]?.trim()) {
-        newRemarkErrors[id] = "Remarks are required for rejection.";
-      }
-    });
-    return newRemarkErrors;
+
+  const handlePageChange = (_, newPage) => setPage(newPage);
+  const handleRowsPerPageChange = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
-  
-  const updateAssetStatus = async (selectedAssetIds) => {
-    try {
-      const loggedInUser = JSON.parse(localStorage.getItem("user"));
-      const extractedRemark = Object.values(remarks)[0]; // Get the first value
-      const apiUrl = confirmAction === "approved" ? "http://localhost:5000/api/underapproval/approve" : "http://localhost:5000/api/underapproval/reject";
-      await axios.post(apiUrl, {
-        requestNums: selectedAssetIds,
-        approved_by: loggedInUser.emp_id,
-        remarks: confirmAction === "rejected" ? extractedRemark : "",
-      });
-      fetchAssignedAssetData(); // Refresh the asset list after action
-      // Optionally, add success feedback (Snackbar)
-    } catch (error) {
-      console.error("Error during API call:", error);
-      setError("Failed to update asset status.");
-    }
-  };
-  
-  const handleAction = (action) => {
-    setConfirmAction(action);
-    setConfirmationOpen(true);
-  };
+
+  const allSelected = filteredAssetData
+    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+    .every((asset) => selectedAssets[asset.request_num]);
 
   return (
     <>
       <Navbar />
       <Container maxWidth="lg" sx={{ mb: 0, backgroundColor: "#F9FAFB", borderRadius: 2, p: 3 }}>
         <Typography variant="h4" align="center" gutterBottom sx={{ color: "#2E3B55", fontWeight: "bold", mb: 4 }}>
-        Under Maintenanace Asset Requests
+          Under Maintenanace Asset Requests
         </Typography>
 
         <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems="center" mb={2}>
@@ -222,7 +225,9 @@ const MaintenanceApproval = () => {
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#a2b0cc", color: "white" }}>
-                  <TableCell><Checkbox onChange={handleSelectAllChange} /></TableCell>
+                <TableCell >
+                    <Checkbox checked={allSelected} onChange={handleSelectAllChange} />
+                  </TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Request NO.</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Asset ID</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Asset Type</TableCell>
@@ -272,20 +277,6 @@ const MaintenanceApproval = () => {
                        </TableCell>
                       <TableCell>{asset.assignment_status}</TableCell>
                       <TableCell>
-                        {/* <TextField
-                          size="small"
-                          placeholder="Enter remark..."
-                          value={remarks[asset.asset_id] || ""}
-                          onChange={(e) => {
-                            handleRemarkChange(asset.asset_id, e.target.value);
-                            setRemarkErrors((prev) => ({ ...prev, [asset.asset_id]: "" }));
-                          }}
-                          disabled={!selectedAssets[asset.asset_id]}
-                          fullWidth
-                          error={!!remarkErrors[asset.asset_id]}
-                          helperText={remarkErrors[asset.asset_id]}
-                        /> */}
-
                         <TextField
                           size="small"
                           placeholder="Enter remark..."
@@ -299,9 +290,8 @@ const MaintenanceApproval = () => {
                           error={!!remarkErrors[asset.request_num]}
                           helperText={remarkErrors[asset.request_num]}
                         />
-
-                      </TableCell>
-                    </TableRow>
+                      </TableCell>                        
+                     </TableRow>
                   ))}
               </TableBody>
             </Table>
@@ -320,17 +310,16 @@ const MaintenanceApproval = () => {
           <Box display="flex" gap={2}>
             <Button 
               variant="contained" 
-              sx={{ backgroundColor: "#1976D2" }} 
-              onClick={() => handleAction("approved")}
-              disabled={Object.values(selectedAssets).every(value => !value)}>
+              sx={{ backgroundColor: "#1976D2", width: { xs: "100%", sm: "auto" } }} 
+              onClick={() => openConfirmationDialog("approved")}
+              disabled={Object.keys(selectedAssets).length === 0}>
               Approve
             </Button>
-
             <Button 
               variant="contained" 
-              sx={{ backgroundColor: "#D32F2F" }} 
-              onClick={() => handleAction("rejected")}
-              disabled={Object.values(selectedAssets).every(value => !value)}>
+              sx={{ backgroundColor: "#D32F2F", width: { xs: "100%", sm: "auto" } }} 
+              onClick={() => openConfirmationDialog("rejected")}
+              disabled={Object.keys(selectedAssets).length === 0}>
               Reject
             </Button>
           </Box>
