@@ -29,6 +29,8 @@ const ResetPassword = () => {
     setToken(t);
   }, [searchParams]);
 
+  const { API_CONFIG, REFRESH_CONFIG } = require('../configuration');
+
   const handleSubmit = async () => {
     if (!password || !confirmPassword) {
       setError("Please fill all fields.");
@@ -41,7 +43,7 @@ const ResetPassword = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/api/reset/password", {
+      const res = await fetch(`${API_CONFIG.APIURL}/reset/password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, newPassword: password }),

@@ -19,6 +19,8 @@ const DashBoard = () => {
   // Check if the page is Total Assets
   const isTotalAssetsPage = location.pathname.includes("/total-assets");
 
+  const { API_CONFIG, REFRESH_CONFIG } = require('../configuration');
+
   useEffect(() => {
     const rawStates = localStorage.getItem("statesAssigned");
     let statesAssigned = [];
@@ -36,7 +38,7 @@ const DashBoard = () => {
     }
   
     axios
-      .get("http://localhost:5000/api/dashboard/summary", {
+      .get(`${API_CONFIG.APIURL}/dashboard/summary`, {
         headers: {
           statesAssigned: statesAssigned.join(","), // Safe to call join now
         },

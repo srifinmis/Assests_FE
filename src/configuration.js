@@ -1,7 +1,19 @@
- const APIURL = 'http://localhost:4000';
- const DROPDOWN_REFRESH_INTERVAL = 30 * 60 * 1000;
- const APIURL_Assests = 'http://localhost:5000/api';
+// configuration.js
 
-module.exports = { APIURL,DROPDOWN_REFRESH_INTERVAL,APIURL_Assests };
-
-// ${APIURL_Assests}
+// API Configuration
+const API_CONFIG = {
+    APIURL: 'http://192.168.80.38:2727/api', // Asset API
+  };
+  
+  // Refresh Intervals and Timeouts
+  const REFRESH_CONFIG = {
+    DROPDOWN_REFRESH_INTERVAL: 30 * 60 * 1000, // 30 minutes in milliseconds
+  };
+  
+  // UI Configuration (if any UI-related settings are needed)
+  const UI_CONFIG = {
+    BASE_UI_URL: 'http://192.168.80.38:3333', // UI base URL
+  };
+  
+  module.exports = { API_CONFIG, REFRESH_CONFIG, UI_CONFIG };
+  

@@ -10,7 +10,8 @@ import axios from "axios";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import SearchIcon from "@mui/icons-material/Search";
 import InfoOutlined from "@mui/icons-material/InfoOutlined"; 
- 
+import { useCallback } from "react";
+
 const MaintenanceApproval = () => {
   const [assetData, setAssetData] = useState([]);
   const [filteredAssetData, setFilteredAssetData] = useState([]);
@@ -27,30 +28,62 @@ const MaintenanceApproval = () => {
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [actionLoading, setActionLoading] = useState(false);
 
-  useEffect(() => {
-    fetchAssignedAssetData();
-  }, []);
+  const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
+
+  
 
   useEffect(() => {
     setFilteredAssetData(assetData);
   }, [assetData]);
 
-  const fetchAssignedAssetData = async () => {
+  const fetchAssignedAssetData = useCallback(async () => { 
     setLoading(true);
+  
+    const CACHE_KEY = "assignedAssetDataMetadata";
+  
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      try {
+        const { timestamp, cacheDuration, data } = JSON.parse(cached);
+        const isValid = timestamp && (Date.now() - timestamp < cacheDuration);
+  
+        if (isValid && Array.isArray(data)) {
+          setAssetData(data);
+          setFilteredAssetData(data);
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.warn("Failed to parse assigned asset cache:", err);
+      }
+    }
+  
     try {
-      const res = await axios.get("http://localhost:5000/api/underapproval/free-under-assets");
+      const res = await axios.get(`${API_CONFIG.APIURL}/underapproval/free-under-assets`);
       if (Array.isArray(res.data)) {
+        const metadata = {
+          timestamp: Date.now(),
+          cacheDuration: REFRESH_CONFIG.DROPDOWN_REFRESH_INTERVAL,
+          data: res.data,
+        };
+        localStorage.setItem(CACHE_KEY, JSON.stringify(metadata));
+  
         setAssetData(res.data);
-        setFilteredAssetData(res.data);     
+        setFilteredAssetData(res.data);
       } else {
         throw new Error("Invalid response data");
       }
     } catch (err) {
+      console.error("Error fetching assigned assets:", err);
       setError("");
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
-  };
+  }, [API_CONFIG.APIURL, REFRESH_CONFIG.DROPDOWN_REFRESH_INTERVAL]);
+  
+  useEffect(() => {
+    fetchAssignedAssetData();
+  }, [fetchAssignedAssetData]);  
 
   const handleSearch = (e) => {
     const query = e.target.value.toLowerCase();
@@ -110,7 +143,7 @@ const MaintenanceApproval = () => {
     setConfirmAction(actionType);
     setConfirmationOpen(true);
   };
-
+  
   const handleConfirmAction = async () => {
     setActionLoading(true);
     const selectedIds = Object.keys(selectedAssets).filter(id => selectedAssets[id]);
@@ -139,7 +172,7 @@ const MaintenanceApproval = () => {
       const extractedRemark = Object.values(remarks)[0]; // Get the first value
       console.log("action",extractedRemark)
 
-      await axios.post("http://localhost:5000/api/underapproval/action", {
+      await axios.post(`${API_CONFIG.APIURL}/underapproval/action`, {
         requestNums: selectedIds,
         action: confirmAction,
         approved_by: loggedInUser.emp_id,

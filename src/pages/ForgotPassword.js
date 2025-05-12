@@ -16,6 +16,8 @@ const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate(); // <-- Hook
 
+  const { API_CONFIG, REFRESH_CONFIG } = require('../configuration');
+  
   const handleResetPassword = async () => {
     if (!empId) {
       alert("Please enter your employee ID.");
@@ -24,7 +26,7 @@ const ForgotPassword = () => {
 
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:5000/api/forgot/password", {
+      const response = await fetch(`${API_CONFIG.APIURL}/forgot/password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ emp_id: empId }),

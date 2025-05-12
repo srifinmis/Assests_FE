@@ -38,10 +38,12 @@ const InvoicePage = () => {
     setFilteredPOs(poData);
   }, [poData]);
 
+  const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
+  
   const fetchPOs = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/invoice/invoice");
+      const res = await axios.get(`${API_CONFIG.APIURL}/invoice/invoice`);
       if (Array.isArray(res.data)) {
         setPoData(res.data);
       } else {
@@ -100,7 +102,7 @@ const InvoicePage = () => {
 
     try {
       const loggedInUser = JSON.parse(localStorage.getItem("user"));
-      const apiUrl = "http://localhost:5000/api/invoice/action";
+      const apiUrl = `${API_CONFIG.APIURL}/invoice/action`;
 
       const remarksList = selectedPOs.map((id) => ({
         assignment_id: id,

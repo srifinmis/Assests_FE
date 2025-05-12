@@ -25,11 +25,13 @@ const RemoveAsset = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [openPopup, setOpenPopup] = useState(false); // ✅ State for popup
 
+  const { API_CONFIG, REFRESH_CONFIG } = require('../configuration');
+
   useEffect(() => {
     const encodedAssetIds = encodeURIComponent(encodedAssetId);  
 
     axios
-    .get(`http://localhost:5000/api/assignasset/details/${encodedAssetIds}`)
+    .get(`${API_CONFIG.APIURL}/assignasset/details/${encodedAssetIds}`)
     .then((response) => {
         setAsset(response.data);
         setLoading(false);
@@ -65,7 +67,7 @@ const RemoveAsset = () => {
         throw new Error("User session expired. Please log in again.");
       }
 
-      const response = await axios.post("http://localhost:5000/api/freepoolasset/freepool", {
+      const response = await axios.post(`${API_CONFIG.APIURL}/freepoolasset/freepool`, {
         asset_id: encodedAssetId,
         requested_by: requestedBy,
       });

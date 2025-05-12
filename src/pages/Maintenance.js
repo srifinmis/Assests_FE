@@ -25,20 +25,49 @@ const MaintenanceAsset = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [openPopup, setOpenPopup] = useState(false); // ✅ State for popup
 
-  useEffect(() => {
-    const encodedAssetIds = encodeURIComponent(encodedAssetId); // Encoding the assetId
+  const { API_CONFIG, REFRESH_CONFIG } = require('../configuration');
 
-    axios
-      .get(`http://localhost:5000/api/assignasset/details/${encodedAssetIds}`)
-      .then((response) => {
-        setAsset(response.data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError("Failed to fetch asset details.");
-        setLoading(false);
-      });
-  }, [encodedAssetId]);
+  useEffect(() => {
+    const encodedAssetIds = encodeURIComponent(encodedAssetId);
+    const cacheKey = `assetDetailsMetadata_${encodedAssetIds}`;
+  
+    const fetchAssetDetails = () => {
+      axios
+        .get(`${API_CONFIG.APIURL}/assignasset/details/${encodedAssetIds}`)
+        .then((response) => {
+          const metadata = {
+            timestamp: Date.now(),
+            cacheDuration: REFRESH_CONFIG.DROPDOWN_REFRESH_INTERVAL, // or define a shorter duration if needed
+            data: response.data,
+          };
+          localStorage.setItem(cacheKey, JSON.stringify(metadata));
+          setAsset(response.data);
+          setLoading(false);
+        })
+        .catch(() => {
+          setError("Failed to fetch asset details.");
+          setLoading(false);
+        });
+    };
+  
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const { timestamp, cacheDuration, data } = JSON.parse(cached);
+        const isValid = timestamp && (Date.now() - timestamp < cacheDuration);
+        if (isValid && data) {
+          setAsset(data);
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.warn("Failed to parse asset details cache:", err);
+      }
+    }
+  
+    fetchAssetDetails();
+  }, [encodedAssetId, API_CONFIG.APIURL, REFRESH_CONFIG.DROPDOWN_REFRESH_INTERVAL]);
+  
 
   const handleMoveToMaintenance = async () => {
     if (isProcessing) return;
@@ -61,7 +90,7 @@ const MaintenanceAsset = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/maintenanceasset/maintenance", {
+      const response = await axios.post(`${API_CONFIG.APIURL}/maintenanceasset/maintenance`, {
         asset_id: encodedAssetId,
         requested_by: requestedBy,
       });

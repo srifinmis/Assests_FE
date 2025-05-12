@@ -34,10 +34,12 @@ const BulkUploadPage = () => {
     fetchBulkUploads();
   }, []);
 
+  const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
+
   const fetchBulkUploads = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/bulkupload/uploads");
+      const res = await axios.get(`${API_CONFIG.APIURL}/bulkupload/uploads`);
       setBulkUploads(Array.isArray(res.data) ? res.data : []);
       setFilteredBulk(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
@@ -49,8 +51,7 @@ const BulkUploadPage = () => {
 
   const fetchBulkDetails = async (bulkId) => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/bulkupload/uploads/${bulkId}`);
-      console.log("assignments",res);
+      const res = await axios.get(`${API_CONFIG.APIURL}/bulkupload/uploads/${bulkId}`);
       setDetailedBulkData(res.data);
     } catch (err) {
       setSnackbar({ open: true, message: "Failed to fetch bulk details.", severity: "error" });
@@ -84,54 +85,6 @@ const BulkUploadPage = () => {
   const handleRemarkChange = (id, value) => {
     setBulkRemarks(prev => ({ ...prev, [id]: value }));
   };
-
-  // const handlePOAction = async (action) => {
-  //   const requiresRemark = action === "reject";
-  //   const hasEmptyRemarks = selectedBulk.some(id => !bulkRemarks[id]?.trim());
-
-  //   if (requiresRemark && hasEmptyRemarks) {
-  //     setSnackbar({
-  //       open: true,
-  //       message: "Remarks are mandatory for rejection.",
-  //       severity: "warning",
-  //     });
-  //     return;
-  //   }
-
-  //   setActionLoading(true);
-  //   try {
-  //     const loggedInUser = JSON.parse(localStorage.getItem("user"));
-  //     const apiUrl = "http://localhost:5000/api/bulkupload/action";
-
-  //     const remarksList = selectedBulk.map((id) => ({
-  //       assignment_id: id,
-  //       remarks: bulkRemarks[id] || "",
-  //     }));
-
-  //     await axios.post(apiUrl, {
-  //       assignmentIds: selectedBulk,
-  //       action,
-  //       approved_by: loggedInUser.emp_id,
-  //       remarksList,
-  //       remark: remarksList[0]?.remarks || "",
-  //     });
-
-  //     setSnackbar({
-  //       open: true,
-  //       message: `POs ${action === "approve" ? "approved" : "rejected"} successfully!`,
-  //       severity: "success",
-  //     });
-
-  //     fetchBulkUploads();
-  //     setSelectedBulk([]);
-  //     setBulkRemarks({});
-  //     setConfirmationOpen(false);
-  //   } catch (error) {
-  //     setSnackbar({ open: true, message: "Failed to update PO status.", severity: "error" });
-  //   } finally {
-  //     setActionLoading(false);
-  //   }
-  // };
 
   const handlePOAction = async (action) => {
     const requiresRemark = action === "reject";
@@ -167,7 +120,7 @@ const BulkUploadPage = () => {
         throw new Error("User not found in local storage");
       }
   
-      const apiUrl = `http://localhost:5000/api/bulkupload/uploads/${bulkId}/action`; // Use the bulkId in URL
+      const apiUrl = `${API_CONFIG.APIURL}/bulkupload/uploads/${bulkId}/action`; // Use the bulkId in URL
   
       const remarks = bulkRemarks[selectedBulk[0]] || ""; // Assuming remarks for rejection/approval come from the first selected item
       const response = await axios.post(apiUrl, {

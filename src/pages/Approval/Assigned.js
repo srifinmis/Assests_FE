@@ -35,10 +35,12 @@ const AssignApproval = () => {
     setFilteredAssetData(assetData);
   }, [assetData]);
 
+  const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
+
   const fetchAssignedAssetData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/approval/free-assign-assets");
+      const res = await axios.get(`${API_CONFIG.APIURL}/approval/free-assign-assets`);
       if (Array.isArray(res.data)) {
         setAssetData(res.data);
       } else {
@@ -137,7 +139,7 @@ const AssignApproval = () => {
       const loggedInUser = JSON.parse(localStorage.getItem("user"));
       const extractedRemark = Object.values(remarks)[0]; // Get the first value
   
-      await axios.post("http://localhost:5000/api/approval/action", {
+      await axios.post(`${API_CONFIG.APIURL}/approval/action`, {
         requestNums: selectedIds,
         action: confirmAction,
         approved_by: loggedInUser.emp_id,

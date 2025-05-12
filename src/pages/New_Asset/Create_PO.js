@@ -86,11 +86,12 @@ const PurchaseOrder = () => {
   const deliveryTermsOptions = ["3-4 working days after PO", "1 week after the PO",];
   const warrantyTermsOptions = ["as per OEM", "1 year subscription"];
 
+  const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
   // Initial Fetch
   // 1. Move fetchNextPONumber here
-const fetchNextPONumber = async () => {
+  const fetchNextPONumber = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/api/CreatePO/next-po-number");
+    const res = await axios.get(`${API_CONFIG.APIURL}/CreatePO/next-po-number`);
     setPoDetails((prev) => ({ ...prev, po_num: res.data.po_num }));
   } catch (error) {
     console.error("Failed to fetch PO number:", error);
@@ -109,7 +110,7 @@ useEffect(() => {
 useEffect(() => {
   const fetchAssetTypes = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/CreatePO/asset-types");
+      const res = await axios.get(`${API_CONFIG.APIURL}/CreatePO/asset-types`);
       setAssetTypes(res.data || []);
     } catch (error) {
       console.error("Failed to fetch asset types:", error);
@@ -241,7 +242,7 @@ useEffect(() => {
     try {
       setLoading(true);
  
-      const response = await axios.post("http://localhost:5000/api/CreatePO/preview", data, {
+      const response = await axios.post(`${API_CONFIG.APIURL}/CreatePO/preview`, data, {
         responseType: 'blob'
       });
     
@@ -283,7 +284,7 @@ useEffect(() => {
     };
   
     try {
-      const response = await axios.post("http://localhost:5000/api/CreatePO/request_po", data);
+      const response = await axios.post(`${API_CONFIG.APIURL}/CreatePO/request_po`, data);
       if (response.data.success==="true") {
         setMessage({ open: true, text: "PO sent for approval successfully!", severity: "success" });
   

@@ -10,6 +10,7 @@ import axios from "axios";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import SearchIcon from "@mui/icons-material/Search";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import { useCallback } from "react";
 
 const POApprovalPage = () => {
   const [poData, setPoData] = useState([]);
@@ -27,18 +28,41 @@ const POApprovalPage = () => {
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
   useEffect(() => {
-    fetchPOs();
-  }, []);
-
-  useEffect(() => {
     setFilteredPOs(poData);
   }, [poData]);
 
-  const fetchPOs = async () => {
+  const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
+  
+  const CACHE_KEY = "poDataCache";
+
+  const fetchPOs = useCallback (async () => {
     setLoading(true);
+  
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      try {
+        const { timestamp, cacheDuration, data } = JSON.parse(cached);
+        const isValid = timestamp && (Date.now() - timestamp < cacheDuration);
+  
+        if (isValid && Array.isArray(data)) {
+          setPoData(data);
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.warn("Failed to parse PO cache:", err);
+      }
+    }
+  
     try {
-      const res = await axios.get("http://localhost:5000/api/purchaseorder/po");
+      const res = await axios.get(`${API_CONFIG.APIURL}/purchaseorder/po`);
       if (Array.isArray(res.data)) {
+        const metadata = {
+          timestamp: Date.now(),
+          cacheDuration: REFRESH_CONFIG.DROPDOWN_REFRESH_INTERVAL,
+          data: res.data,
+        };
+        localStorage.setItem(CACHE_KEY, JSON.stringify(metadata));
         setPoData(res.data);
       } else {
         throw new Error("Fetched data is not an array.");
@@ -49,7 +73,14 @@ const POApprovalPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_CONFIG.APIURL, REFRESH_CONFIG.DROPDOWN_REFRESH_INTERVAL]);
+
+  useEffect(() => {
+    fetchPOs();
+    const interval = setInterval(fetchPOs, REFRESH_CONFIG.DROPDOWN_REFRESH_INTERVAL);
+    return () => clearInterval(interval);
+  }, [fetchPOs, REFRESH_CONFIG.DROPDOWN_REFRESH_INTERVAL]);
+  
 
   const handleSearch = (e) => {
     const query = e.target.value.toLowerCase();
@@ -93,11 +124,10 @@ const POApprovalPage = () => {
     }
   
     setActionLoading(true); // Start loading
-    console.log("remarks:",  poRemarks);
 
     try {
       const loggedInUser = JSON.parse(localStorage.getItem("user"));
-      const apiUrl = "http://localhost:5000/api/purchaseorder/action";
+      const apiUrl = `${API_CONFIG.APIURL}/purchaseorder/action`;
     
       const remarksList = selectedPOs.map((id) => ({
         assignment_id: id,
@@ -105,7 +135,6 @@ const POApprovalPage = () => {
       }));
     
       const extractedRemark = remarksList.length > 0 ? remarksList[0].remarks : "";
-      console.log("remarks:",  action);
 
       await axios.post(apiUrl, {
         assignmentIds: selectedPOs,

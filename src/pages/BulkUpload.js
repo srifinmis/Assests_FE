@@ -119,6 +119,8 @@ const BulkUpload = () => {
     };
   }, []);
 
+  const { API_CONFIG, REFRESH_CONFIG } = require('../configuration');
+  
   const handleUpload = async () => {
     if (!fileName || !uploadedFile) {
       setSnackbarMessage("❌ No file uploaded.");
@@ -160,7 +162,7 @@ const BulkUpload = () => {
 
     try {
       setLoading(true);
-      await axios.post("http://localhost:5000/api/bulk/upload", formData, {
+      await axios.post(`${API_CONFIG.APIURL}/bulk/upload`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

@@ -31,6 +31,8 @@ const AssignAsset = () => {
 
   const tokenlocal = localStorage.getItem("token");
 
+  const { API_CONFIG, REFRESH_CONFIG } = require('../configuration');
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -38,10 +40,10 @@ const AssignAsset = () => {
         const encodedAssetIds = encodeURIComponent(encodedAssetId); // Encoding the assetId
 
         const [assetRes, usersRes] = await Promise.all([
-          axios.get(`http://localhost:5000/api/assignasset/details/${encodedAssetIds}`, {
+          axios.get(`${API_CONFIG.APIURL}/assignasset/details/${encodedAssetIds}`, {
             headers: { Authorization: `Bearer ${tokenlocal}` },
           }),
-          axios.get("http://localhost:5000/api/assignasset/users", {
+          axios.get(`${API_CONFIG.APIURL}/assignasset/users`, {
             headers: { Authorization: `Bearer ${tokenlocal}` },
           }),
         ]);
@@ -81,7 +83,6 @@ const AssignAsset = () => {
       const loggedInUser = JSON.parse(localStorage.getItem("user"));
       const token = localStorage.getItem("token");
       if (!token) {
-        console.log("No token found. Redirecting to login.");
         navigate("/");
         return;
       }
@@ -93,7 +94,7 @@ const AssignAsset = () => {
       };
   
       const response = await axios.post(
-        "http://localhost:5000/api/assignasset/assign",
+        `${API_CONFIG.APIURL}/assignasset/assign`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -32,7 +32,7 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
-  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+  const { API_CONFIG, REFRESH_CONFIG } = require('../configuration');
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -40,7 +40,7 @@ const Login = () => {
     setMessage("");
 
     try {
-      const response = await fetch(`${API_URL}/login`, {
+      const response = await fetch(`${API_CONFIG.APIURL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

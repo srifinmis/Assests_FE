@@ -40,9 +40,11 @@ const UploadInvoice = () => {
   const [selectedProductIndex, setSelectedProductIndex] = useState(null);
   const [assetCreationAt, setAssetCreationAt] = useState("");
 
+  const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
+
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/invoices/po_no")
+      .get(`${API_CONFIG.APIURL}/invoices/po_no`)
       .then((res) => setPoOptions(res.data))
       .catch((err) => console.error("❌ Error fetching PO numbers:", err));
   }, []);
@@ -61,7 +63,7 @@ const UploadInvoice = () => {
     try {
       // Fetch PO details from the backend API
       const { data } = await axios.get(
-        `http://localhost:5000/api/invoices/po_details/${encodeURIComponent(po)}`
+        `${API_CONFIG.APIURL}/invoices/po_details/${encodeURIComponent(po)}`
       );
   
       // Set asset creation type
@@ -89,7 +91,7 @@ const UploadInvoice = () => {
   
         // Fetch generated asset IDs based on PO number
         const { data: assetIdData } = await axios.get(
-          `http://localhost:5000/api/invoices/next-asset-ids/${encodeURIComponent(po)}`
+          `${API_CONFIG.APIURL}/invoices/next-asset-ids/${encodeURIComponent(po)}`
         );
   
         const assetIds = assetIdData.generated_asset_ids; // Get generated asset IDs
@@ -257,7 +259,7 @@ const UploadInvoice = () => {
   };  
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/invoices/locations')
+    fetch(`${API_CONFIG.APIURL}/invoices/locations`)
       .then((res) => res.json())
       .then((data) => {
         setBaseLocationOptions(data.baseLocations || []);
@@ -342,7 +344,7 @@ const UploadInvoice = () => {
   
     try {
       setLoading(true);
-      const response = await axios.post("http://localhost:5000/api/invoices/upload_invoice", formData, {
+      const response = await axios.post(`${API_CONFIG.APIURL}/invoices/upload_invoice`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

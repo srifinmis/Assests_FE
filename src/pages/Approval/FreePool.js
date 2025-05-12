@@ -35,10 +35,12 @@ const FreePoolApproval = () => {
     setFilteredAssetData(assetData);
   }, [assetData]);
 
+  const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
+  
   const fetchAssignedAssetData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/freeapproval/free-assets");
+      const res = await axios.get(`${API_CONFIG.APIURL}/freeapproval/free-assets`);
       if (Array.isArray(res.data)) {
         setAssetData(res.data);
         setFilteredAssetData(res.data);
@@ -137,11 +139,9 @@ const FreePoolApproval = () => {
 
     try {
       const loggedInUser = JSON.parse(localStorage.getItem("user"));
-      console.log("action",confirmAction)
       const extractedRemark = Object.values(remarks)[0]; // Get the first value
-      console.log("action",extractedRemark)
 
-      await axios.post("http://localhost:5000/api/freeapproval/action", {
+      await axios.post(`${API_CONFIG.APIURL}/freeapproval/action`, {
         requestNums: selectedIds,
         action: confirmAction,
         approved_by: loggedInUser.emp_id,

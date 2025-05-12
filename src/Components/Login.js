@@ -13,10 +13,6 @@ const Login = () => {
     // const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    // const API_URL =request.login_user;
-    const API_URL = process.env.REACT_APP_API_URL;
-    console.log('app_url: ', API_URL)
-
     const handleLogin = async (e) => {
         e.preventDefault();
         // setLoading(true);
@@ -31,14 +27,12 @@ const Login = () => {
                 body: JSON.stringify({ emp_id, passwd }),
             });
             const data = await response.json();
-            console.log('data is: ', data)
             if (response.ok) {
                 localStorage.setItem("isLoggedIn", "true");
                 localStorage.setItem("loginSuccess", "true");
                 localStorage.setItem("loginTime", Date.now().toString());
                 localStorage.setItem("token", data.token)
                 // setMessage("Login successful ✅");
-                // console.log('success logged response ok')
                 navigate("/Dashboardmain");
             } else {
                 toast.error("Login failed! Please check your credentials.");

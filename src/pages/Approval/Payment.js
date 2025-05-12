@@ -38,11 +38,12 @@ const PaymentPage = () => {
     setFilteredPOs(poData);
   }, [poData]);
 
+  const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
+  
   const fetchPOs = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/payment/receipt");
-      console.log("res:",res);
+      const res = await axios.get(`${API_CONFIG.APIURL}/payment/receipt`);
       if (Array.isArray(res.data)) {
         setPoData(res.data);
       } else {
@@ -98,11 +99,10 @@ const PaymentPage = () => {
     }
 
     setActionLoading(true); // Start loading
-    console.log("remarks:",  poRemarks);
 
     try {
       const loggedInUser = JSON.parse(localStorage.getItem("user"));
-      const apiUrl = "http://localhost:5000/api/payment/action";
+      const apiUrl = `${API_CONFIG.APIURL}/payment/action`;
 
       const remarksList = selectedPOs.map((id) => ({
         assignment_id: id,
@@ -110,7 +110,6 @@ const PaymentPage = () => {
       }));
 
       const extractedRemark = remarksList.length > 0 ? remarksList[0].remarks : "";
-      console.log("remarks:",  action);
 
       await axios.post(apiUrl, {
         assignmentIds: selectedPOs,

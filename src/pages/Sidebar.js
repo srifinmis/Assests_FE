@@ -165,7 +165,7 @@ const approvalItems = [
   { text: "Purchase Order", icon: <Approval />, path: "/approval/po" },
   { text: "Invoice", icon: <RequestQuote />, path: "/approval/invoice" },
   { text: "Payment Receipt", icon: <ReceiptLong />, path: "/approval/payment" },
-  { text: "Bulk Upload", icon: <ReceiptLong />, path: "/approval/bulk" },
+  { text: "Bulk Upload", icon: <CloudUpload />, path: "/approval/bulk" },
 ];
 
 const newAssetsItems = [

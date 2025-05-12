@@ -37,9 +37,11 @@ const AssetDepreciationTable = () => {
 
   const navigate = useNavigate();
 
+  const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
+  
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/depreciation/asset-depreciation-values")
+      .get(`${API_CONFIG.APIURL}/depreciation/asset-depreciation-values`)
       .then((response) => {
         setAssets(response.data);
         setLoading(false);

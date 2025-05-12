@@ -38,10 +38,11 @@ const AssetList = () => {
     const storedAllowedModules = JSON.parse(localStorage.getItem("allowedModules") || "[]");
     setAllowedModules(storedAllowedModules);
 
+    const { API_CONFIG, REFRESH_CONFIG } = require('../configuration');
+
     axios
-      .get(`http://localhost:5000/api/assetlist/details/${category}/${type}`)
+      .get(`${API_CONFIG.APIURL}/assetlist/details/${category}/${type}`)
       .then((response) => {
-        console.log("Fetched asset data:", response.data); // ✅ Add this line to log the data
         setAssets(response.data);
         setFilteredAssets(response.data);
         setLoading(false);
@@ -56,7 +57,6 @@ const AssetList = () => {
 
   const handleAction = (assetId, action) => {
     const encodedAssetId = encodeURIComponent(assetId); // Encoding the assetId
-    console.log(`Performing action: ${action} on Asset ID: ${assetId}`);
     if (action === "Assign") {
       navigate(`/assign-asset/${encodedAssetId}`);
     } else if (action === "Free Pool") {

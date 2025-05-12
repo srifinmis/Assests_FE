@@ -36,10 +36,12 @@ const RoleChange = ({ isDropped }) => {
         setSnackbarOpen(false);
     };
 
+    const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
+
     useEffect(() => {
         const fetchEmployeeData = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/role/emp_idname`);
+                const response = await axios.get(`${API_CONFIG.APIURL}/role/emp_idname`);
                 if (Array.isArray(response.data?.data)) {
                     setEmployeeList(response.data.data.map(item => ({
                         emp_id: item.emp_id,
@@ -54,7 +56,7 @@ const RoleChange = ({ isDropped }) => {
 
         const fetchRoles = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/role/list`);
+                const response = await axios.get(`${API_CONFIG.APIURL}/role/list`);
                 if (Array.isArray(response.data?.data)) {
                     setRoleList(response.data.data);
                 }
@@ -65,7 +67,7 @@ const RoleChange = ({ isDropped }) => {
 
         const fetchStates = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/dashboard/distinct-states`);
+                const response = await axios.get(`${API_CONFIG.APIURL}/dashboard/distinct-states`);
                 if (Array.isArray(response.data)) {
                     setStateList(["Select All", ...response.data]);
                 }
@@ -149,7 +151,7 @@ const RoleChange = ({ isDropped }) => {
         };
 
         try {
-            const response = await fetch(`http://localhost:5000/api/role/update`, {
+            const response = await fetch(`${API_CONFIG.APIURL}/role/update`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(finalFormData),
@@ -168,7 +170,6 @@ const RoleChange = ({ isDropped }) => {
             setFormData({ emp_id: "", roles: [], states: [] });
             navigate("/user_roles");
         } catch (error) {
-            console.log("Error connecting to server ⚠️", error);
         }
     };
 

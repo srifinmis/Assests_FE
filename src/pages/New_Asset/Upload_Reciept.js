@@ -40,10 +40,11 @@ const UploadReceipt = () => {
   const [selectedProductIndex, setSelectedProductIndex] = useState(null);
   const [assetCreationAt, setAssetCreationAt] = useState("");
 
+  const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/reciept/po_no")
+      .get(`${API_CONFIG.APIURL}/reciept/po_no`)
       .then((res) => setPoOptions(res.data))
       .catch((err) => console.error("❌ Error fetching PO numbers:", err));
   }, []);
@@ -62,7 +63,7 @@ const UploadReceipt = () => {
     try {
       // Fetch PO details from the backend API
       const { data } = await axios.get(
-        `http://localhost:5000/api/reciept/po_details/${encodeURIComponent(po)}`
+        `${API_CONFIG.APIURL}/reciept/po_details/${encodeURIComponent(po)}`
       );
   
       // Set asset creation type
@@ -90,7 +91,7 @@ const UploadReceipt = () => {
   
         // Fetch generated asset IDs based on PO number
         const { data: assetIdData } = await axios.get(
-          `http://localhost:5000/api/reciept/next-asset-ids/${encodeURIComponent(po)}`
+          `${API_CONFIG.APIURL}/reciept/next-asset-ids/${encodeURIComponent(po)}`
         );
   
         const assetIds = assetIdData.generated_asset_ids; // Get generated asset IDs
@@ -258,7 +259,7 @@ const UploadReceipt = () => {
   };  
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/invoices/locations')
+    fetch(`${API_CONFIG.APIURL}/invoices/locations`)
       .then((res) => res.json())
       .then((data) => {
         setBaseLocationOptions(data.baseLocations || []);
@@ -343,7 +344,7 @@ const UploadReceipt = () => {
   
     try {
       setLoading(true);
-      const response = await axios.post("http://localhost:5000/api/reciept/upload_receipt", formData, {
+      const response = await axios.post(`${API_CONFIG.APIURL}/reciept/upload_receipt`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
