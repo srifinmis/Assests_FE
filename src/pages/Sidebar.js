@@ -1,15 +1,14 @@
 // src/pages/Sidebar.js
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Drawer,
   Box,
-  Typography,
   Divider,
   List,
-  ListItem,
   ListItemIcon,
   ListItemText,
   Collapse,
+  ListItemButton,
 } from "@mui/material";
 import {
   ExpandLess,
@@ -27,8 +26,8 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import GroupIcon from "@mui/icons-material/Group";
+import SrifinLogo from "../assets/srifin_final.svg";
 
-// Mapping of module names to their identifiers
 const MODULES = {
   HOME: "IT-HOME",
   APPROVAL: "IT-APPROVAL",
@@ -53,51 +52,106 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
 
   const isModuleAllowed = (moduleName) => allowedModules.includes(moduleName);
 
+  // Memoized menu items to avoid re-creation on every render
+  const approvalMenuItems = useMemo(() => [
+    { text: "Free Pool", icon: <CheckCircle />, path: "/approval/free-pool" },
+    { text: "Assigned", icon: <Assignment />, path: "/approval/assigned" },
+    { text: "Under Maintenance", icon: <Build />, path: "/approval/under-maintenance" },
+    { text: "Purchase Order", icon: <Approval />, path: "/approval/po" },
+    { text: "Invoice", icon: <RequestQuote />, path: "/approval/invoice" },
+    { text: "Payment Receipt", icon: <ReceiptLong />, path: "/approval/payment" },
+    { text: "Bulk Upload", icon: <CloudUpload />, path: "/approval/bulk" },
+  ], []);
+
+  const newAssetsMenuItems = useMemo(() => [
+    { text: "Create PO", icon: <AddCircle />, path: "/new-assets/create-po" },
+    { text: "Upload Invoice", icon: <RequestQuote />, path: "/new-assets/upload-invoice" },
+    { text: "Upload Payment Receipt", icon: <ReceiptLong />, path: "/new-assets/upload-reciept" },
+  ], []);
+
   return (
-    <Drawer anchor="left" open={sidebarOpen} onClose={() => setSidebarOpen(false)}>
+    <Drawer
+      anchor="left"
+      open={sidebarOpen}
+      onClose={() => setSidebarOpen(false)}
+      ModalProps={{ keepMounted: true }} // Improves performance on mobile
+    >
       <Box
         sx={{
           width: 280,
-          backgroundColor: "#1E293B",
+          bgcolor: "#1E293B",
           height: "100vh",
           color: "#FFF",
           display: "flex",
           flexDirection: "column",
-          overflow: "auto",
+          overflowY: "auto",
           "&::-webkit-scrollbar": { width: "6px" },
-          "&::-webkit-scrollbar-thumb": { backgroundColor: "#4B5563", borderRadius: "10px" },
+          "&::-webkit-scrollbar-thumb": { bgcolor: "#4B5563", borderRadius: 1.25 },
+          p: 2,
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: "bold", padding: 2, textAlign: "center", letterSpacing: 1.2 }}>
-          Asset Management
-        </Typography>
-        <Divider sx={{ backgroundColor: "#FFFFFF" }} />
-        <List>
+        <Box
+          component="img"
+          src={SrifinLogo}
+          alt="Srifin Logo"
+          sx={{
+            width: 160,
+            height: 40,
+            bgcolor: "white",
+            p: "5px 0",
+            borderRadius: 1,
+            mb: 1,
+            alignSelf: "center",
+            objectFit: "contain",
+          }}
+        />
+        <Divider sx={{ bgcolor: "#FFFFFF", mb: 2 }} />
+        <List component="nav" aria-label="main navigation">
           {isModuleAllowed(MODULES.HOME) && (
-            <ListItem button onClick={() => handleNavigate("/DashBoard")} sx={menuItemStyles}>
+            <ListItemButton
+              onClick={() => handleNavigate("/DashBoard")}
+              sx={menuItemStyles}
+              aria-label="Navigate to Home"
+            >
               <ListItemIcon>
                 <Home sx={{ color: "#93C5FD" }} />
               </ListItemIcon>
               <ListItemText primary="Home" />
-            </ListItem>
+            </ListItemButton>
           )}
 
           {isModuleAllowed(MODULES.APPROVAL) && (
             <>
-              <ListItem button onClick={() => toggleDropdown("approval")} sx={menuItemStyles}>
+              <ListItemButton
+                onClick={() => toggleDropdown("approval")}
+                sx={menuItemStyles}
+                aria-controls="approval-menu"
+                aria-expanded={activeDropdown === "approval"}
+                aria-haspopup="true"
+              >
                 <ListItemIcon>
                   <Approval sx={{ color: "#93C5FD" }} />
                 </ListItemIcon>
                 <ListItemText primary="Approval" />
                 {activeDropdown === "approval" ? <ExpandLess /> : <ExpandMore />}
-              </ListItem>
-              <Collapse in={activeDropdown === "approval"} timeout="auto" unmountOnExit>
+              </ListItemButton>
+              <Collapse
+                in={activeDropdown === "approval"}
+                timeout="auto"
+                unmountOnExit
+                id="approval-menu"
+              >
                 <List component="div" disablePadding>
-                  {approvalItems.map((item, idx) => (
-                    <ListItem key={idx} button sx={subMenuItemStyles} onClick={() => handleNavigate(item.path)}>
-                      <ListItemIcon sx={{ color: "#93C5FD" }}>{item.icon}</ListItemIcon>
-                      <ListItemText primary={item.text} />
-                    </ListItem>
+                  {approvalMenuItems.map(({ text, icon, path }, idx) => (
+                    <ListItemButton
+                      key={idx}
+                      sx={subMenuItemStyles}
+                      onClick={() => handleNavigate(path)}
+                      aria-label={`Navigate to ${text}`}
+                    >
+                      <ListItemIcon sx={{ color: "#93C5FD" }}>{icon}</ListItemIcon>
+                      <ListItemText primary={text} />
+                    </ListItemButton>
                   ))}
                 </List>
               </Collapse>
@@ -106,20 +160,36 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
 
           {isModuleAllowed(MODULES.NEW_ASSETS) && (
             <>
-              <ListItem button onClick={() => toggleDropdown("newAssets")} sx={menuItemStyles}>
+              <ListItemButton
+                onClick={() => toggleDropdown("newAssets")}
+                sx={menuItemStyles}
+                aria-controls="new-assets-menu"
+                aria-expanded={activeDropdown === "newAssets"}
+                aria-haspopup="true"
+              >
                 <ListItemIcon>
                   <AddCircle sx={{ color: "#93C5FD" }} />
                 </ListItemIcon>
                 <ListItemText primary="New Assets" />
                 {activeDropdown === "newAssets" ? <ExpandLess /> : <ExpandMore />}
-              </ListItem>
-              <Collapse in={activeDropdown === "newAssets"} timeout="auto" unmountOnExit>
+              </ListItemButton>
+              <Collapse
+                in={activeDropdown === "newAssets"}
+                timeout="auto"
+                unmountOnExit
+                id="new-assets-menu"
+              >
                 <List component="div" disablePadding>
-                  {newAssetsItems.map((item, idx) => (
-                    <ListItem key={idx} button sx={subMenuItemStyles} onClick={() => handleNavigate(item.path)}>
-                      <ListItemIcon sx={{ color: "#93C5FD" }}>{item.icon}</ListItemIcon>
-                      <ListItemText primary={item.text} />
-                    </ListItem>
+                  {newAssetsMenuItems.map(({ text, icon, path }, idx) => (
+                    <ListItemButton
+                      key={idx}
+                      sx={subMenuItemStyles}
+                      onClick={() => handleNavigate(path)}
+                      aria-label={`Navigate to ${text}`}
+                    >
+                      <ListItemIcon sx={{ color: "#93C5FD" }}>{icon}</ListItemIcon>
+                      <ListItemText primary={text} />
+                    </ListItemButton>
                   ))}
                 </List>
               </Collapse>
@@ -127,30 +197,42 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
           )}
 
           {isModuleAllowed(MODULES.BULK_UPLOAD) && (
-            <ListItem button sx={menuItemStyles} onClick={() => handleNavigate("/BulkUpload")}>
+            <ListItemButton
+              sx={menuItemStyles}
+              onClick={() => handleNavigate("/BulkUpload")}
+              aria-label="Navigate to Bulk Upload"
+            >
               <ListItemIcon>
                 <CloudUpload sx={{ color: "#93C5FD" }} />
               </ListItemIcon>
               <ListItemText primary="Bulk Upload" />
-            </ListItem>
+            </ListItemButton>
           )}
 
           {isModuleAllowed(MODULES.ASSET_DEPRECIATION) && (
-            <ListItem button sx={menuItemStyles} onClick={() => handleNavigate("/new-assets/assetdepreciation")}>
+            <ListItemButton
+              sx={menuItemStyles}
+              onClick={() => handleNavigate("/new-assets/assetdepreciation")}
+              aria-label="Navigate to Asset Depreciation"
+            >
               <ListItemIcon>
                 <MonetizationOn sx={{ color: "#93C5FD" }} />
               </ListItemIcon>
               <ListItemText primary="Asset Depreciation" />
-            </ListItem>
+            </ListItemButton>
           )}
 
           {isModuleAllowed(MODULES.USER_ROLES) && (
-            <ListItem button sx={menuItemStyles} onClick={() => handleNavigate("/user_roles")}>
+            <ListItemButton
+              sx={menuItemStyles}
+              onClick={() => handleNavigate("/user_roles")}
+              aria-label="Navigate to User Roles"
+            >
               <ListItemIcon>
                 <GroupIcon sx={{ color: "#93C5FD" }} />
               </ListItemIcon>
               <ListItemText primary="User Roles" />
-            </ListItem>
+            </ListItemButton>
           )}
         </List>
       </Box>
@@ -158,36 +240,20 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
   );
 };
 
-const approvalItems = [
-  { text: "Free Pool", icon: <CheckCircle />, path: "/approval/free-pool" },
-  { text: "Assigned", icon: <Assignment />, path: "/approval/assigned" },
-  { text: "Under Maintenance", icon: <Build />, path: "/approval/under-maintenance" },
-  { text: "Purchase Order", icon: <Approval />, path: "/approval/po" },
-  { text: "Invoice", icon: <RequestQuote />, path: "/approval/invoice" },
-  { text: "Payment Receipt", icon: <ReceiptLong />, path: "/approval/payment" },
-  { text: "Bulk Upload", icon: <CloudUpload />, path: "/approval/bulk" },
-];
-
-const newAssetsItems = [
-  { text: "Create PO", icon: <AddCircle />, path: "/new-assets/create-po" },
-  { text: "Upload Invoice", icon: <RequestQuote />, path: "/new-assets/upload-invoice" },
-  { text: "Upload Payment Receipt", icon: <ReceiptLong />, path: "/new-assets/upload-reciept" },
-];
-
 const menuItemStyles = {
   "&:hover": {
-    backgroundColor: "#334155",
-    transition: "all 0.3s ease-in-out",
-    borderRadius: "8px",
+    bgcolor: "#334155",
+    transition: "background-color 0.3s ease-in-out",
+    borderRadius: 1,
   },
 };
 
 const subMenuItemStyles = {
   pl: 4,
   "&:hover": {
-    backgroundColor: "#475569",
-    transition: "all 0.3s ease-in-out",
-    borderRadius: "8px",
+    bgcolor: "#475569",
+    transition: "background-color 0.3s ease-in-out",
+    borderRadius: 1,
   },
 };
 

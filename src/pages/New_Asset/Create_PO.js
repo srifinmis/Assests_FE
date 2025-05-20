@@ -23,6 +23,7 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import Navbar from "../Navbar";
 import axios from "axios";
+import CloseIcon from "@mui/icons-material/Close";
 
 // Styles
 const sectionStyle = {
@@ -228,36 +229,39 @@ useEffect(() => {
   };
   
   const handleGeneratePreview = async () => {
-    if (!validateForm()) return;
-  
-    const data = {
-      ...poDetails,
-      ...formData,
-      line_items: lineItems,
-      totals,
-      status: "Preview",
-      asset_creation: assetCreationOption,  
-    };
-
     try {
       setLoading(true);
- 
-      const response = await axios.post(`${API_CONFIG.APIURL}/CreatePO/preview`, data, {
-        responseType: 'blob'
-      });
-    
+      setError("");
+      setMessage("");
+
+      const poData = {
+        ...poDetails,
+        ...formData,
+        line_items: lineItems,
+        totals,
+        asset_creation: assetCreationOption
+      };
+
+      // Use the preview endpoint to get the PDF
+      const response = await axios.post(
+        `${API_CONFIG.APIURL}/CreatePO/preview`,
+        poData,
+        {
+          responseType: 'blob',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      // Create a blob URL from the response
       const blob = new Blob([response.data], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-  
+      const url = window.URL.createObjectURL(blob);
       setPdfUrl(url);
       setOpenPreview(true);
-      setMessage({ open: true, text: "PO Preview Generated Successfully!", severity: "success" });
-  
-      alert("Purchase Order generated successfully!");
-    } catch (err) {
-      console.error("❌ Submit failed:", err);
-      alert("Failed to submit PO.");
-      setMessage({ open: true, text: "Error generating PO preview.", severity: "error" });
+    } catch (error) {
+      console.error("Error generating preview:", error);
+      setError("Failed to generate preview. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -754,26 +758,49 @@ useEffect(() => {
         </Box>
 
         {/* Dialog for Preview */} 
-        <Dialog open={openPreview} onClose={() => setOpenPreview(false)} fullWidth maxWidth="lg">
-          <DialogTitle>Purchase Order Preview</DialogTitle>
-          <DialogContent>
-            {pdfUrl ? (
-              <Box sx={{ width: "100%", height: { xs: "300px", sm: "500px", md: "600px" } }}>
-                <iframe src={pdfUrl} width="100%" height="100%" title="PO Preview" />
-              </Box>
-            ) : (
-              <Typography variant="body1" color="textSecondary">Loading preview...</Typography>
+        <Dialog
+          open={openPreview}
+          onClose={() => setOpenPreview(false)}
+          maxWidth="lg"
+          fullWidth
+          PaperProps={{
+            sx: {
+              height: '90vh',
+              maxHeight: '90vh'
+            }
+          }}
+        >
+          <DialogTitle>
+            PO Preview
+            <IconButton
+              onClick={() => setOpenPreview(false)}
+              sx={{ position: 'absolute', right: 8, top: 8 }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent sx={{ p: 0, height: 'calc(100% - 120px)' }}>
+            {pdfUrl && (
+              <iframe
+                src={pdfUrl}
+                width="100%"
+                height="100%"
+                title="PO Preview"
+                style={{ border: 'none' }}
+              />
             )}
           </DialogContent>
-          <DialogActions sx={{ display: "flex", p: 2 }}>
-            <Button onClick={() => setOpenPreview(false)} color="primary">Close</Button>
+          <DialogActions sx={{ p: 2, display: 'flex', justifyContent: 'space-between' }}>
+            <Button onClick={() => setOpenPreview(false)} color="primary">
+              Close
+            </Button>
             <Button
               variant="contained"
               color="primary"
               disabled={loading}
               onClick={handleApproval}
               sx={{ width: { xs: "100%", sm: "auto" }, maxWidth: "200px" }}
-              >
+            >
               {loading ? (
                 <>
                   <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />

@@ -10,6 +10,7 @@ import axios from "axios";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import SearchIcon from "@mui/icons-material/Search";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import CloseIcon from "@mui/icons-material/Close";
 import { useCallback } from "react";
 
 const POApprovalPage = () => {
@@ -17,6 +18,7 @@ const POApprovalPage = () => {
   const [filteredPOs, setFilteredPOs] = useState([]);
   const [selectedPOs, setSelectedPOs] = useState([]);
   const [poRemarks, setPoRemarks] = useState({});
+  const [remarkErrors, setRemarkErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -26,6 +28,11 @@ const POApprovalPage = () => {
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [openPreview, setOpenPreview] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [loadingPreview, setLoadingPreview] = useState(false);
+  const [pdfFile, setPdfFile] = useState(null);
+  const [pdfError, setPdfError] = useState("");
 
   useEffect(() => {
     setFilteredPOs(poData);
@@ -35,45 +42,56 @@ const POApprovalPage = () => {
   
   const CACHE_KEY = "poDataCache";
 
-  const fetchPOs = useCallback (async () => {
+  const fetchPOs = useCallback(async () => {
     setLoading(true);
-  
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) {
-      try {
-        const { timestamp, cacheDuration, data } = JSON.parse(cached);
-        const isValid = timestamp && (Date.now() - timestamp < cacheDuration);
-  
-        if (isValid && Array.isArray(data)) {
-          setPoData(data);
-          setLoading(false);
-          return;
-        }
-      } catch (err) {
-        console.warn("Failed to parse PO cache:", err);
-      }
-    }
+    setError(null);
   
     try {
-      const res = await axios.get(`${API_CONFIG.APIURL}/purchaseorder/po`);
+      console.log("Fetching POs from:", `${API_CONFIG.APIURL}/approval/purchaseorder/po`);
+      const res = await axios.get(`${API_CONFIG.APIURL}/approval/purchaseorder/po`);
+      
       if (Array.isArray(res.data)) {
-        const metadata = {
-          timestamp: Date.now(),
-          cacheDuration: REFRESH_CONFIG.DROPDOWN_REFRESH_INTERVAL,
-          data: res.data,
-        };
-        localStorage.setItem(CACHE_KEY, JSON.stringify(metadata));
+        console.log(`Received ${res.data.length} POs`);
         setPoData(res.data);
+        setFilteredPOs(res.data);
       } else {
-        throw new Error("Fetched data is not an array.");
+        console.error("Invalid response format:", res.data);
+        throw new Error("Invalid response format from server");
       }
     } catch (err) {
-      console.error(err);
-      setError("Failed to fetch PO data. Please try again.");
+      console.error("Error fetching PO data:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
+
+      let errorMessage = "Failed to fetch PO data. Please try again.";
+      
+      if (err.response) {
+        switch (err.response.status) {
+          case 500:
+            errorMessage = err.response.data.error || "Server error occurred";
+            break;
+          case 400:
+            errorMessage = "Invalid request data";
+            break;
+          case 404:
+            errorMessage = "PO endpoint not found";
+            break;
+          default:
+            errorMessage = err.response.data.error || errorMessage;
+        }
+      } else if (err.request) {
+        errorMessage = "No response from server. Please check your connection.";
+      }
+
+      setError(errorMessage);
+      setPoData([]);
+      setFilteredPOs([]);
     } finally {
       setLoading(false);
     }
-  }, [API_CONFIG.APIURL, REFRESH_CONFIG.DROPDOWN_REFRESH_INTERVAL]);
+  }, [API_CONFIG.APIURL]);
 
   useEffect(() => {
     fetchPOs();
@@ -86,8 +104,9 @@ const POApprovalPage = () => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
     const filtered = poData.filter(po =>
-      String(po.po_number).toLowerCase().includes(query) ||
-      String(po.utr_number).toLowerCase().includes(query)
+      String(po.po_num).toLowerCase().includes(query) ||
+      String(po.vendor_name).toLowerCase().includes(query) ||
+      String(po.assignment_id).toLowerCase().includes(query)
     );
     setFilteredPOs(filtered);
   };
@@ -108,12 +127,21 @@ const POApprovalPage = () => {
 
   const handlePORemarkChange = (id, value) => {
     setPoRemarks((prev) => ({ ...prev, [id]: value }));
+    if (remarkErrors[id]) {
+      setRemarkErrors((prev) => ({ ...prev, [id]: false }));
+    }
   };
 
   const handlePOAction = async (action) => {
-    if (action === "reject" || action === "approve") {
-      const hasEmptyRemarks = selectedPOs.some(id => !poRemarks[id]?.trim());
-      if (hasEmptyRemarks) {
+    if (action === "reject") {
+      const emptyRemarkPOs = selectedPOs.filter(id => !poRemarks[id]?.trim());
+      if (emptyRemarkPOs.length > 0) {
+        const newRemarkErrors = {};
+        emptyRemarkPOs.forEach(id => {
+          newRemarkErrors[id] = true;
+        });
+        setRemarkErrors(newRemarkErrors);
+        
         setSnackbar({
           open: true,
           message: "Remarks are mandatory for rejection.",
@@ -123,11 +151,11 @@ const POApprovalPage = () => {
       }
     }
   
-    setActionLoading(true); // Start loading
+    setActionLoading(true);
 
     try {
       const loggedInUser = JSON.parse(localStorage.getItem("user"));
-      const apiUrl = `${API_CONFIG.APIURL}/purchaseorder/action`;
+      const apiUrl = `${API_CONFIG.APIURL}/approval/purchaseorder/action`;
     
       const remarksList = selectedPOs.map((id) => ({
         assignment_id: id,
@@ -140,8 +168,8 @@ const POApprovalPage = () => {
         assignmentIds: selectedPOs,
         action,
         approved_by: loggedInUser.emp_id,
-        remarksList,             // full list
-        remark: extractedRemark, // single remark
+        remarksList,
+        remark: extractedRemark,
       });
     
       setSnackbar({
@@ -153,12 +181,17 @@ const POApprovalPage = () => {
       fetchPOs();
       setSelectedPOs([]);
       setPoRemarks({});
-      setConfirmationOpen(false); // Close dialog after success
+      setRemarkErrors({});
+      setConfirmationOpen(false);
     } catch (error) {
       console.error("Error handling PO action", error);
-      setSnackbar({ open: true, message: "Failed to update PO status.", severity: "error" });
+      setSnackbar({ 
+        open: true, 
+        message: error.response?.data?.error || "Failed to update PO status.", 
+        severity: "error" 
+      });
     } finally {
-      setActionLoading(false); // Stop loading
+      setActionLoading(false);
     }
   };
   
@@ -183,6 +216,35 @@ const POApprovalPage = () => {
   const allCurrentPageSelected = filteredPOs
     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
     .every(po => selectedPOs.includes(po.assignment_id));
+
+  const handlePreview = async (poNum) => {
+    try {
+      setLoadingPreview(true);
+      const response = await axios.get(
+        `${API_CONFIG.APIURL}/approval/purchaseorder/get_po_pdf/${encodeURIComponent(poNum)}`,
+        {
+          responseType: 'blob',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      setPreviewUrl(url);
+      setOpenPreview(true);
+    } catch (error) {
+      console.error("Error loading preview:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to load preview. Please try again.",
+        severity: "error"
+      });
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
 
   return (
     <>
@@ -262,12 +324,11 @@ const POApprovalPage = () => {
                       <TableCell>{po.requested_by}</TableCell>
                       <TableCell>
                         <IconButton
-                          href={po.po_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          onClick={() => handlePreview(po.po_num)}
+                          disabled={loadingPreview}
                           aria-label="Preview PDF"
                         >
-                          <VisibilityIcon />
+                          {loadingPreview ? <CircularProgress size={24} /> : <VisibilityIcon />}
                         </IconButton>
                       </TableCell>
                       <TableCell>
@@ -277,6 +338,17 @@ const POApprovalPage = () => {
                           disabled={!selectedPOs.includes(po.assignment_id)}
                           value={poRemarks[po.assignment_id] || ""}
                           onChange={(e) => handlePORemarkChange(po.assignment_id, e.target.value)}
+                          error={remarkErrors[po.assignment_id]}
+                          helperText={remarkErrors[po.assignment_id] ? "Remarks required for rejection" : ""}
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              '&.Mui-error': {
+                                '& fieldset': {
+                                  borderColor: remarkErrors[po.assignment_id] ? 'error.main' : 'inherit',
+                                },
+                              },
+                            },
+                          }}
                         />
                       </TableCell>
                     </TableRow>
@@ -351,6 +423,47 @@ const POApprovalPage = () => {
         >
           <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
         </Snackbar>
+
+        {/* Preview Dialog */}
+        <Dialog
+          open={openPreview}
+          onClose={() => {
+            setOpenPreview(false);
+            setPreviewUrl("");
+          }}
+          maxWidth="lg"
+          fullWidth
+          PaperProps={{
+            sx: {
+              height: '90vh',
+              maxHeight: '90vh'
+            }
+          }}
+        >
+          <DialogTitle>
+            PO Preview
+            <IconButton
+              onClick={() => {
+                setOpenPreview(false);
+                setPreviewUrl("");
+              }}
+              sx={{ position: 'absolute', right: 8, top: 8 }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent sx={{ p: 0, height: 'calc(100% - 64px)' }}>
+            {previewUrl && (
+              <iframe
+                src={previewUrl}
+                width="100%"
+                height="100%"
+                title="PO Preview"
+                style={{ border: 'none' }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </Container>
     </>
   );
