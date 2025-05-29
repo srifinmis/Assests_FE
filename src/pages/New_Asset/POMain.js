@@ -1,26 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { Table, Spin, message, Button, Input, Select, Tag } from "antd";
+import { EditOutlined } from '@ant-design/icons';
 import { Box } from "@mui/material";
 import Navbar from "../Navbar";
-
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
+import { API_CONFIG, REFRESH_CONFIG } from '../../configuration';
 
 const { Option } = Select;
 
 const POMain = ({ isDropped }) => {
-    const API_URL = process.env.REACT_APP_API_URL;
-
-    const [interestRates, setInterestRates] = useState([]);
+    const [purchaseOrders, setPurchaseOrders] = useState([]); 
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState("");
     const [filterStatus, setFilterStatus] = useState("All");
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchInterestRates = async () => {
+        const fetchPurchaseOrders = async () => {
             setLoading(true);
 
             const submissionMessage = localStorage.getItem("submissionMessage");
@@ -39,29 +38,27 @@ const POMain = ({ isDropped }) => {
             }
 
             try {
-                const response = await axios.get(`${API_URL}/interest/fetchAll`);
-                if (response.data.success) {
-                    setInterestRates([...response.data.mainData, ...response.data.data]);
+                const response = await axios.get(`${API_CONFIG.APIURL}/po/po-details`);
+                if (response.data) {
+                    setPurchaseOrders(response.data);
                 } else {
-                    message.error("Failed to fetch interest rate changes");
+                    message.error("Failed to fetch purchase orders");
                 }
             } catch (error) {
-                console.error("Error fetching interest rate changes:", error);
-                message.error("Error fetching interest rate changes");
+                console.error("Error fetching purchase orders:", error);
+                message.error("Error fetching purchase orders");
             } finally {
                 setLoading(false);
             }
         };
-        fetchInterestRates();
-    }, [API_URL]);
+        fetchPurchaseOrders();
+    }, []);
 
-    const handleViewDetails = (sanction_id, lender_code, tranche_id, approval_status, createdat) => {
-        navigate(`/interestratemaker/${sanction_id}`, {
-            state: { sanction_id, lender_code, tranche_id, approval_status, createdat },
-        });
+    const handleEditPO = (po_number) => {
+        navigate(`/new-assets/edit-po`);
     };
 
-    const handleAddNewRateChange = () => {
+    const handleAddNewPO = () => {
         navigate("/new-assets/create-po");
     };
 
@@ -70,90 +67,94 @@ const POMain = ({ isDropped }) => {
     };
 
     const statusColors = {
-        Approved: "green",
-        Rejected: "red",
-        "Approval Pending": "orange",
+        "Approved": "green",
+        "Rejected": "red",
+        "Pending": "orange"
     };
 
-    const displayedInterestRates = interestRates
-        .filter((rate) => {
-            const matchesStatus =
-                filterStatus === "All" || rate.approval_status === filterStatus;
+    const formatDate = (dateString) => {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    };
 
-            const matchesSearch = Object.values(rate).some((field) =>
+    const displayedPOs = purchaseOrders
+        .filter((po) => {
+            const matchesStatus =
+                filterStatus === "All" || po.po_status === filterStatus;
+
+            const matchesSearch = Object.values(po).some((field) =>
                 field?.toString().toLowerCase().includes(searchText)
             );
 
             return matchesStatus && matchesSearch;
-        })
-        .sort(
-            (a, b) =>
-                new Date(b.updatedat || b.createdat) -
-                new Date(a.updatedat || a.createdat)
-        );
+        });
 
     const columns = [
         {
-            title: "Po Number", dataIndex: "po_num",
+            title: "PO Number",
+            dataIndex: "po_number",
+            key: "po_number",
             onHeaderCell: () => ({
                 style: { backgroundColor: "#F4F6F8", color: "black" }
             }),
         },
         {
-            title: "Asset Type", dataIndex: "asset_type",
+            title: "Asset Type",
+            dataIndex: "asset_type",
+            key: "asset_type",
             onHeaderCell: () => ({
                 style: { backgroundColor: "#F4F6F8", color: "black" }
             }),
         },
         {
-            title: "Asset Creation At", dataIndex: "asset_creation_at",
+            title: "Created At",
+            dataIndex: "asset_creation_at",
+            key: "asset_creation_at",
+            render: (date) => formatDate(date),
             onHeaderCell: () => ({
                 style: { backgroundColor: "#F4F6F8", color: "black" }
             }),
         },
         {
-            title: "Po Date", dataIndex: "po_date",
+            title: "PO Date",
+            dataIndex: "po_date",
+            key: "po_date",
+            render: (date) => formatDate(date),
             onHeaderCell: () => ({
                 style: { backgroundColor: "#F4F6F8", color: "black" }
             }),
         },
-        // {
-        //     title: "Effective Date", dataIndex: "effective_date",
-        //     onHeaderCell: () => ({
-        //         style: { backgroundColor: "#a2b0cc", color: "black" }
-        //     }),
-        // },
         {
             title: "Status",
             dataIndex: "po_status",
+            key: "po_status",
             onHeaderCell: () => ({
                 style: { backgroundColor: "#F4F6F8", color: "black" }
             }),
             render: (status) => (
-                <Tag color={statusColors[status] || "blue"}>{status}</Tag>
+                <Tag color={statusColors[status] || "orange"}>{status || 'Pending'}</Tag>
             ),
         },
         {
-            title: "Edit",
-            dataIndex: "po_num",
+            title: "Actions",
+            key: "actions",
             onHeaderCell: () => ({
                 style: { backgroundColor: "#F4F6F8", color: "black" }
             }),
-            render: (id, record) => (
-                <Button
-                    type="link"
-                    onClick={() =>
-                        handleViewDetails(
-                            id,
-                            record.lender_code,
-                            record.tranche_id,
-                            record.approval_status,
-                            record.createdat
-                        )
-                    }
-                >
-                    View
-                </Button>
+            render: (_, record) => (
+                <EditOutlined
+                    style={{ 
+                        fontSize: '18px',
+                        color: '#1890ff',
+                        cursor: 'pointer'
+                    }}
+                    onClick={() => handleEditPO(record.po_number)}
+                />
             ),
         },
     ];
@@ -167,9 +168,7 @@ const POMain = ({ isDropped }) => {
                     flexDirection: "column",
                     height: "400px",
                     marginTop: "10px",
-                    // marginLeft:"20px",
                     transition: "margin-left 0.3s ease-in-out",
-                    // width: isDropped ? "calc(100% - 180px)" : "calc(100% - 350px)",
                     padding: 30,
                 }}
             >
@@ -184,9 +183,9 @@ const POMain = ({ isDropped }) => {
                         marginBottom: "20px",
                     }}
                 >
-                    <h2 style={{ flex: 1 }}>Purchase Order</h2>
+                    <h2 style={{ flex: 1 }}>Purchase Orders</h2>
                     <Input
-                        placeholder="Search Purchase Order changes..."
+                        placeholder="Search purchase orders..."
                         value={searchText}
                         onChange={handleSearch}
                         style={{ width: "250px", height: "40px" }}
@@ -197,11 +196,11 @@ const POMain = ({ isDropped }) => {
                         style={{ width: "200px", height: "40px" }}
                     >
                         <Option value="All">All</Option>
+                        <Option value="Pending">Pending</Option>
                         <Option value="Approved">Approved</Option>
-                        <Option value="Approval Pending">Approval Pending</Option>
                         <Option value="Rejected">Rejected</Option>
                     </Select>
-                    <Button type="primary" style={{ height: "40px" }} onClick={handleAddNewRateChange}>
+                    <Button type="primary" style={{ height: "40px" }} onClick={handleAddNewPO}>
                         Create Purchase Order
                     </Button>
                 </div>
@@ -210,20 +209,18 @@ const POMain = ({ isDropped }) => {
                     <Spin size="large" style={{ display: "block", margin: "20px auto" }} />
                 ) : (
                     <div style={{
-                        // border: "2px solid #ccc", 
-                        position: "relative", borderRadius: "8px", padding: "0px"
+                        position: "relative",
+                        borderRadius: "8px",
+                        padding: "0px"
                     }}>
                         <Table
                             bordered
                             size="medium"
-                            dataSource={displayedInterestRates}
+                            dataSource={displayedPOs}
                             columns={columns}
-                            rowKey="change_id"
+                            rowKey="po_number"
                             pagination={{ pageSize: 6 }}
                         />
-                        {/* <div style={{ position: "absolute", bottom: "10px", left: "10px" }}>
-                        Total Records : {displayedInterestRates.length}
-                    </div> */}
                     </div>
                 )}
             </Box>

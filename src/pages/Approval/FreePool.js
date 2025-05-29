@@ -111,7 +111,6 @@ const FreePoolApproval = () => {
     }
   };
 
-
   const openConfirmationDialog = (actionType) => {
     if (actionType === "reject") {
       const selectedIds = Object.keys(selectedAssets).filter(id => selectedAssets[id]);
@@ -127,6 +126,13 @@ const FreePoolApproval = () => {
           message: "Please add remarks for all selected items",
           severity: "warning",
         });
+        setConfirmationOpen(false);
+        
+        // Scroll to the first error
+        const firstErrorElement = document.querySelector('[data-error="true"]');
+        if (firstErrorElement) {
+          firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
         return;
       }
     }
@@ -201,15 +207,15 @@ const FreePoolApproval = () => {
       });
 
       await handleSuccess(confirmAction);
-    } catch (error) {
-      handleError();
-    } finally {
-      setActionLoading(false);
       if (window.location.pathname === "/approval/free-pool") {
         window.location.reload();
       } else {
         navigate("/approval/free-pool");
       }
+    } catch (error) {
+      handleError();
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -222,6 +228,13 @@ const FreePoolApproval = () => {
   const allSelected = filteredAssetData
     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
     .every((asset) => selectedAssets[asset.request_num]);
+
+  // Add this new function to check if all selected items have remarks
+  const validateSelectedRemarks = () => {
+    const selectedIds = Object.keys(selectedAssets).filter(id => selectedAssets[id]);
+    const missingRemarks = selectedIds.filter(id => !remarks[id]?.trim());
+    return missingRemarks.length === 0;
+  };
 
   return (
     <>
@@ -333,6 +346,17 @@ const FreePoolApproval = () => {
                           fullWidth
                           error={!!remarkErrors[asset.request_num]}
                           helperText={remarkErrors[asset.request_num]}
+                          data-error={!!remarkErrors[asset.request_num]}
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              '&.Mui-error': {
+                                '& fieldset': {
+                                  borderColor: '#D32F2F',
+                                  borderWidth: '2px'
+                                }
+                              }
+                            }
+                          }}
                         />
                       </TableCell>
                     </TableRow>
@@ -362,9 +386,16 @@ const FreePoolApproval = () => {
 
             <Button
               variant="contained"
-              sx={{ backgroundColor: "#D32F2F", width: { xs: "100%", sm: "auto" } }}
+              sx={{ 
+                backgroundColor: "#D32F2F", 
+                width: { xs: "100%", sm: "auto" },
+                '&:hover': {
+                  backgroundColor: "#B71C1C"
+                }
+              }}
               onClick={() => openConfirmationDialog("rejected")}
-              disabled={Object.keys(selectedAssets).length === 0}>
+              disabled={Object.keys(selectedAssets).length === 0}
+            >
               Reject
             </Button>
           </Box>

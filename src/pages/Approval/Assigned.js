@@ -119,7 +119,7 @@ const AssignApproval = () => {
     setActionLoading(true);
     const selectedIds = Object.keys(selectedAssets).filter(id => selectedAssets[id]);
 
-    if (confirmAction === "reject") {
+    if (confirmAction === "rejected") {
       const missingRemarks = selectedIds.filter(id => !remarks[id]?.trim());
       if (missingRemarks.length > 0) {
         const errors = {};
@@ -133,6 +133,7 @@ const AssignApproval = () => {
           severity: "warning",
         });
         setActionLoading(false);
+        setConfirmationOpen(false);
         return;
       }
     }
@@ -155,7 +156,11 @@ const AssignApproval = () => {
       });
 
       // Refresh the data
-      navigate("/approval/assigned");
+      if (window.location.pathname === "/approval/assigned") {
+        window.location.reload();
+      } else {
+        navigate("/approval/assigned");
+      }
       fetchAssignedAssetData();
       setSelectedAssets([]);
       setRemarks({});
@@ -170,11 +175,6 @@ const AssignApproval = () => {
       });
     } finally {
       setActionLoading(false);
-      if (window.location.pathname === "/approval/assigned") {
-        window.location.reload();
-      } else {
-        navigate("/approval/assigned");
-      }
     }
   };
 
@@ -298,6 +298,27 @@ const AssignApproval = () => {
                           fullWidth
                           error={!!remarkErrors[asset.request_num]}
                           helperText={remarkErrors[asset.request_num]}
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              '&.Mui-error': {
+                                '& fieldset': {
+                                  borderColor: remarkErrors[asset.request_num] ? '#d32f2f' : 'rgba(0, 0, 0, 0.23)',
+                                  borderWidth: remarkErrors[asset.request_num] ? '2px' : '1px',
+                                },
+                                '&:hover fieldset': {
+                                  borderColor: remarkErrors[asset.request_num] ? '#d32f2f' : 'rgba(0, 0, 0, 0.23)',
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: remarkErrors[asset.request_num] ? '#d32f2f' : '#1976d2',
+                                  borderWidth: remarkErrors[asset.request_num] ? '2px' : '2px',
+                                }
+                              }
+                            },
+                            '& .MuiFormHelperText-root': {
+                              color: remarkErrors[asset.request_num] ? '#d32f2f' : 'rgba(0, 0, 0, 0.6)',
+                              fontWeight: remarkErrors[asset.request_num] ? 'bold' : 'normal'
+                            }
+                          }}
                         />
                       </TableCell>
                     </TableRow>
