@@ -6,11 +6,12 @@ import {
   Snackbar, Alert, TablePagination, Paper, IconButton, Tooltip, Box, InputAdornment,
   Dialog, DialogActions, DialogContent, DialogTitle,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import SearchIcon from "@mui/icons-material/Search";
 import InfoOutlined from "@mui/icons-material/InfoOutlined"; // Importing the InfoOutlined icon
- 
+
 const AssignApproval = () => {
   const [assetData, setAssetData] = useState([]);
   const [filteredAssetData, setFilteredAssetData] = useState([]);
@@ -22,13 +23,14 @@ const AssignApproval = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [error, setError] = useState(null);
   const [remarkErrors, setRemarkErrors] = useState({});
+  const navigate = useNavigate();
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
-    refreshData();
+    fetchAssignedAssetData();
   }, []);
 
   useEffect(() => {
@@ -37,21 +39,18 @@ const AssignApproval = () => {
 
   const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
 
-  const refreshData = async () => {
+  const fetchAssignedAssetData = async () => {
     setLoading(true);
     try {
       const res = await axios.get(`${API_CONFIG.APIURL}/approval/free-assign-assets`);
       if (Array.isArray(res.data)) {
         setAssetData(res.data);
-        setFilteredAssetData(res.data);
+      } else {
+        throw new Error("Invalid response data");
       }
     } catch (err) {
-      console.error("Error refreshing data:", err);
-      setSnackbar({
-        open: true,
-        message: "Error refreshing data",
-        severity: "error",
-      });
+      console.error(err);
+      setError("");
     } finally {
       setLoading(false);
     }
@@ -70,110 +69,36 @@ const AssignApproval = () => {
     setFilteredAssetData(filtered);
   };
 
-  const validateRejection = (selectedIds) => {
-    const missingRemarks = selectedIds.filter(id => !remarks[id]?.trim());
-    if (missingRemarks.length > 0) {
-      setRemarkErrors(
-        missingRemarks.reduce((acc, id) => ({ ...acc, [id]: "Remark is required for rejection." }), {})
-      );
-      setSnackbar({
-        open: true,
-        message: "Please add remarks for all selected items",
-        severity: "warning",
-      });
-      return false;
-    }
-    return true;
-  };
-
-  const resetStates = () => {
-    setSelectedAssets({});
-    setRemarks({});
-    setRemarkErrors({});
-    setConfirmationOpen(false);
-  };
-
-  const handleSuccess = async (action) => {
-    setSnackbar({
-      open: true,
-      message: `Assets ${action === "approved" ? "accepted" : "rejected"} successfully!`,
-      severity: "success",
-    });
-    
-    // Reset states first
-    resetStates();
-    setPage(0);
-    setSearchQuery("");
-    
-    // Then refresh data
-    await refreshData();
-  };
-
-  const handleError = () => {
-    setSnackbar({
-      open: true,
-      message: "Failed to update asset approval status",
-      severity: "error",
-    });
-  };
-
-  const handleConfirmAction = async () => {
-    const selectedIds = Object.keys(selectedAssets).filter(id => selectedAssets[id]);
-    
-    // Validate rejection if needed
-    if (confirmAction === "rejected" && !validateRejection(selectedIds)) {
-      setConfirmationOpen(false);
-      return;
-    }
-
-    setActionLoading(true);
-    try {
-      const loggedInUser = JSON.parse(localStorage.getItem("user"));
-      await axios.post(`${API_CONFIG.APIURL}/approval/action`, {
-        requestNums: selectedIds,
-        action: confirmAction,
-        approved_by: loggedInUser.emp_id,
-        remarks: confirmAction === "rejected" ? Object.values(remarks)[0] : "",
-      });
-
-      await handleSuccess(confirmAction);
-    } catch (error) {
-      handleError();
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
   const handleCheckboxChange = (requestNum) => {
     setSelectedAssets((prev) => ({
       ...prev,
       [requestNum]: !prev[requestNum],
     }));
-    // Clear remark when unchecking
     if (selectedAssets[requestNum]) {
-      setRemarks(prev => {
-        const updated = { ...prev };
-        delete updated[requestNum];
-        return updated;
-      });
+      const updatedRemarks = { ...remarks };
+      delete updatedRemarks[requestNum];
+      setRemarks(updatedRemarks);
     }
   };
 
   const handleSelectAllChange = (e) => {
     const isChecked = e.target.checked;
     const currentPageItems = filteredAssetData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    
-    const updatedSelections = currentPageItems.reduce((acc, item) => ({
-      ...acc,
-      [item.request_num]: isChecked
-    }), {});
-  
-    setSelectedAssets(updatedSelections);
+
+    const updatedSelections = { ...selectedAssets };
+
+    currentPageItems.forEach(item => {
+      updatedSelections[item.request_num] = isChecked;
+      if (!isChecked) delete remarks[item.request_num];
+    });
+
     if (!isChecked) {
       setRemarks({});
     }
+
+    setSelectedAssets(updatedSelections);
   };
-  
+
   const handleRemarkChange = (id, value) => {
     setRemarks(prev => ({ ...prev, [id]: value }));
     if (remarkErrors[id]) {
@@ -188,6 +113,69 @@ const AssignApproval = () => {
   const openConfirmationDialog = (actionType) => {
     setConfirmAction(actionType);
     setConfirmationOpen(true);
+  };
+
+  const handleConfirmAction = async () => {
+    setActionLoading(true);
+    const selectedIds = Object.keys(selectedAssets).filter(id => selectedAssets[id]);
+
+    if (confirmAction === "reject") {
+      const missingRemarks = selectedIds.filter(id => !remarks[id]?.trim());
+      if (missingRemarks.length > 0) {
+        const errors = {};
+        missingRemarks.forEach(id => {
+          errors[id] = "Remark is required for rejection.";
+        });
+        setRemarkErrors(errors);
+        setSnackbar({
+          open: true,
+          message: "Remarks are mandatory for rejection.",
+          severity: "warning",
+        });
+        setActionLoading(false);
+        return;
+      }
+    }
+
+    try {
+      const loggedInUser = JSON.parse(localStorage.getItem("user"));
+      const extractedRemark = Object.values(remarks)[0]; // Get the first value
+
+      await axios.post(`${API_CONFIG.APIURL}/approval/action`, {
+        requestNums: selectedIds,
+        action: confirmAction,
+        approved_by: loggedInUser.emp_id,
+        remarks: confirmAction === "rejected" ? extractedRemark : "",
+      });
+
+      setSnackbar({
+        open: true,
+        message: `Assets ${confirmAction === "approved" ? "accepted" : "rejected"} successfully!`,
+        severity: "success",
+      });
+
+      // Refresh the data
+      navigate("/approval/assigned");
+      fetchAssignedAssetData();
+      setSelectedAssets([]);
+      setRemarks({});
+      setRemarkErrors({});
+      setConfirmationOpen(false);
+    } catch (error) {
+      console.error("Approval error:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to update asset approval status.",
+        severity: "error",
+      });
+    } finally {
+      setActionLoading(false);
+      if (window.location.pathname === "/approval/assigned") {
+        window.location.reload();
+      } else {
+        navigate("/approval/assigned");
+      }
+    }
   };
 
   const handlePageChange = (_, newPage) => setPage(newPage);
@@ -225,7 +213,7 @@ const AssignApproval = () => {
             }}
           />
           <Tooltip title="Refresh Asset List">
-            <IconButton onClick={refreshData} sx={{ color: "#607D8B", mt: { xs: 1, sm: 0 } }}>
+            <IconButton onClick={fetchAssignedAssetData} sx={{ color: "#607D8B", mt: { xs: 1, sm: 0 } }}>
               <RefreshIcon />
             </IconButton>
           </Tooltip>
@@ -246,7 +234,7 @@ const AssignApproval = () => {
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#a2b0cc", color: "white" }}>
-                <TableCell>
+                  <TableCell>
                     <Checkbox checked={allSelected} onChange={handleSelectAllChange} />
                   </TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Request NO.</TableCell>
@@ -276,26 +264,26 @@ const AssignApproval = () => {
                       <TableCell>{asset.asset_name}</TableCell>
                       <TableCell>{asset.imei_num}</TableCell>
                       <TableCell>
-                         {`${asset?.system?.emp_id || "N/A"} - ${asset?.system?.emp_name || "N/A"}`}
-                         <Tooltip
-                         title={
-                           <Box sx={{ textAlign: "left" }}>
-                             <Typography variant="body2">Designation: {asset?.system?.designation_name || "N/A"}</Typography>
-                             <Typography variant="body2">Department: {asset?.system?.department_name || "N/A"}</Typography>
-                             <Typography variant="body2">Branch: {asset?.system?.branchid_name || "N/A"}</Typography>
-                             <Typography variant="body2">Area: {asset?.system?.areaid_name || "N/A"}</Typography>
-                             <Typography variant="body2">Region: {asset?.system?.regionid_name || "N/A"}</Typography>
-                             <Typography variant="body2">Cluster: {asset?.system?.clusterid_name || "N/A"}</Typography>
-                             <Typography variant="body2">State: {asset?.system?.state || "N/A"}</Typography>
-                           </Box>
-                         }
-                         arrow
-                         >
+                        {`${asset?.system?.emp_id || "N/A"} - ${asset?.system?.emp_name || "N/A"}`}
+                        <Tooltip
+                          title={
+                            <Box sx={{ textAlign: "left" }}>
+                              <Typography variant="body2">Designation: {asset?.system?.designation_name || "N/A"}</Typography>
+                              <Typography variant="body2">Department: {asset?.system?.department_name || "N/A"}</Typography>
+                              <Typography variant="body2">Branch: {asset?.system?.branchid_name || "N/A"}</Typography>
+                              <Typography variant="body2">Area: {asset?.system?.areaid_name || "N/A"}</Typography>
+                              <Typography variant="body2">Region: {asset?.system?.regionid_name || "N/A"}</Typography>
+                              <Typography variant="body2">Cluster: {asset?.system?.clusterid_name || "N/A"}</Typography>
+                              <Typography variant="body2">State: {asset?.system?.state || "N/A"}</Typography>
+                            </Box>
+                          }
+                          arrow
+                        >
                           <IconButton size="small" sx={{ color: "#1976D2", ml: 1 }}>
-                             <InfoOutlined fontSize="small" />
-                         </IconButton>
-                         </Tooltip>
-                       </TableCell>
+                            <InfoOutlined fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
                       <TableCell>{asset.assignment_status}</TableCell>
                       <TableCell>
                         <TextField
@@ -311,8 +299,8 @@ const AssignApproval = () => {
                           error={!!remarkErrors[asset.request_num]}
                           helperText={remarkErrors[asset.request_num]}
                         />
-                      </TableCell>                        
-                     </TableRow>
+                      </TableCell>
+                    </TableRow>
                   ))}
               </TableBody>
             </Table>
@@ -329,16 +317,16 @@ const AssignApproval = () => {
             onRowsPerPageChange={handleRowsPerPageChange}
           />
           <Box display="flex" gap={2}>
-            <Button 
-              variant="contained" 
-              sx={{ backgroundColor: "#1976D2", width: { xs: "100%", sm: "auto" } }} 
+            <Button
+              variant="contained"
+              sx={{ backgroundColor: "#1976D2", width: { xs: "100%", sm: "auto" } }}
               onClick={() => openConfirmationDialog("approved")}
               disabled={Object.keys(selectedAssets).length === 0}>
               Approve
             </Button>
-            <Button 
-              variant="contained" 
-              sx={{ backgroundColor: "#D32F2F", width: { xs: "100%", sm: "auto" } }} 
+            <Button
+              variant="contained"
+              sx={{ backgroundColor: "#D32F2F", width: { xs: "100%", sm: "auto" } }}
               onClick={() => openConfirmationDialog("rejected")}
               disabled={Object.keys(selectedAssets).length === 0}>
               Reject
@@ -363,8 +351,8 @@ const AssignApproval = () => {
             </DialogActions>
           </Dialog>
           <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
-        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
-      </Snackbar>
+            <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+          </Snackbar>
         </Box>
       </Container>
     </>

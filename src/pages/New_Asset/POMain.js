@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Table, Spin, message, Button, Input, Select, Tag } from "antd";
 import { Box } from "@mui/material";
+import Navbar from "../Navbar";
+
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -94,25 +96,25 @@ const POMain = ({ isDropped }) => {
         {
             title: "Po Number", dataIndex: "po_num",
             onHeaderCell: () => ({
-                style: { backgroundColor: "#a2b0cc", color: "black" }
+                style: { backgroundColor: "#F4F6F8", color: "black" }
             }),
         },
         {
             title: "Asset Type", dataIndex: "asset_type",
             onHeaderCell: () => ({
-                style: { backgroundColor: "#a2b0cc", color: "black" }
+                style: { backgroundColor: "#F4F6F8", color: "black" }
             }),
         },
         {
             title: "Asset Creation At", dataIndex: "asset_creation_at",
             onHeaderCell: () => ({
-                style: { backgroundColor: "#a2b0cc", color: "black" }
+                style: { backgroundColor: "#F4F6F8", color: "black" }
             }),
         },
         {
             title: "Po Date", dataIndex: "po_date",
             onHeaderCell: () => ({
-                style: { backgroundColor: "#a2b0cc", color: "black" }
+                style: { backgroundColor: "#F4F6F8", color: "black" }
             }),
         },
         // {
@@ -125,7 +127,7 @@ const POMain = ({ isDropped }) => {
             title: "Status",
             dataIndex: "po_status",
             onHeaderCell: () => ({
-                style: { backgroundColor: "#a2b0cc", color: "black" }
+                style: { backgroundColor: "#F4F6F8", color: "black" }
             }),
             render: (status) => (
                 <Tag color={statusColors[status] || "blue"}>{status}</Tag>
@@ -135,7 +137,7 @@ const POMain = ({ isDropped }) => {
             title: "Edit",
             dataIndex: "po_num",
             onHeaderCell: () => ({
-                style: { backgroundColor: "#a2b0cc", color: "black" }
+                style: { backgroundColor: "#F4F6F8", color: "black" }
             }),
             render: (id, record) => (
                 <Button
@@ -157,72 +159,75 @@ const POMain = ({ isDropped }) => {
     ];
 
     return (
-        <Box
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                height: "400px",
-                marginTop: "10px",
-                // marginLeft:"20px",
-                transition: "margin-left 0.3s ease-in-out",
-                // width: isDropped ? "calc(100% - 180px)" : "calc(100% - 350px)",
-                padding: 30,
-            }}
-        >
-            <ToastContainer position="top-right" autoClose={5000} />
-            <div
+        <>
+            <Navbar />
+            <Box
                 style={{
                     display: "flex",
-                    gap: "10px",
-                    flexWrap: "wrap",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "20px",
+                    flexDirection: "column",
+                    height: "400px",
+                    marginTop: "10px",
+                    // marginLeft:"20px",
+                    transition: "margin-left 0.3s ease-in-out",
+                    // width: isDropped ? "calc(100% - 180px)" : "calc(100% - 350px)",
+                    padding: 30,
                 }}
             >
-                <h2 style={{ flex: 1 }}>Purchase Order</h2>
-                <Input
-                    placeholder="Search Purchase Order changes..."
-                    value={searchText}
-                    onChange={handleSearch}
-                    style={{ width: "250px", height: "40px" }}
-                />
-                <Select
-                    value={filterStatus}
-                    onChange={setFilterStatus}
-                    style={{ width: "200px", height: "40px" }}
+                <ToastContainer position="top-right" autoClose={5000} />
+                <div
+                    style={{
+                        display: "flex",
+                        gap: "10px",
+                        flexWrap: "wrap",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "20px",
+                    }}
                 >
-                    <Option value="All">All</Option>
-                    <Option value="Approved">Approved</Option>
-                    <Option value="Approval Pending">Approval Pending</Option>
-                    <Option value="Rejected">Rejected</Option>
-                </Select>
-                <Button type="primary" style={{ height: "40px" }} onClick={handleAddNewRateChange}>
-                    Create Purchase Order
-                </Button>
-            </div>
-
-            {loading ? (
-                <Spin size="large" style={{ display: "block", margin: "20px auto" }} />
-            ) : (
-                <div style={{
-                    // border: "2px solid #ccc", 
-                    position: "relative", borderRadius: "8px", padding: "0px"
-                }}>
-                    <Table
-                        bordered
-                        size="small"
-                        dataSource={displayedInterestRates}
-                        columns={columns}
-                        rowKey="change_id"
-                        pagination={{ pageSize: 6 }}
+                    <h2 style={{ flex: 1 }}>Purchase Order</h2>
+                    <Input
+                        placeholder="Search Purchase Order changes..."
+                        value={searchText}
+                        onChange={handleSearch}
+                        style={{ width: "250px", height: "40px" }}
                     />
-                    {/* <div style={{ position: "absolute", bottom: "10px", left: "10px" }}>
+                    <Select
+                        value={filterStatus}
+                        onChange={setFilterStatus}
+                        style={{ width: "200px", height: "40px" }}
+                    >
+                        <Option value="All">All</Option>
+                        <Option value="Approved">Approved</Option>
+                        <Option value="Approval Pending">Approval Pending</Option>
+                        <Option value="Rejected">Rejected</Option>
+                    </Select>
+                    <Button type="primary" style={{ height: "40px" }} onClick={handleAddNewRateChange}>
+                        Create Purchase Order
+                    </Button>
+                </div>
+
+                {loading ? (
+                    <Spin size="large" style={{ display: "block", margin: "20px auto" }} />
+                ) : (
+                    <div style={{
+                        // border: "2px solid #ccc", 
+                        position: "relative", borderRadius: "8px", padding: "0px"
+                    }}>
+                        <Table
+                            bordered
+                            size="medium"
+                            dataSource={displayedInterestRates}
+                            columns={columns}
+                            rowKey="change_id"
+                            pagination={{ pageSize: 6 }}
+                        />
+                        {/* <div style={{ position: "absolute", bottom: "10px", left: "10px" }}>
                         Total Records : {displayedInterestRates.length}
                     </div> */}
-                </div>
-            )}
-        </Box>
+                    </div>
+                )}
+            </Box>
+        </>
     );
 };
 
