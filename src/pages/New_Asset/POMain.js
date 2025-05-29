@@ -55,7 +55,13 @@ const POMain = ({ isDropped }) => {
     }, []);
 
     const handleEditPO = (po_number) => {
-        navigate(`/new-assets/edit-po`);
+        // Replace colon and spaces with single underscore
+        // const cleanPONum = po_number.replace(/[: ]/g, '_');
+        navigate(`/new-assets/edit-po/${po_number}`,{
+            state: {
+                po_number: po_number
+            }
+        });
     };
 
     const handleAddNewPO = () => {
@@ -112,10 +118,9 @@ const POMain = ({ isDropped }) => {
             }),
         },
         {
-            title: "Created At",
+            title: "Asset Creation",
             dataIndex: "asset_creation_at",
             key: "asset_creation_at",
-            render: (date) => formatDate(date),
             onHeaderCell: () => ({
                 style: { backgroundColor: "#F4F6F8", color: "black" }
             }),

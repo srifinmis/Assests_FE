@@ -24,19 +24,21 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from "../Navbar";
 import { format } from 'date-fns';
 
 const EditPO = () => {
-  const { poNum } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const poNum = location.state?.po_number;
+  
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [availablePOs, setAvailablePOs] = useState([]);
-  const [selectedPONum, setSelectedPONum] = useState(poNum || '');
+  const [assetTypes, setAssetTypes] = useState([]);
+  const [originalData, setOriginalData] = useState(null);
   const [poData, setPoData] = useState({
     po_date: new Date().toISOString().split('T')[0],
     asset_type: '',
@@ -70,76 +72,126 @@ const EditPO = () => {
   const [assetCreationOption, setAssetCreationOption] = useState('payment');
   const [showGstError, setShowGstError] = useState(false);
 
+  // Select Options
+  const paymentTermsOptions = ["100% advance along with PO", "50% advance 50% after Delivery"];
+  const deliveryTermsOptions = ["3-4 working days after PO", "1 week after the PO"];
+  const warrantyTermsOptions = ["as per OEM", "1 year subscription"];
+
   const { API_CONFIG } = require('../../configuration');
 
   useEffect(() => {
-    const initializeData = async () => {
-      setLoading(true);
+    const fetchAssetTypes = async () => {
       try {
-        await fetchAvailablePOs();
-        if (selectedPONum) {
-          await fetchPODetails();
+        const res = await axios.get(`${API_CONFIG.APIURL}/CreatePO/asset-types`);
+        setAssetTypes(res.data || []);
+      } catch (error) {
+        console.error("Failed to fetch asset types:", error);
+      }
+    };
+
+    fetchAssetTypes();
+  }, []);
+
+  const hasChanges = () => {
+    if (!originalData) return false;
+    
+    // Compare all relevant fields
+    const fieldsToCompare = [
+      'po_date', 'asset_type', 'asset_creation_at', 'client_name', 'client_email',
+      'client_gst_num', 'client_phone_num', 'client_address', 'vendor_name',
+      'vendor_phone_num', 'vendor_email', 'vendor_gst_num', 'vendor_address',
+      'shipping_name', 'shipping_phone_num', 'shipping_address', 'delivery_terms',
+      'payment_terms', 'warranty', 'gst'
+    ];
+
+    // Check if any field has changed
+    for (const field of fieldsToCompare) {
+      if (poData[field] !== originalData[field]) {
+        return true;
+      }
+    }
+
+    // Compare line items
+    if (poData.line_items.length !== originalData.line_items.length) {
+      return true;
+    }
+
+    for (let i = 0; i < poData.line_items.length; i++) {
+      const currentItem = poData.line_items[i];
+      const originalItem = originalData.line_items[i];
+      
+      if (!originalItem) return true;
+      
+      if (currentItem.asset_name !== originalItem.asset_name ||
+          currentItem.quantity !== originalItem.quantity ||
+          currentItem.unit_price !== originalItem.unit_price) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  useEffect(() => {
+    const fetchPODetails = async () => {
+      if (!poNum) {
+        setError('No PO number provided');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        console.log('Fetching PO details for:', poNum);
+        const response = await axios.get(`${API_CONFIG.APIURL}/edit-po/${poNum}`);
+        console.log('API Response:', response.data);
+
+        if (!response.data || !response.data.po_details) {
+          throw new Error('No PO details found');
         }
+
+        const { po_details, products } = response.data;
+        
+        const formattedDate = po_details.po_date 
+          ? new Date(po_details.po_date).toISOString().split('T')[0] 
+          : new Date().toISOString().split('T')[0];
+        
+        const subtotal = products.reduce((sum, product) => 
+          sum + (product.quantity * product.unit_price), 0);
+        
+        const gstAmount = po_details.gst ? (subtotal * po_details.gst) / 100 : 0;
+        
+        setAssetCreationOption(po_details.asset_creation_at || 'payment');
+        
+        const newPoData = {
+          ...po_details,
+          po_date: formattedDate,
+          line_items: products.map(product => ({
+            asset_name: product.item_description,
+            quantity: product.quantity,
+            unit_price: product.unit_price
+          })),
+          totals: {
+            subtotal: subtotal,
+            gstAmount: gstAmount,
+            grandTotal: subtotal + gstAmount
+          }
+        };
+
+        setPoData(newPoData);
+        setOriginalData(newPoData);
       } catch (err) {
-        setError('Failed to initialize data');
+        console.error('Error fetching PO details:', err);
+        setError('Failed to fetch PO details. Please try again.');
+        setTimeout(() => {
+          navigate('/new-assets/po-main');
+        }, 3000);
       } finally {
         setLoading(false);
       }
     };
 
-    initializeData();
-  }, [selectedPONum]);
-
-  const fetchAvailablePOs = async () => {
-    try {
-      const response = await axios.get(`${API_CONFIG.APIURL}/EditPO/available`);
-      setAvailablePOs(response.data);
-    } catch (err) {
-      setError('Failed to fetch available POs');
-      throw err;
-    } 
-  };
-
-  const fetchPODetails = async () => {
-    if (!selectedPONum) return;
-    
-    setLoading(true);
-    try {
-      const response = await axios.get(`${API_CONFIG.APIURL}/EditPO/${selectedPONum}`);
-      const { po_details, products } = response.data;
-      
-      const formattedDate = po_details.po_date ? new Date(po_details.po_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
-      
-      // Calculate totals from products
-      const subtotal = products.reduce((sum, product) => 
-        sum + (product.quantity * product.unit_price), 0);
-      
-      // Only calculate GST if a value is provided
-      const gstAmount = po_details.gst ? (subtotal * po_details.gst) / 100 : 0;
-      
-      // Set the asset creation option based on po_details
-      setAssetCreationOption(po_details.asset_creation_at || 'payment');
-      
-      setPoData({
-        ...po_details,
-        po_date: formattedDate,
-        line_items: products.map(product => ({
-          asset_name: product.item_description,
-          quantity: product.quantity,
-          unit_price: product.unit_price
-        })),
-        totals: {
-          subtotal: subtotal,
-          gstAmount: gstAmount,
-          grandTotal: subtotal + gstAmount
-        }
-      });
-    } catch (err) {
-      setError('Failed to fetch PO details');
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchPODetails();
+  }, [poNum, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -287,10 +339,10 @@ const EditPO = () => {
       
       // Append the PDF blob
       const pdfBlob = new Blob([previewResponse.data], { type: 'application/pdf' });
-      formData.append('po_pdf', pdfBlob, `${selectedPONum}.pdf`);
+      formData.append('po_pdf', pdfBlob, `${poNum}.pdf`);
 
       // Update PO with new PDF
-      await axios.put(`${API_CONFIG.APIURL}/EditPO/${selectedPONum}`, formData, {
+      await axios.put(`${API_CONFIG.APIURL}/edit-po/${poNum}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -298,7 +350,7 @@ const EditPO = () => {
 
       setSuccess('PO updated successfully');
       setTimeout(() => {
-        window.location.href = '/new-assets/edit-po';
+        window.location.href = '/new-assets/purchase-order';
       }, 1000);
     } catch (err) {
       console.error('Error updating PO:', err);
@@ -338,6 +390,9 @@ const EditPO = () => {
     }
   };
 
+  // Debug log for render
+  console.log('Current state:', { loading, error, poData });
+
   return (
     <>
       <Navbar />
@@ -347,68 +402,29 @@ const EditPO = () => {
             Edit Purchase Order
           </Typography>
 
-          {/* PO Number Selection */}
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Autocomplete
-                value={availablePOs.find(po => po.po_num === selectedPONum) || null}
-                onChange={(event, newValue) => {
-                  setSelectedPONum(newValue ? newValue.po_num : '');
-                }}
-                options={availablePOs}
-                getOptionLabel={(option) => `${option.po_num} - ${option.po_status}`}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Select PO Number"
-                    required
-                    error={false}
-                    helperText=""
-                  />
-                )}
-                renderOption={(props, option) => {
-                  let formattedDate = 'N/A';
-                  try {
-                    if (option.requested_at) {
-                      const date = new Date(option.requested_at);
-                      if (!isNaN(date)) {
-                        formattedDate = format(date, 'dd/MM/yyyy');
-                      }
-                    }
-                  } catch (_) {
-                    formattedDate = 'Invalid date';
-                  }
-
-                  return (
-                    <li {...props}>
-                      <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
-                        <Typography variant="body1">
-                          {option.po_num}
-                        </Typography>
-                        <Typography variant="caption" color="textSecondary" sx={{ marginLeft: 2 }}>
-                          Status: {option.po_status} | Date: {formattedDate}
-                        </Typography>
-                      </Box>
-                    </li>
-                  );
-                }}
-                isOptionEqualToValue={(option, value) => option.po_num === value.po_num}
-                loading={loading}
-                loadingText="Loading POs..."
-                noOptionsText="No POs Found"
-                disabled={loading}
-              />
-            </Grid>
-          </Grid>
-
           {loading ? (
             <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
               <CircularProgress />
             </Box>
-          ) : selectedPONum ? (
+          ) : error ? (
+            <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+              <Typography variant="h6" color="error">
+                {error}
+              </Typography>
+            </Box>
+          ) : (
             <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
               <Grid container spacing={3}>
-                {/* PO Date and Asset Type */}
+                {/* PO Number Display */}
+                <Grid item xs={12}>
+                  <Paper elevation={3} sx={{ p: 3, mb: 4, bgcolor: "#f9f9f9" }}>
+                    <Typography variant="h6" gutterBottom>
+                      PO Number: {poNum}
+                    </Typography>
+                  </Paper>
+                </Grid>
+
+                {/* PO Details */}
                 <Grid item xs={12}>
                   <Paper elevation={3} sx={{ p: 3, mb: 4, bgcolor: "#f9f9f9" }}>
                     <Typography variant="h6" gutterBottom>
@@ -430,12 +446,25 @@ const EditPO = () => {
                         />
                       </Grid>
                       <Grid item xs={12} md={6}>
-                        <TextField
-                          fullWidth
-                          label="Asset Type"
-                          name="asset_type"
-                          value={poData.asset_type}
-                          onChange={handleInputChange}
+                        <Autocomplete
+                          options={assetTypes}
+                          getOptionLabel={(option) => option.asset_type || ''}
+                          value={assetTypes.find(type => type.asset_type === poData.asset_type) || null}
+                          onChange={(event, newValue) => {
+                            handleInputChange({
+                              target: {
+                                name: 'asset_type',
+                                value: newValue ? newValue.asset_type : ''
+                              }
+                            });
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Asset Type"
+                              fullWidth
+                            />
+                          )}
                         />
                       </Grid>
                     </Grid>
@@ -640,36 +669,69 @@ const EditPO = () => {
                     <Divider sx={{ mb: 2 }} />
                     <Grid container spacing={3}>
                       <Grid item xs={12} md={4}>
-                        <TextField
-                          fullWidth
-                          label="Delivery Terms"
-                          name="delivery_terms"
+                        <Autocomplete
+                          freeSolo
+                          options={deliveryTermsOptions}
                           value={poData.delivery_terms}
-                          onChange={handleInputChange}
-                          multiline
-                          rows={2}
+                          onChange={(event, newValue) => {
+                            handleInputChange({
+                              target: {
+                                name: 'delivery_terms',
+                                value: newValue || ''
+                              }
+                            });
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Delivery Terms"
+                              fullWidth
+                            />
+                          )}
                         />
                       </Grid>
                       <Grid item xs={12} md={4}>
-                        <TextField
-                          fullWidth
-                          label="Payment Terms"
-                          name="payment_terms"
+                        <Autocomplete
+                          freeSolo
+                          options={paymentTermsOptions}
                           value={poData.payment_terms}
-                          onChange={handleInputChange}
-                          multiline
-                          rows={2}
+                          onChange={(event, newValue) => {
+                            handleInputChange({
+                              target: {
+                                name: 'payment_terms',
+                                value: newValue || ''
+                              }
+                            });
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Payment Terms"
+                              fullWidth
+                            />
+                          )}
                         />
                       </Grid>
                       <Grid item xs={12} md={4}>
-                        <TextField
-                          fullWidth
-                          label="Warranty"
-                          name="warranty"
+                        <Autocomplete
+                          freeSolo
+                          options={warrantyTermsOptions}
                           value={poData.warranty}
-                          onChange={handleInputChange}
-                          multiline
-                          rows={2}
+                          onChange={(event, newValue) => {
+                            handleInputChange({
+                              target: {
+                                name: 'warranty',
+                                value: newValue || ''
+                              }
+                            });
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Warranty"
+                              fullWidth
+                            />
+                          )}
                         />
                       </Grid>
                     </Grid>
@@ -762,7 +824,7 @@ const EditPO = () => {
                     <Button
                       variant="outlined"
                       color="primary"
-                      disabled={loading}
+                      disabled={loading || !hasChanges()}
                       onClick={handleGeneratePreview}
                     >
                       {loading ? 'Generating Preview...' : 'Preview PO'}
@@ -771,19 +833,13 @@ const EditPO = () => {
                       type="submit"
                       variant="contained"
                       color="primary"
-                      disabled={loading}
+                      disabled={loading || !hasChanges()}
                     >
                       {loading ? 'Updating...' : 'Update PO'}
                     </Button>
                   </Box>
                 </Grid>
               </Grid>
-            </Box>
-          ) : (
-            <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-              <Typography variant="h6" color="textSecondary">
-                Please select a PO number to edit
-              </Typography>
             </Box>
           )}
 
