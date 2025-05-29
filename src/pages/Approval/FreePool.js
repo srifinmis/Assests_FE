@@ -7,6 +7,7 @@ import {
   Dialog, DialogActions, DialogContent, DialogTitle,
 } from "@mui/material";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import SearchIcon from "@mui/icons-material/Search";
 import InfoOutlined from "@mui/icons-material/InfoOutlined"; // Importing the InfoOutlined icon
@@ -19,6 +20,7 @@ const FreePoolApproval = () => {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
+  const navigate = useNavigate();
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [error, setError] = useState(null);
   const [remarkErrors, setRemarkErrors] = useState({});
@@ -36,7 +38,7 @@ const FreePoolApproval = () => {
   }, [assetData]);
 
   const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
-  
+
   const fetchAssignedAssetData = async () => {
     setLoading(true);
     try {
@@ -66,7 +68,7 @@ const FreePoolApproval = () => {
     );
     setFilteredAssetData(filtered);
   };
-  
+
   const handleCheckboxChange = (requestNum) => {
     setSelectedAssets((prev) => ({
       ...prev,
@@ -79,22 +81,22 @@ const FreePoolApproval = () => {
       setRemarks(updatedRemarks);
     }
   };
-  
+
   const handleSelectAllChange = (e) => {
     const isChecked = e.target.checked;
     const currentPageItems = filteredAssetData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    
+
     const updatedSelections = { ...selectedAssets };
-  
+
     currentPageItems.forEach(item => {
       updatedSelections[item.request_num] = isChecked;
       if (!isChecked) delete remarks[item.request_num];
     });
-  
+
     if (!isChecked) {
       setRemarks({});
     }
-  
+
     setSelectedAssets(updatedSelections);
   };
 
@@ -108,8 +110,8 @@ const FreePoolApproval = () => {
       });
     }
   };
- 
-  
+
+
   const openConfirmationDialog = (actionType) => {
     setConfirmAction(actionType);
     setConfirmationOpen(true);
@@ -168,6 +170,11 @@ const FreePoolApproval = () => {
       });
     } finally {
       setActionLoading(false);
+      if (window.location.pathname === "/approval/free-pool") {
+        window.location.reload();
+      } else {
+        navigate("/approval/free-pool");
+      }
     }
   };
 
@@ -227,8 +234,8 @@ const FreePoolApproval = () => {
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#a2b0cc", color: "white" }}>
-                <TableCell >
-                    <Checkbox checked={allSelected} onChange={handleSelectAllChange} /> 
+                  <TableCell >
+                    <Checkbox checked={allSelected} onChange={handleSelectAllChange} />
                   </TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Request NO.</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Asset ID</TableCell>
@@ -257,26 +264,26 @@ const FreePoolApproval = () => {
                       <TableCell>{asset.asset_name}</TableCell>
                       <TableCell>{asset.imei_num}</TableCell>
                       <TableCell>
-                         {`${asset?.system?.emp_id || "N/A"} - ${asset?.system?.emp_name || "N/A"}`}
-                         <Tooltip
-                         title={
-                           <Box sx={{ textAlign: "left" }}>
-                             <Typography variant="body2">Designation: {asset?.system?.designation_name || "N/A"}</Typography>
-                             <Typography variant="body2">Department: {asset?.system?.department_name || "N/A"}</Typography>
-                             <Typography variant="body2">Branch: {asset?.system?.branchid_name || "N/A"}</Typography>
-                             <Typography variant="body2">Area: {asset?.system?.areaid_name || "N/A"}</Typography>
-                             <Typography variant="body2">Region: {asset?.system?.regionid_name || "N/A"}</Typography>
-                             <Typography variant="body2">Cluster: {asset?.system?.clusterid_name || "N/A"}</Typography>
-                             <Typography variant="body2">State: {asset?.system?.state || "N/A"}</Typography>
-                           </Box>
-                         }
-                         arrow
-                         >
+                        {`${asset?.system?.emp_id || "N/A"} - ${asset?.system?.emp_name || "N/A"}`}
+                        <Tooltip
+                          title={
+                            <Box sx={{ textAlign: "left" }}>
+                              <Typography variant="body2">Designation: {asset?.system?.designation_name || "N/A"}</Typography>
+                              <Typography variant="body2">Department: {asset?.system?.department_name || "N/A"}</Typography>
+                              <Typography variant="body2">Branch: {asset?.system?.branchid_name || "N/A"}</Typography>
+                              <Typography variant="body2">Area: {asset?.system?.areaid_name || "N/A"}</Typography>
+                              <Typography variant="body2">Region: {asset?.system?.regionid_name || "N/A"}</Typography>
+                              <Typography variant="body2">Cluster: {asset?.system?.clusterid_name || "N/A"}</Typography>
+                              <Typography variant="body2">State: {asset?.system?.state || "N/A"}</Typography>
+                            </Box>
+                          }
+                          arrow
+                        >
                           <IconButton size="small" sx={{ color: "#1976D2", ml: 1 }}>
-                             <InfoOutlined fontSize="small" />
-                         </IconButton>
-                         </Tooltip>
-                       </TableCell>
+                            <InfoOutlined fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
                       <TableCell>{asset.assignment_status}</TableCell>
                       <TableCell>
                         <TextField
@@ -292,8 +299,8 @@ const FreePoolApproval = () => {
                           error={!!remarkErrors[asset.request_num]}
                           helperText={remarkErrors[asset.request_num]}
                         />
-                      </TableCell>                        
-                     </TableRow>
+                      </TableCell>
+                    </TableRow>
                   ))}
               </TableBody>
             </Table>
@@ -310,17 +317,17 @@ const FreePoolApproval = () => {
             onRowsPerPageChange={handleRowsPerPageChange}
           />
           <Box display="flex" gap={2}>
-            <Button 
-              variant="contained" 
-              sx={{ backgroundColor: "#1976D2", width: { xs: "100%", sm: "auto" } }} 
+            <Button
+              variant="contained"
+              sx={{ backgroundColor: "#1976D2", width: { xs: "100%", sm: "auto" } }}
               onClick={() => openConfirmationDialog("approved")}
               disabled={Object.keys(selectedAssets).length === 0}>
               Approve
             </Button>
 
-            <Button 
-              variant="contained" 
-              sx={{ backgroundColor: "#D32F2F", width: { xs: "100%", sm: "auto" } }} 
+            <Button
+              variant="contained"
+              sx={{ backgroundColor: "#D32F2F", width: { xs: "100%", sm: "auto" } }}
               onClick={() => openConfirmationDialog("rejected")}
               disabled={Object.keys(selectedAssets).length === 0}>
               Reject

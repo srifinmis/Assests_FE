@@ -6,11 +6,12 @@ import {
   Snackbar, Alert, TablePagination, Paper, IconButton, Tooltip, Box, InputAdornment,
   Dialog, DialogActions, DialogContent, DialogTitle,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import SearchIcon from "@mui/icons-material/Search";
 import InfoOutlined from "@mui/icons-material/InfoOutlined"; // Importing the InfoOutlined icon
- 
+
 const AssignApproval = () => {
   const [assetData, setAssetData] = useState([]);
   const [filteredAssetData, setFilteredAssetData] = useState([]);
@@ -22,6 +23,7 @@ const AssignApproval = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [error, setError] = useState(null);
   const [remarkErrors, setRemarkErrors] = useState({});
+  const navigate = useNavigate();
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
@@ -45,12 +47,12 @@ const AssignApproval = () => {
         setAssetData(res.data);
       } else {
         throw new Error("Invalid response data");
-      } 
+      }
     } catch (err) {
       console.error(err);
-      setError(""); 
+      setError("");
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -82,21 +84,21 @@ const AssignApproval = () => {
   const handleSelectAllChange = (e) => {
     const isChecked = e.target.checked;
     const currentPageItems = filteredAssetData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    
+
     const updatedSelections = { ...selectedAssets };
-  
+
     currentPageItems.forEach(item => {
       updatedSelections[item.request_num] = isChecked;
       if (!isChecked) delete remarks[item.request_num];
     });
-  
+
     if (!isChecked) {
       setRemarks({});
     }
-  
+
     setSelectedAssets(updatedSelections);
   };
-  
+
   const handleRemarkChange = (id, value) => {
     setRemarks(prev => ({ ...prev, [id]: value }));
     if (remarkErrors[id]) {
@@ -116,7 +118,7 @@ const AssignApproval = () => {
   const handleConfirmAction = async () => {
     setActionLoading(true);
     const selectedIds = Object.keys(selectedAssets).filter(id => selectedAssets[id]);
-  
+
     if (confirmAction === "reject") {
       const missingRemarks = selectedIds.filter(id => !remarks[id]?.trim());
       if (missingRemarks.length > 0) {
@@ -134,26 +136,27 @@ const AssignApproval = () => {
         return;
       }
     }
-  
+
     try {
       const loggedInUser = JSON.parse(localStorage.getItem("user"));
       const extractedRemark = Object.values(remarks)[0]; // Get the first value
-  
+
       await axios.post(`${API_CONFIG.APIURL}/approval/action`, {
         requestNums: selectedIds,
         action: confirmAction,
         approved_by: loggedInUser.emp_id,
         remarks: confirmAction === "rejected" ? extractedRemark : "",
       });
-  
+
       setSnackbar({
         open: true,
         message: `Assets ${confirmAction === "approved" ? "accepted" : "rejected"} successfully!`,
         severity: "success",
       });
-  
+
       // Refresh the data
-      fetchAssignedAssetData(); 
+      navigate("/approval/assigned");
+      fetchAssignedAssetData();
       setSelectedAssets([]);
       setRemarks({});
       setRemarkErrors({});
@@ -167,8 +170,13 @@ const AssignApproval = () => {
       });
     } finally {
       setActionLoading(false);
+      if (window.location.pathname === "/approval/assigned") {
+        window.location.reload();
+      } else {
+        navigate("/approval/assigned");
+      }
     }
-  };  
+  };
 
   const handlePageChange = (_, newPage) => setPage(newPage);
   const handleRowsPerPageChange = (event) => {
@@ -226,7 +234,7 @@ const AssignApproval = () => {
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#a2b0cc", color: "white" }}>
-                <TableCell>
+                  <TableCell>
                     <Checkbox checked={allSelected} onChange={handleSelectAllChange} />
                   </TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Request NO.</TableCell>
@@ -256,26 +264,26 @@ const AssignApproval = () => {
                       <TableCell>{asset.asset_name}</TableCell>
                       <TableCell>{asset.imei_num}</TableCell>
                       <TableCell>
-                         {`${asset?.system?.emp_id || "N/A"} - ${asset?.system?.emp_name || "N/A"}`}
-                         <Tooltip
-                         title={
-                           <Box sx={{ textAlign: "left" }}>
-                             <Typography variant="body2">Designation: {asset?.system?.designation_name || "N/A"}</Typography>
-                             <Typography variant="body2">Department: {asset?.system?.department_name || "N/A"}</Typography>
-                             <Typography variant="body2">Branch: {asset?.system?.branchid_name || "N/A"}</Typography>
-                             <Typography variant="body2">Area: {asset?.system?.areaid_name || "N/A"}</Typography>
-                             <Typography variant="body2">Region: {asset?.system?.regionid_name || "N/A"}</Typography>
-                             <Typography variant="body2">Cluster: {asset?.system?.clusterid_name || "N/A"}</Typography>
-                             <Typography variant="body2">State: {asset?.system?.state || "N/A"}</Typography>
-                           </Box>
-                         }
-                         arrow
-                         >
+                        {`${asset?.system?.emp_id || "N/A"} - ${asset?.system?.emp_name || "N/A"}`}
+                        <Tooltip
+                          title={
+                            <Box sx={{ textAlign: "left" }}>
+                              <Typography variant="body2">Designation: {asset?.system?.designation_name || "N/A"}</Typography>
+                              <Typography variant="body2">Department: {asset?.system?.department_name || "N/A"}</Typography>
+                              <Typography variant="body2">Branch: {asset?.system?.branchid_name || "N/A"}</Typography>
+                              <Typography variant="body2">Area: {asset?.system?.areaid_name || "N/A"}</Typography>
+                              <Typography variant="body2">Region: {asset?.system?.regionid_name || "N/A"}</Typography>
+                              <Typography variant="body2">Cluster: {asset?.system?.clusterid_name || "N/A"}</Typography>
+                              <Typography variant="body2">State: {asset?.system?.state || "N/A"}</Typography>
+                            </Box>
+                          }
+                          arrow
+                        >
                           <IconButton size="small" sx={{ color: "#1976D2", ml: 1 }}>
-                             <InfoOutlined fontSize="small" />
-                         </IconButton>
-                         </Tooltip>
-                       </TableCell>
+                            <InfoOutlined fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
                       <TableCell>{asset.assignment_status}</TableCell>
                       <TableCell>
                         <TextField
@@ -291,8 +299,8 @@ const AssignApproval = () => {
                           error={!!remarkErrors[asset.request_num]}
                           helperText={remarkErrors[asset.request_num]}
                         />
-                      </TableCell>                        
-                     </TableRow>
+                      </TableCell>
+                    </TableRow>
                   ))}
               </TableBody>
             </Table>
@@ -309,16 +317,16 @@ const AssignApproval = () => {
             onRowsPerPageChange={handleRowsPerPageChange}
           />
           <Box display="flex" gap={2}>
-            <Button 
-              variant="contained" 
-              sx={{ backgroundColor: "#1976D2", width: { xs: "100%", sm: "auto" } }} 
+            <Button
+              variant="contained"
+              sx={{ backgroundColor: "#1976D2", width: { xs: "100%", sm: "auto" } }}
               onClick={() => openConfirmationDialog("approved")}
               disabled={Object.keys(selectedAssets).length === 0}>
               Approve
             </Button>
-            <Button 
-              variant="contained" 
-              sx={{ backgroundColor: "#D32F2F", width: { xs: "100%", sm: "auto" } }} 
+            <Button
+              variant="contained"
+              sx={{ backgroundColor: "#D32F2F", width: { xs: "100%", sm: "auto" } }}
               onClick={() => openConfirmationDialog("rejected")}
               disabled={Object.keys(selectedAssets).length === 0}>
               Reject
@@ -343,8 +351,8 @@ const AssignApproval = () => {
             </DialogActions>
           </Dialog>
           <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
-        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
-      </Snackbar>
+            <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+          </Snackbar>
         </Box>
       </Container>
     </>
