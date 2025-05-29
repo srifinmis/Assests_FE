@@ -27,6 +27,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import GroupIcon from "@mui/icons-material/Group";
 import SrifinLogo from "../assets/srifin_final.svg";
+import EditIcon from '@mui/icons-material/Edit';
 
 const MODULES = {
   HOME: "IT-HOME",
@@ -65,6 +66,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
 
   const newAssetsMenuItems = useMemo(() => [
     { text: "Create PO", icon: <AddCircle />, path: "/new-assets/create-po" },
+    { text: "Edit PO", icon: <EditIcon />, path: "/new-assets/edit-po" },
     { text: "Upload Invoice", icon: <RequestQuote />, path: "/new-assets/upload-invoice" },
     { text: "Upload Payment Receipt", icon: <ReceiptLong />, path: "/new-assets/upload-reciept" },
   ], []);

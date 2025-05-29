@@ -207,7 +207,7 @@ const Login = () => {
                 control={<Checkbox checked={rememberMe} onChange={() => setRememberMe(!rememberMe)} />}
                 label="Remember me"
               />
-              <Link to="/forgot-password" style={{ color: "#1c5789", fontSize: "12px" }}>
+              <Link to="/ForgotPassword" style={{ color: "#1c5789", fontSize: "12px" }}>
                 <MailOutlineIcon sx={{ mr: 1, fontSize: "20px" }} /> Forgot Password?
               </Link>
             </Box>

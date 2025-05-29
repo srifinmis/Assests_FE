@@ -28,7 +28,7 @@ const AssignApproval = () => {
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
-    fetchAssignedAssetData();
+    refreshData();
   }, []);
 
   useEffect(() => {
@@ -37,20 +37,23 @@ const AssignApproval = () => {
 
   const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
 
-  const fetchAssignedAssetData = async () => {
+  const refreshData = async () => {
     setLoading(true);
     try {
       const res = await axios.get(`${API_CONFIG.APIURL}/approval/free-assign-assets`);
       if (Array.isArray(res.data)) {
         setAssetData(res.data);
-      } else {
-        throw new Error("Invalid response data");
-      } 
+        setFilteredAssetData(res.data);
+      }
     } catch (err) {
-      console.error(err);
-      setError(""); 
+      console.error("Error refreshing data:", err);
+      setSnackbar({
+        open: true,
+        message: "Error refreshing data",
+        severity: "error",
+      });
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -67,15 +70,92 @@ const AssignApproval = () => {
     setFilteredAssetData(filtered);
   };
 
+  const validateRejection = (selectedIds) => {
+    const missingRemarks = selectedIds.filter(id => !remarks[id]?.trim());
+    if (missingRemarks.length > 0) {
+      setRemarkErrors(
+        missingRemarks.reduce((acc, id) => ({ ...acc, [id]: "Remark is required for rejection." }), {})
+      );
+      setSnackbar({
+        open: true,
+        message: "Please add remarks for all selected items",
+        severity: "warning",
+      });
+      return false;
+    }
+    return true;
+  };
+
+  const resetStates = () => {
+    setSelectedAssets({});
+    setRemarks({});
+    setRemarkErrors({});
+    setConfirmationOpen(false);
+  };
+
+  const handleSuccess = async (action) => {
+    setSnackbar({
+      open: true,
+      message: `Assets ${action === "approved" ? "accepted" : "rejected"} successfully!`,
+      severity: "success",
+    });
+    
+    // Reset states first
+    resetStates();
+    setPage(0);
+    setSearchQuery("");
+    
+    // Then refresh data
+    await refreshData();
+  };
+
+  const handleError = () => {
+    setSnackbar({
+      open: true,
+      message: "Failed to update asset approval status",
+      severity: "error",
+    });
+  };
+
+  const handleConfirmAction = async () => {
+    const selectedIds = Object.keys(selectedAssets).filter(id => selectedAssets[id]);
+    
+    // Validate rejection if needed
+    if (confirmAction === "rejected" && !validateRejection(selectedIds)) {
+      setConfirmationOpen(false);
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      const loggedInUser = JSON.parse(localStorage.getItem("user"));
+      await axios.post(`${API_CONFIG.APIURL}/approval/action`, {
+        requestNums: selectedIds,
+        action: confirmAction,
+        approved_by: loggedInUser.emp_id,
+        remarks: confirmAction === "rejected" ? Object.values(remarks)[0] : "",
+      });
+
+      await handleSuccess(confirmAction);
+    } catch (error) {
+      handleError();
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleCheckboxChange = (requestNum) => {
     setSelectedAssets((prev) => ({
       ...prev,
       [requestNum]: !prev[requestNum],
     }));
+    // Clear remark when unchecking
     if (selectedAssets[requestNum]) {
-      const updatedRemarks = { ...remarks };
-      delete updatedRemarks[requestNum];
-      setRemarks(updatedRemarks);
+      setRemarks(prev => {
+        const updated = { ...prev };
+        delete updated[requestNum];
+        return updated;
+      });
     }
   };
 
@@ -83,18 +163,15 @@ const AssignApproval = () => {
     const isChecked = e.target.checked;
     const currentPageItems = filteredAssetData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     
-    const updatedSelections = { ...selectedAssets };
+    const updatedSelections = currentPageItems.reduce((acc, item) => ({
+      ...acc,
+      [item.request_num]: isChecked
+    }), {});
   
-    currentPageItems.forEach(item => {
-      updatedSelections[item.request_num] = isChecked;
-      if (!isChecked) delete remarks[item.request_num];
-    });
-  
+    setSelectedAssets(updatedSelections);
     if (!isChecked) {
       setRemarks({});
     }
-  
-    setSelectedAssets(updatedSelections);
   };
   
   const handleRemarkChange = (id, value) => {
@@ -112,63 +189,6 @@ const AssignApproval = () => {
     setConfirmAction(actionType);
     setConfirmationOpen(true);
   };
-
-  const handleConfirmAction = async () => {
-    setActionLoading(true);
-    const selectedIds = Object.keys(selectedAssets).filter(id => selectedAssets[id]);
-  
-    if (confirmAction === "reject") {
-      const missingRemarks = selectedIds.filter(id => !remarks[id]?.trim());
-      if (missingRemarks.length > 0) {
-        const errors = {};
-        missingRemarks.forEach(id => {
-          errors[id] = "Remark is required for rejection.";
-        });
-        setRemarkErrors(errors);
-        setSnackbar({
-          open: true,
-          message: "Remarks are mandatory for rejection.",
-          severity: "warning",
-        });
-        setActionLoading(false);
-        return;
-      }
-    }
-  
-    try {
-      const loggedInUser = JSON.parse(localStorage.getItem("user"));
-      const extractedRemark = Object.values(remarks)[0]; // Get the first value
-  
-      await axios.post(`${API_CONFIG.APIURL}/approval/action`, {
-        requestNums: selectedIds,
-        action: confirmAction,
-        approved_by: loggedInUser.emp_id,
-        remarks: confirmAction === "rejected" ? extractedRemark : "",
-      });
-  
-      setSnackbar({
-        open: true,
-        message: `Assets ${confirmAction === "approved" ? "accepted" : "rejected"} successfully!`,
-        severity: "success",
-      });
-  
-      // Refresh the data
-      fetchAssignedAssetData(); 
-      setSelectedAssets([]);
-      setRemarks({});
-      setRemarkErrors({});
-      setConfirmationOpen(false);
-    } catch (error) {
-      console.error("Approval error:", error);
-      setSnackbar({
-        open: true,
-        message: "Failed to update asset approval status.",
-        severity: "error",
-      });
-    } finally {
-      setActionLoading(false);
-    }
-  };  
 
   const handlePageChange = (_, newPage) => setPage(newPage);
   const handleRowsPerPageChange = (event) => {
@@ -205,7 +225,7 @@ const AssignApproval = () => {
             }}
           />
           <Tooltip title="Refresh Asset List">
-            <IconButton onClick={fetchAssignedAssetData} sx={{ color: "#607D8B", mt: { xs: 1, sm: 0 } }}>
+            <IconButton onClick={refreshData} sx={{ color: "#607D8B", mt: { xs: 1, sm: 0 } }}>
               <RefreshIcon />
             </IconButton>
           </Tooltip>

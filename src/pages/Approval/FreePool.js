@@ -111,15 +111,8 @@ const FreePoolApproval = () => {
  
   
   const openConfirmationDialog = (actionType) => {
-    setConfirmAction(actionType);
-    setConfirmationOpen(true);
-  };
-
-  const handleConfirmAction = async () => {
-    setActionLoading(true);
-    const selectedIds = Object.keys(selectedAssets).filter(id => selectedAssets[id]);
-
-    if (confirmAction === "reject") {
+    if (actionType === "reject") {
+      const selectedIds = Object.keys(selectedAssets).filter(id => selectedAssets[id]);
       const missingRemarks = selectedIds.filter(id => !remarks[id]?.trim());
       if (missingRemarks.length > 0) {
         const errors = {};
@@ -129,43 +122,85 @@ const FreePoolApproval = () => {
         setRemarkErrors(errors);
         setSnackbar({
           open: true,
-          message: "Remarks are mandatory for rejection.",
+          message: "Please add remarks for all selected items",
           severity: "warning",
         });
-        setActionLoading(false);
         return;
       }
     }
+    setConfirmAction(actionType);
+    setConfirmationOpen(true);
+  };
 
+  const validateRejection = (selectedIds) => {
+    const missingRemarks = selectedIds.filter(id => !remarks[id]?.trim());
+    if (missingRemarks.length > 0) {
+      setRemarkErrors(
+        missingRemarks.reduce((acc, id) => ({ ...acc, [id]: "Remark is required for rejection." }), {})
+      );
+      setSnackbar({
+        open: true,
+        message: "Please add remarks for all selected items",
+        severity: "warning",
+      });
+      return false;
+    }
+    return true;
+  };
+
+  const resetStates = () => {
+    setSelectedAssets({});
+    setRemarks({});
+    setRemarkErrors({});
+    setConfirmationOpen(false);
+  };
+
+  const handleSuccess = async (action) => {
+    setSnackbar({
+      open: true,
+      message: `Assets ${action === "approved" ? "accepted" : "rejected"} successfully!`,
+      severity: "success",
+    });
+    
+    // Reset states first
+    resetStates();
+    setPage(0);
+    setSearchQuery("");
+    
+    // Then refresh data
+    await fetchAssignedAssetData();
+  };
+
+  const handleError = () => {
+    setSnackbar({
+      open: true,
+      message: "Failed to update asset approval status",
+      severity: "error",
+    });
+  };
+
+  const handleConfirmAction = async () => {
+    const selectedIds = Object.keys(selectedAssets).filter(id => selectedAssets[id]);
+    
+    // Validate rejection if needed
+    if (confirmAction === "reject" && !validateRejection(selectedIds)) {
+      setConfirmationOpen(false);
+      return;
+    }
+
+    setActionLoading(true);
     try {
       const loggedInUser = JSON.parse(localStorage.getItem("user"));
-      const extractedRemark = Object.values(remarks)[0]; // Get the first value
-
       await axios.post(`${API_CONFIG.APIURL}/freeapproval/action`, {
         requestNums: selectedIds,
         action: confirmAction,
         approved_by: loggedInUser.emp_id,
-        remarks: confirmAction === "rejected" ? extractedRemark : "",
+        remarks: confirmAction === "rejected" ? Object.values(remarks)[0] : "",
       });
 
-      setSnackbar({
-        open: true,
-        message: `Assets ${confirmAction === "approved" ? "accepeted" : "rejected"} successfully!`,
-        severity: "success",
-      });
-
-      fetchAssignedAssetData();
-      setSelectedAssets([]);
-      setRemarks({});
-      setRemarkErrors({});
-      setConfirmationOpen(false);
+      await handleSuccess(confirmAction);
     } catch (error) {
-      console.error("Approval error:", error);
-      setSnackbar({
-        open: true,
-        message: "Failed to update asset approval status.",
-        severity: "error",
-      });
+      handleError();
     } finally {
       setActionLoading(false);
     }
@@ -282,7 +317,7 @@ const FreePoolApproval = () => {
                         <TextField
                           size="small"
                           placeholder="Enter remark..."
-                          value={remarks[asset.request_num] || ""}  // Ensure request_num is used
+                          value={remarks[asset.request_num] || ""}
                           onChange={(e) => {
                             handleRemarkChange(asset.request_num, e.target.value);
                             setRemarkErrors((prev) => ({ ...prev, [asset.request_num]: "" }));
@@ -326,7 +361,7 @@ const FreePoolApproval = () => {
               Reject
             </Button>
           </Box>
-        </Box>
+        </Box> 
 
         {/* Confirmation Dialog */}
         <Box>
@@ -344,8 +379,19 @@ const FreePoolApproval = () => {
               </Button>
             </DialogActions>
           </Dialog>
-          <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
-            <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+          <Snackbar 
+            open={snackbar.open} 
+            autoHideDuration={6000} 
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          >
+            <Alert 
+              onClose={() => setSnackbar({ ...snackbar, open: false })} 
+              severity={snackbar.severity}
+              sx={{ width: '100%' }}
+            >
+              {snackbar.message}
+            </Alert>
           </Snackbar>
         </Box>
       </Container>

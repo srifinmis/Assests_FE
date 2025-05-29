@@ -23,6 +23,7 @@ import BulkApproval from "../pages/Approval/bulk_upload"
 
 // New Asset
 import CreatePO from "../pages/New_Asset/Create_PO";
+import EditPO from "../pages/New_Asset/Edit_PO";
 import UploadInvoice from "../pages/New_Asset/Upload_Invoice";
 import UploadReciept from "../pages/New_Asset/Upload_Reciept";
 import AssetDepreciation from "../pages/New_Asset/AssetDepreciation";
@@ -85,6 +86,7 @@ const AppRoutes = () => {
 
                 {/* New Asset Routes */}
                 <Route path="/new-assets/create-po" element={<CreatePO />} />
+                <Route path="/new-assets/edit-po" element={<EditPO />} />
                 <Route path="/new-assets/upload-invoice" element={<UploadInvoice />} />
                 <Route path="/new-assets/upload-reciept" element={<UploadReciept />} />
                 <Route path="/new-assets/assetdepreciation" element={<AssetDepreciation />} />
