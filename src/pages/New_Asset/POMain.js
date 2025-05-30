@@ -72,8 +72,13 @@ const POMain = ({ isDropped }) => {
     const handleSearch = (e) => {
         setSearchText(e.target.value.toLowerCase());
     };
-    const handleInvoiceUpload = () => {
-        navigate("/new-assets/upload-invoice");
+    const handleInvoiceUpload = (po_number) => {
+        // navigate("/new-assets/upload-invoice");
+        navigate(`/new-assets/upload-invoice/${po_number}`, {
+            state: {
+                po_number: po_number
+            }
+        });
     }
 
     const statusColors = {

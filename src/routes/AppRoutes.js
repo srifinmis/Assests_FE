@@ -91,7 +91,7 @@ const AppRoutes = () => {
                 <Route path="/new-assets/invoice" element={<InvoiceMain />} />
                 <Route path="/new-assets/create-po" element={<CreatePO />} />
                 <Route path="/new-assets/edit-po/:po_number" element={<EditPO />} />
-                <Route path="/new-assets/upload-invoice" element={<UploadInvoice />} />
+                <Route path="/new-assets/upload-invoice/:po_number" element={<UploadInvoice />} />
                 <Route path="/new-assets/upload-reciept" element={<UploadReciept />} />
                 <Route path="/new-assets/assetdepreciation" element={<AssetDepreciation />} />
 
