@@ -23,6 +23,7 @@ import BulkApproval from "../pages/Approval/bulk_upload"
 
 // New Asset
 import POMain from "../pages/New_Asset/POMain";
+import InvoiceMain from "../pages/New_Asset/InvoiceMain"
 import CreatePO from "../pages/New_Asset/Create_PO";
 import EditPO from "../pages/New_Asset/Edit_PO";
 import UploadInvoice from "../pages/New_Asset/Upload_Invoice";
@@ -87,6 +88,7 @@ const AppRoutes = () => {
 
                 {/* New Asset Routes */}
                 <Route path="/new-assets/purchase-order" element={<POMain />} />
+                <Route path="/new-assets/invoice" element={<InvoiceMain />} />
                 <Route path="/new-assets/create-po" element={<CreatePO />} />
                 <Route path="/new-assets/edit-po/:po_number" element={<EditPO />} />
                 <Route path="/new-assets/upload-invoice" element={<UploadInvoice />} />

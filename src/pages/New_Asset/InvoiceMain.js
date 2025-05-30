@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Table, Spin, message, Button, Input, Select, Tag } from "antd";
 import { EditOutlined } from '@ant-design/icons';
-import { UploadOutlined } from '@ant-design/icons';
 import { Box } from "@mui/material";
 import Navbar from "../Navbar";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +11,7 @@ import { API_CONFIG, REFRESH_CONFIG } from '../../configuration';
 
 const { Option } = Select;
 
-const POMain = ({ isDropped }) => {
+const InvoiceMain = ({ isDropped }) => {
     const [purchaseOrders, setPurchaseOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState("");
@@ -72,9 +71,6 @@ const POMain = ({ isDropped }) => {
     const handleSearch = (e) => {
         setSearchText(e.target.value.toLowerCase());
     };
-    const handleInvoiceUpload = () => {
-        navigate("/new-assets/upload-invoice");
-    }
 
     const statusColors = {
         "Approved": "green",
@@ -193,71 +189,7 @@ const POMain = ({ isDropped }) => {
                     />
                 )
             ),
-        },
-        {
-            title: "Invoice",
-            key: "invoice",
-            onHeaderCell: () => ({
-                style: { backgroundColor: "#F4F6F8", color: "black" }
-            }),
-            render: (_, record) => {
-                const isDisabled = record.po_status === "Pending" || record.po_status === "Rejected";
-                const iconStyle = {
-                    fontSize: '18px',
-                    cursor: isDisabled ? 'not-allowed' : 'pointer',
-                    color: isDisabled ? '#d9d9d9' : '#1890ff',
-                };
-
-                return (
-                    <span style={{ display: 'flex', gap: '8px' }}>
-                        <UploadOutlined
-                            style={{ ...iconStyle }}
-                            onClick={() => {
-                                if (!isDisabled) handleInvoiceUpload(record.po_number);
-                            }}
-                        />
-                        {/* <EditOutlined
-                            style={{ ...iconStyle }}
-                            onClick={() => {
-                                if (!isDisabled) handleEditPO(record.po_number);
-                            }}
-                        /> */}
-                    </span>
-                );
-            }
-        },
-        // {
-        //     title: "Payment",
-        //     key: "payment",
-        //     onHeaderCell: () => ({
-        //         style: { backgroundColor: "#F4F6F8", color: "black" }
-        //     }),
-        //     render: (_, record) => {
-        //         const isDisabled = record.po_status === "Pending" || record.po_status === "Rejected";
-        //         const iconStyle = {
-        //             fontSize: '18px',
-        //             cursor: isDisabled ? 'not-allowed' : 'pointer',
-        //             color: isDisabled ? '#d9d9d9' : '#1890ff',
-        //         };
-
-        //         return (
-        //             <span style={{ display: 'flex', gap: '8px' }}>
-        //                 <UploadOutlined
-        //                     style={{ ...iconStyle }}
-        //                     onClick={() => {
-        //                         if (!isDisabled) handleEditPO(record.po_number);
-        //                     }}
-        //                 />
-        //                 <EditOutlined
-        //                     style={{ ...iconStyle }}
-        //                     onClick={() => {
-        //                         if (!isDisabled) handleEditPO(record.po_number);
-        //                     }}
-        //                 />
-        //             </span>
-        //         );
-        //     }
-        // }
+        }
     ];
 
     return (
@@ -284,9 +216,9 @@ const POMain = ({ isDropped }) => {
                         marginBottom: "20px",
                     }}
                 >
-                    <h2 style={{ flex: 1 }}>Purchase Orders</h2>
+                    <h2 style={{ flex: 1 }}>Invoice</h2>
                     <Input
-                        placeholder="Search purchase orders..."
+                        placeholder="Search Invoice..."
                         value={searchText}
                         onChange={handleSearch}
                         style={{ width: "250px", height: "40px" }}
@@ -329,4 +261,4 @@ const POMain = ({ isDropped }) => {
     );
 };
 
-export default POMain;
+export default InvoiceMain;

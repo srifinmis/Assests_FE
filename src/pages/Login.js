@@ -54,9 +54,9 @@ const Login = () => {
         // Storing token and user data
         localStorage.setItem("token", data.token); // ✅ Store token
         localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("user", JSON.stringify(data.user || {})); 
+        localStorage.setItem("user", JSON.stringify(data.user || {}));
         localStorage.setItem("allowedModules", JSON.stringify(data.allowedModules || [])); // ✅ Storing allowed modules
-        localStorage.setItem("statesAssigned",JSON.stringify( data.statesAssigned || [])); // ✅ Store state_assigned in localStorage
+        localStorage.setItem("statesAssigned", JSON.stringify(data.statesAssigned || [])); // ✅ Store state_assigned in localStorage
 
         setMessage("Login successful ✅");
 
