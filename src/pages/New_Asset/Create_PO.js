@@ -91,36 +91,36 @@ const PurchaseOrder = () => {
   // Initial Fetch
   // 1. Move fetchNextPONumber here
   const fetchNextPONumber = async () => {
-  try {
-    const res = await axios.get(`${API_CONFIG.APIURL}/CreatePO/next-po-number`);
-    setPoDetails((prev) => ({ ...prev, po_num: res.data.po_num }));
-  } catch (error) {
-    console.error("Failed to fetch PO number:", error);
-  }
-};
-
-useEffect(() => {
-  if (assetCreationOption !== "payment" && assetCreationOption !== "invoice") {
-    setAssetCreationOption("payment"); // Default to "payment"
-  }
-}, [assetCreationOption]);
-
-
-
-// 2. Then this useEffect can safely use it
-useEffect(() => {
-  const fetchAssetTypes = async () => {
     try {
-      const res = await axios.get(`${API_CONFIG.APIURL}/CreatePO/asset-types`);
-      setAssetTypes(res.data || []);
+      const res = await axios.get(`${API_CONFIG.APIURL}/CreatePO/next-po-number`);
+      setPoDetails((prev) => ({ ...prev, po_num: res.data.po_num }));
     } catch (error) {
-      console.error("Failed to fetch asset types:", error);
+      console.error("Failed to fetch PO number:", error);
     }
   };
 
-  fetchNextPONumber();
-  fetchAssetTypes();
-}, []);
+  useEffect(() => {
+    if (assetCreationOption !== "payment" && assetCreationOption !== "invoice") {
+      setAssetCreationOption("payment"); // Default to "payment"
+    }
+  }, [assetCreationOption]);
+
+
+
+  // 2. Then this useEffect can safely use it
+  useEffect(() => {
+    const fetchAssetTypes = async () => {
+      try {
+        const res = await axios.get(`${API_CONFIG.APIURL}/CreatePO/asset-types`);
+        setAssetTypes(res.data || []);
+      } catch (error) {
+        console.error("Failed to fetch asset types:", error);
+      }
+    };
+
+    fetchNextPONumber();
+    fetchAssetTypes();
+  }, []);
 
 
   // Event Handlers
@@ -227,7 +227,7 @@ useEffect(() => {
     setLineItems([{ asset_name: "", quantity: 1, unit_price: 0 }]);
     setTotals({ subtotal: 0, gstAmount: 0, grandTotal: 0 });
   };
-  
+
   const handleGeneratePreview = async () => {
     try {
       setLoading(true);
@@ -271,34 +271,34 @@ useEffect(() => {
     setLoading(true);
     const loggedInUser = JSON.parse(localStorage.getItem("user")) || {};
     const requestedBy = loggedInUser.emp_id;
-  
+
     if (!requestedBy) {
       setError("User not logged in. Please log in and try again.");
       setLoading(false);
       return;
     }
-  
+
     const data = {
       ...poDetails,
       ...formData,
       line_items: lineItems,
       totals,
       requested_by: requestedBy,
-      asset_creation: assetCreationOption,  
+      asset_creation: assetCreationOption,
     };
-  
+
     try {
       const response = await axios.post(`${API_CONFIG.APIURL}/CreatePO/request_po`, data);
-      if (response.data.success==="true") {
+      if (response.data.success === "true") {
         setMessage({ open: true, text: "PO sent for approval successfully!", severity: "success" });
-  
+
         if (response.data.emailStatus === "sent") {
           setMessage({ open: true, text: "Email sent successfully!", severity: "success" });
         } else {
           setMessage({ open: true, text: "PO sent, but email failed to send.", severity: "warning" });
         }
         resetForm();
-        await fetchNextPONumber();  
+        await fetchNextPONumber();
         setOpenPreview(false);
       } else {
         setMessage({ open: true, text: "Failed to send PO for approval.", severity: "error" });
@@ -310,7 +310,7 @@ useEffect(() => {
       setLoading(false);
     }
   };
-  
+
   return (
     <>
       <Navbar />
@@ -394,32 +394,32 @@ useEffect(() => {
   </FormGroup>
 </Paper> */}
 
-<Paper elevation={3} sx={{ p: 2, mb: 2, bgcolor: "#f9f9f9" }}>
-  <Typography variant="h6" gutterBottom>
-    Asset Creation Preference
-  </Typography>
-  <Divider sx={{ mb: 2 }} />
+        <Paper elevation={3} sx={{ p: 2, mb: 2, bgcolor: "#f9f9f9" }}>
+          <Typography variant="h6" gutterBottom>
+            Asset Creation Preference
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
 
-  <FormControl component="fieldset" fullWidth>
-    <RadioGroup
-      row
-      value={assetCreationOption}
-      onChange={(e) => setAssetCreationOption(e.target.value)}
-      sx={{ justifyContent: "space-around" }}
-    >
-      <FormControlLabel
-        value="payment"
-        control={<Radio sx={{ color: "#1976d2" }} />}
-        label="At Payment Receipt"
-      />
-      <FormControlLabel
-        value="invoice"
-        control={<Radio sx={{ color: "#1976d2" }} />}
-        label="At Invoice Upload"
-      />
-    </RadioGroup>
-  </FormControl>
-</Paper>
+          <FormControl component="fieldset" fullWidth>
+            <RadioGroup
+              row
+              value={assetCreationOption}
+              onChange={(e) => setAssetCreationOption(e.target.value)}
+              sx={{ justifyContent: "space-around" }}
+            >
+              <FormControlLabel
+                value="payment"
+                control={<Radio sx={{ color: "#1976d2" }} />}
+                label="At Payment Receipt"
+              />
+              <FormControlLabel
+                value="invoice"
+                control={<Radio sx={{ color: "#1976d2" }} />}
+                label="At Invoice Upload"
+              />
+            </RadioGroup>
+          </FormControl>
+        </Paper>
 
 
 
@@ -500,128 +500,128 @@ useEffect(() => {
 
         {/* Vendor Details Section */}
         <Paper elevation={3} sx={sectionStyle}>
-        <Typography variant="h6" gutterBottom>Vendor Details</Typography>
-        <Divider sx={{ mb: 2 }} />
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Vendor Name"
-              name="vendor_name"
-              fullWidth
-              value={formData.vendor_name}
-              onChange={handleChange}
-            />
+          <Typography variant="h6" gutterBottom>Vendor Details</Typography>
+          <Divider sx={{ mb: 2 }} />
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Vendor Name"
+                name="vendor_name"
+                fullWidth
+                value={formData.vendor_name}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Vendor Phone Number"
+                name="vendor_phone_num"
+                fullWidth
+                value={formData.vendor_phone_num}
+                onChange={(e) =>
+                  handleChange({
+                    target: {
+                      name: "vendor_phone_num",
+                      value: e.target.value.replace(/\D/g, ""),
+                    },
+                  })
+                }
+                inputProps={{ inputMode: "numeric", maxLength: 10 }}
+                error={formData.vendor_phone_num.length > 0 && formData.vendor_phone_num.length < 10}
+                helperText={
+                  formData.vendor_phone_num.length > 0 && formData.vendor_phone_num.length < 10
+                    ? "Phone number must be exactly 10 digits."
+                    : ""
+                }
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Vendor Email"
+                name="vendor_email"
+                fullWidth
+                value={formData.vendor_email}
+                onChange={handleChange}
+                error={Boolean(formData.vendor_email && !/^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.vendor_email))}
+                helperText={
+                  formData.vendor_email && !/^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.vendor_email)
+                    ? "Enter a valid email address."
+                    : ""
+                }
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Vendor GST Number"
+                name="vendor_gst_num"
+                fullWidth
+                value={formData.vendor_gst_num}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Vendor Address"
+                name="vendor_address"
+                fullWidth
+                multiline
+                rows={3}
+                value={formData.vendor_address}
+                onChange={handleChange}
+              />
+            </Grid>
           </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Vendor Phone Number"
-              name="vendor_phone_num"
-              fullWidth
-              value={formData.vendor_phone_num}
-              onChange={(e) =>
-                handleChange({
-                  target: {
-                    name: "vendor_phone_num",
-                    value: e.target.value.replace(/\D/g, ""),
-                  },
-                })
-              }
-              inputProps={{ inputMode: "numeric", maxLength: 10 }}
-              error={formData.vendor_phone_num.length > 0 && formData.vendor_phone_num.length < 10}
-              helperText={
-                formData.vendor_phone_num.length > 0 && formData.vendor_phone_num.length < 10
-                  ? "Phone number must be exactly 10 digits."
-                  : ""
-              }
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Vendor Email"
-              name="vendor_email"
-              fullWidth
-              value={formData.vendor_email}
-              onChange={handleChange}
-              error={Boolean(formData.vendor_email && !/^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.vendor_email))}
-              helperText={
-                formData.vendor_email && !/^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.vendor_email)
-                  ? "Enter a valid email address."
-                  : ""
-              }
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Vendor GST Number"
-              name="vendor_gst_num"
-              fullWidth
-              value={formData.vendor_gst_num}
-              onChange={handleChange}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              label="Vendor Address"
-              name="vendor_address"
-              fullWidth
-              multiline
-              rows={3}
-              value={formData.vendor_address}
-              onChange={handleChange}
-            />
-          </Grid>
-        </Grid>
         </Paper>
 
         {/* Shipping Details Section */}
         <Paper elevation={3} sx={sectionStyle}>
-        <Typography variant="h6" gutterBottom>Shipping Details</Typography>
-        <Divider sx={{ mb: 2 }} />
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Shipping Name"
-              name="shipping_name"
-              fullWidth
-              value={formData.shipping_name}
-              onChange={handleChange}
-            />
+          <Typography variant="h6" gutterBottom>Shipping Details</Typography>
+          <Divider sx={{ mb: 2 }} />
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Shipping Name"
+                name="shipping_name"
+                fullWidth
+                value={formData.shipping_name}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Shipping Phone Number"
+                name="shipping_phone_num"
+                fullWidth
+                value={formData.shipping_phone_num}
+                onChange={(e) =>
+                  handleChange({
+                    target: {
+                      name: "shipping_phone_num",
+                      value: e.target.value.replace(/\D/g, ""),
+                    },
+                  })
+                }
+                inputProps={{ inputMode: "numeric", maxLength: 10 }}
+                error={formData.shipping_phone_num.length > 0 && formData.shipping_phone_num.length < 10}
+                helperText={
+                  formData.shipping_phone_num.length > 0 && formData.shipping_phone_num.length < 10
+                    ? "Phone number must be exactly 10 digits."
+                    : ""
+                }
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Shipping Address"
+                name="shipping_address"
+                fullWidth
+                multiline
+                rows={3}
+                value={formData.shipping_address}
+                onChange={handleChange}
+              />
+            </Grid>
           </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Shipping Phone Number"
-              name="shipping_phone_num"
-              fullWidth
-              value={formData.shipping_phone_num}
-              onChange={(e) =>
-                handleChange({
-                  target: {
-                    name: "shipping_phone_num",
-                    value: e.target.value.replace(/\D/g, ""),
-                  },
-                })
-              }
-              inputProps={{ inputMode: "numeric", maxLength: 10 }}
-              error={formData.shipping_phone_num.length > 0 && formData.shipping_phone_num.length < 10}
-              helperText={
-                formData.shipping_phone_num.length > 0 && formData.shipping_phone_num.length < 10
-                  ? "Phone number must be exactly 10 digits."
-                  : ""
-              }
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              label="Shipping Address"
-              name="shipping_address"
-              fullWidth
-              multiline
-              rows={3}
-              value={formData.shipping_address}
-              onChange={handleChange}
-            />
-          </Grid>
-        </Grid>
         </Paper>
 
         {/* Line Items */}
@@ -634,10 +634,10 @@ useEffect(() => {
               <Grid item xs={12} sm={2}><TextField label="Quantity" type="number" fullWidth value={item.quantity} onChange={(e) => handleLineItemChange(index, "quantity", e.target.value)} /></Grid>
               <Grid item xs={12} sm={2}><TextField label="Unit Price" type="number" fullWidth value={item.unit_price} onChange={(e) => handleLineItemChange(index, "unit_price", e.target.value)} /></Grid>
               <Grid item xs={12} sm={2}><Typography variant="body1" sx={{ mt: 2 }}>   ₹ {((item.quantity * item.unit_price))}</Typography></Grid>
-              <Grid item xs={12} sm={1}> <IconButton color="error" onClick={() => removeLineItem(index)}><DeleteIcon/></IconButton> </Grid>
+              <Grid item xs={12} sm={1}> <IconButton color="error" onClick={() => removeLineItem(index)}><DeleteIcon /></IconButton> </Grid>
             </Grid>
           ))}
-          
+
           <Button variant="outlined" onClick={addLineItem}>+ Add Item</Button>
           <Divider sx={{ my: 2 }} />
           <Typography variant="body1">Subtotal: ₹{totals.subtotal}</Typography>
@@ -668,77 +668,77 @@ useEffect(() => {
           <Typography variant="h6" gutterBottom> Terms & Conditions</Typography>
           <Divider sx={{ mb: 2 }} />
           <Grid container spacing={2} sx={{ mt: 2 }}>
-          <Grid item xs={12} sm={4}>
-          <Autocomplete
-            freeSolo
-            options={paymentTermsOptions}
-            value={formData.payment_terms}
-            onChange={(event, newValue) => {
-              setFormData((prev) => ({
-                ...prev,
-                payment_terms: newValue || "",
-              }));
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Payment Terms"
-                name="payment_terms"
-                fullWidth
-                onChange={handleChange}
+            <Grid item xs={12} sm={4}>
+              <Autocomplete
+                freeSolo
+                options={paymentTermsOptions}
+                value={formData.payment_terms}
+                onChange={(event, newValue) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    payment_terms: newValue || "",
+                  }));
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Payment Terms"
+                    name="payment_terms"
+                    fullWidth
+                    onChange={handleChange}
+                  />
+                )}
               />
-            )}
-          />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-          <Autocomplete
-            freeSolo
-            options={deliveryTermsOptions}
-            value={formData.delivery_terms}
-            onChange={(event, newValue) => {
-              setFormData((prev) => ({
-                ...prev,
-                delivery_terms: newValue || "",
-              }));
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Delivery Terms"
-                name="delivery_terms"
-                fullWidth
-                onChange={handleChange}
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Autocomplete
+                freeSolo
+                options={deliveryTermsOptions}
+                value={formData.delivery_terms}
+                onChange={(event, newValue) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    delivery_terms: newValue || "",
+                  }));
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Delivery Terms"
+                    name="delivery_terms"
+                    fullWidth
+                    onChange={handleChange}
+                  />
+                )}
               />
-            )}
-          />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-          <Autocomplete
-            freeSolo
-            options={warrantyTermsOptions}
-            value={formData.warranty}
-            onChange={(event, newValue) => {
-              setFormData((prev) => ({
-                ...prev,
-                warranty: newValue || "",
-              }));
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Warranty"
-                name="warranty"
-                fullWidth
-                onChange={handleChange}
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Autocomplete
+                freeSolo
+                options={warrantyTermsOptions}
+                value={formData.warranty}
+                onChange={(event, newValue) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    warranty: newValue || "",
+                  }));
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Warranty"
+                    name="warranty"
+                    fullWidth
+                    onChange={handleChange}
+                  />
+                )}
               />
-            )}
-          />
-          </Grid>
+            </Grid>
           </Grid>
         </Paper>
 
         {/* Generate Button */}
-        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2,  mt: 4, width: "100%" }}> {/*justifyContent: "center", */}
+        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 4, width: "100%" }}> {/*justifyContent: "center", */}
           <Button
             variant="contained"
             color="primary"
@@ -757,7 +757,7 @@ useEffect(() => {
           </Button>
         </Box>
 
-        {/* Dialog for Preview */} 
+        {/* Dialog for Preview */}
         <Dialog
           open={openPreview}
           onClose={() => setOpenPreview(false)}

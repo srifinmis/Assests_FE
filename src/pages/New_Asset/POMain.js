@@ -12,7 +12,7 @@ import { API_CONFIG, REFRESH_CONFIG } from '../../configuration';
 const { Option } = Select;
 
 const POMain = ({ isDropped }) => {
-    const [purchaseOrders, setPurchaseOrders] = useState([]); 
+    const [purchaseOrders, setPurchaseOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState("");
     const [filterStatus, setFilterStatus] = useState("All");
@@ -57,7 +57,7 @@ const POMain = ({ isDropped }) => {
     const handleEditPO = (po_number) => {
         // Replace colon and spaces with single underscore
         // const cleanPONum = po_number.replace(/[: ]/g, '_');
-        navigate(`/new-assets/edit-po/${po_number}`,{
+        navigate(`/new-assets/edit-po/${po_number}`, {
             state: {
                 po_number: po_number
             }
@@ -145,6 +145,23 @@ const POMain = ({ isDropped }) => {
                 <Tag color={statusColors[status] || "orange"}>{status || 'Pending'}</Tag>
             ),
         },
+        // {
+        //     title: "Actions",
+        //     key: "actions",
+        //     onHeaderCell: () => ({
+        //         style: { backgroundColor: "#F4F6F8", color: "black" }
+        //     }),
+        //     render: (_, record) => (
+        //         <EditOutlined
+        //             style={{ 
+        //                 fontSize: '18px',
+        //                 color: '#1890ff',
+        //                 cursor: 'pointer'
+        //             }}
+        //             onClick={() => handleEditPO(record.po_number)}
+        //         />
+        //     ),
+        // },
         {
             title: "Actions",
             key: "actions",
@@ -152,16 +169,27 @@ const POMain = ({ isDropped }) => {
                 style: { backgroundColor: "#F4F6F8", color: "black" }
             }),
             render: (_, record) => (
-                <EditOutlined
-                    style={{ 
-                        fontSize: '18px',
-                        color: '#1890ff',
-                        cursor: 'pointer'
-                    }}
-                    onClick={() => handleEditPO(record.po_number)}
-                />
+                record.po_status === "Approved" ? (
+                    <EditOutlined
+                        style={{
+                            fontSize: '18px',
+                            color: '#d9d9d9',
+                            cursor: 'not-allowed'
+                        }}
+                        disabled
+                    />
+                ) : (
+                    <EditOutlined
+                        style={{
+                            fontSize: '18px',
+                            color: '#1890ff',
+                            cursor: 'pointer'
+                        }}
+                        onClick={() => handleEditPO(record.po_number)}
+                    />
+                )
             ),
-        },
+        }
     ];
 
     return (

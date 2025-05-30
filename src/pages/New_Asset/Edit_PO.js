@@ -33,7 +33,7 @@ const EditPO = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const poNum = location.state?.po_number;
-  
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -94,14 +94,14 @@ const EditPO = () => {
 
   const hasChanges = () => {
     if (!originalData) return false;
-    
+
     // Compare all relevant fields
     const fieldsToCompare = [
       'po_date', 'asset_type', 'asset_creation_at', 'client_name', 'client_email',
       'client_gst_num', 'client_phone_num', 'client_address', 'vendor_name',
       'vendor_phone_num', 'vendor_email', 'vendor_gst_num', 'vendor_address',
       'shipping_name', 'shipping_phone_num', 'shipping_address', 'delivery_terms',
-      'payment_terms', 'warranty', 'gst'
+      'payment_terms', 'warranty', 'cgst', 'sgst'
     ];
 
     // Check if any field has changed
@@ -119,12 +119,12 @@ const EditPO = () => {
     for (let i = 0; i < poData.line_items.length; i++) {
       const currentItem = poData.line_items[i];
       const originalItem = originalData.line_items[i];
-      
+
       if (!originalItem) return true;
-      
+
       if (currentItem.asset_name !== originalItem.asset_name ||
-          currentItem.quantity !== originalItem.quantity ||
-          currentItem.unit_price !== originalItem.unit_price) {
+        currentItem.quantity !== originalItem.quantity ||
+        currentItem.unit_price !== originalItem.unit_price) {
         return true;
       }
     }
@@ -150,29 +150,41 @@ const EditPO = () => {
         }
 
         const { po_details, products } = response.data;
-        
-        const formattedDate = po_details.po_date 
-          ? new Date(po_details.po_date).toISOString().split('T')[0] 
+
+        const formattedDate = po_details.po_date
+          ? new Date(po_details.po_date).toISOString().split('T')[0]
           : new Date().toISOString().split('T')[0];
-        
-        const subtotal = products.reduce((sum, product) => 
+
+        const firstProduct = products[0] || {};
+        const cgst = parseFloat(firstProduct.cgst || 0);
+        const sgst = parseFloat(firstProduct.sgst || 0);
+        console.log("GST's:", cgst, sgst);
+
+        const gst = cgst + sgst;
+        const subtotal = products.reduce((sum, product) =>
           sum + (product.quantity * product.unit_price), 0);
-        
-        const gstAmount = po_details.gst ? (subtotal * po_details.gst) / 100 : 0;
-        
+
+
+        const gstAmount = gst ? (subtotal * gst) / 100 : 0;
+
         setAssetCreationOption(po_details.asset_creation_at || 'payment');
-        
+
+        // const halfGst = gst / 2;
+
         const newPoData = {
           ...po_details,
           po_date: formattedDate,
+          cgst,
+          sgst,
+          gst: gst,
           line_items: products.map(product => ({
             asset_name: product.item_description,
             quantity: product.quantity,
             unit_price: product.unit_price
           })),
           totals: {
-            subtotal: subtotal,
-            gstAmount: gstAmount,
+            subtotal,
+            gstAmount,
             grandTotal: subtotal + gstAmount
           }
         };
@@ -196,22 +208,24 @@ const EditPO = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name === 'gst') {
-      const gstValue = Math.max(0, Math.min(100, parseFloat(value) || 0));
-      // Recalculate totals with new GST value
-      const subtotal = poData.line_items.reduce((sum, item) => 
-        sum + (item.quantity || 0) * (item.unit_price || 0), 0);
-      const gstAmount = gstValue ? (subtotal * gstValue) / 100 : 0;
-      
+      const newValue = Math.max(0, Math.min(100, parseFloat(value) || 0));
+
+      const subtotal = poData.line_items.reduce(
+        (sum, item) => sum + (item.quantity || 0) * (item.unit_price || 0), 0
+      );
+      const gstAmount = (subtotal * newValue) / 100;
+
       setPoData(prev => ({
         ...prev,
-        gst: gstValue,
+        [name]: newValue,
+        gst: newValue,
         totals: {
-          subtotal: subtotal,
-          gstAmount: gstAmount,
+          subtotal,
+          gstAmount,
           grandTotal: subtotal + gstAmount
         }
       }));
-      // Clear GST error when user starts typing
+
       setShowGstError(false);
     } else {
       setPoData(prev => ({
@@ -234,14 +248,14 @@ const EditPO = () => {
       ...newLineItems[index],
       [field]: value
     };
-    
+
     // Recalculate totals
-    const subtotal = newLineItems.reduce((sum, item) => 
+    const subtotal = newLineItems.reduce((sum, item) =>
       sum + (item.quantity || 0) * (item.unit_price || 0), 0);
-    
+
     // Only calculate GST if a value is provided
     const gstAmount = poData.gst ? (subtotal * poData.gst) / 100 : 0;
-    
+
     setPoData(prev => ({
       ...prev,
       line_items: newLineItems,
@@ -259,14 +273,14 @@ const EditPO = () => {
         ...prev.line_items,
         { asset_name: '', quantity: 1, unit_price: 0 }
       ];
-      
+
       // Recalculate totals with new line item
-      const subtotal = newLineItems.reduce((sum, item) => 
+      const subtotal = newLineItems.reduce((sum, item) =>
         sum + (item.quantity || 0) * (item.unit_price || 0), 0);
-      
+
       // Only calculate GST if a value is provided
       const gstAmount = prev.gst ? (subtotal * prev.gst) / 100 : 0;
-      
+
       return {
         ...prev,
         line_items: newLineItems,
@@ -282,14 +296,14 @@ const EditPO = () => {
   const removeLineItem = (index) => {
     setPoData(prev => {
       const newLineItems = prev.line_items.filter((_, i) => i !== index);
-      
+
       // Recalculate totals after removing line item
-      const subtotal = newLineItems.reduce((sum, item) => 
+      const subtotal = newLineItems.reduce((sum, item) =>
         sum + (item.quantity || 0) * (item.unit_price || 0), 0);
-      
+
       // Only calculate GST if a value is provided
       const gstAmount = prev.gst ? (subtotal * prev.gst) / 100 : 0;
-      
+
       return {
         ...prev,
         line_items: newLineItems,
@@ -314,7 +328,7 @@ const EditPO = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    
+
     setLoading(true);
     try {
       // First generate the new PO PDF
@@ -336,7 +350,7 @@ const EditPO = () => {
         asset_creation_at: assetCreationOption,
         updated_by: localStorage.getItem('userId')
       }));
-      
+
       // Append the PDF blob
       const pdfBlob = new Blob([previewResponse.data], { type: 'application/pdf' });
       formData.append('po_pdf', pdfBlob, `${poNum}.pdf`);
@@ -362,7 +376,7 @@ const EditPO = () => {
 
   const handleGeneratePreview = async () => {
     if (!validateForm()) return;
-    
+
     try {
       setLoading(true);
       setError('');
@@ -748,29 +762,29 @@ const EditPO = () => {
                         <Grid item xs={12} key={index}>
                           <Grid container spacing={2} alignItems="center">
                             <Grid item xs={12} sm={5}>
-                              <TextField 
-                                label="Asset Name" 
-                                fullWidth 
-                                value={item.asset_name} 
-                                onChange={(e) => handleLineItemChange(index, 'asset_name', e.target.value)} 
+                              <TextField
+                                label="Asset Name"
+                                fullWidth
+                                value={item.asset_name}
+                                onChange={(e) => handleLineItemChange(index, 'asset_name', e.target.value)}
                               />
                             </Grid>
                             <Grid item xs={12} sm={2}>
-                              <TextField 
-                                label="Quantity" 
-                                type="number" 
-                                fullWidth 
-                                value={item.quantity} 
-                                onChange={(e) => handleLineItemChange(index, 'quantity', e.target.value)} 
+                              <TextField
+                                label="Quantity"
+                                type="number"
+                                fullWidth
+                                value={item.quantity}
+                                onChange={(e) => handleLineItemChange(index, 'quantity', e.target.value)}
                               />
                             </Grid>
                             <Grid item xs={12} sm={2}>
-                              <TextField 
-                                label="Unit Price" 
-                                type="number" 
-                                fullWidth 
-                                value={item.unit_price} 
-                                onChange={(e) => handleLineItemChange(index, 'unit_price', e.target.value)} 
+                              <TextField
+                                label="Unit Price"
+                                type="number"
+                                fullWidth
+                                value={item.unit_price}
+                                onChange={(e) => handleLineItemChange(index, 'unit_price', e.target.value)}
                               />
                             </Grid>
                             <Grid item xs={12} sm={2}>
@@ -787,13 +801,13 @@ const EditPO = () => {
                         </Grid>
                       ))}
                     </Grid>
-                    
+
                     <Button variant="outlined" onClick={addLineItem} sx={{ mt: 2 }}>
                       + Add Item
                     </Button>
-                    
+
                     <Divider sx={{ my: 2 }} />
-                    
+
                     <Grid container spacing={2}>
                       <Grid item xs={12} sm={4}>
                         <TextField
