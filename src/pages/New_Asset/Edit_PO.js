@@ -343,14 +343,17 @@ const EditPO = () => {
         }
       );
 
+      const loggedInUser = JSON.parse(localStorage.getItem("user")) || {};
+      const requestedBy = loggedInUser.emp_id;
+
       // Create FormData to send both PO data and PDF
       const formData = new FormData();
       formData.append('po_data', JSON.stringify({
         ...poData,
         asset_creation_at: assetCreationOption,
-        updated_by: localStorage.getItem('userId')
+        updated_by: requestedBy
       }));
-
+      console.log("poData", poData);
       // Append the PDF blob
       const pdfBlob = new Blob([previewResponse.data], { type: 'application/pdf' });
       formData.append('po_pdf', pdfBlob, `${poNum}.pdf`);

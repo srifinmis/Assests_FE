@@ -303,6 +303,9 @@ const PurchaseOrder = () => {
       } else {
         setMessage({ open: true, text: "Failed to send PO for approval.", severity: "error" });
       }
+      setTimeout(() => {
+        window.location.href = '/new-assets/purchase-order';
+      }, 1000);
     } catch (error) {
       console.error("Error sending PO for approval:", error);
       setMessage({ open: true, text: "Error sending PO for approval.", severity: "error" });
