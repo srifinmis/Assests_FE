@@ -27,6 +27,7 @@ import InvoiceMain from "../pages/New_Asset/InvoiceMain"
 import CreatePO from "../pages/New_Asset/Create_PO";
 import EditPO from "../pages/New_Asset/Edit_PO";
 import UploadInvoice from "../pages/New_Asset/Upload_Invoice";
+import EditInvoice from "../pages/New_Asset/Edit_Invoice"
 import UploadReciept from "../pages/New_Asset/Upload_Reciept";
 import AssetDepreciation from "../pages/New_Asset/AssetDepreciation";
 
@@ -92,6 +93,7 @@ const AppRoutes = () => {
                 <Route path="/new-assets/create-po" element={<CreatePO />} />
                 <Route path="/new-assets/edit-po/:po_number" element={<EditPO />} />
                 <Route path="/new-assets/upload-invoice/:po_number" element={<UploadInvoice />} />
+                <Route path="/new-assets/edit-invoice/:po_number" element={<EditInvoice />} />
                 <Route path="/new-assets/upload-reciept" element={<UploadReciept />} />
                 <Route path="/new-assets/assetdepreciation" element={<AssetDepreciation />} />
 

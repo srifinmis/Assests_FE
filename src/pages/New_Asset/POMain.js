@@ -14,6 +14,7 @@ const { Option } = Select;
 
 const POMain = ({ isDropped }) => {
     const [purchaseOrders, setPurchaseOrders] = useState([]);
+    const [invoiceData, setinvoiceData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState("");
     const [filterStatus, setFilterStatus] = useState("All");
@@ -43,27 +44,52 @@ const POMain = ({ isDropped }) => {
                 if (response.data) {
                     setPurchaseOrders(response.data);
                 } else {
-                    message.error("Failed to fetch purchase orders");
+                    message.error("Failed to fetch invoice Data");
                 }
             } catch (error) {
-                console.error("Error fetching purchase orders:", error);
-                message.error("Error fetching purchase orders");
+                console.error("Error fetching purchase orders :", error);
+                message.error("Error fetching purchase orders ");
             } finally {
                 setLoading(false);
             }
         };
+        const fetchInvoiceAssignments = async () => {
+            setLoading(true);
+            try {
+                const response = await axios.get(`${API_CONFIG.APIURL}/invoices/pobyids`);
+                // console.log("po invoice data: ", response.data)
+                if (response.data) {
+                    setinvoiceData(response.data);
+                } else {
+                    message.error("Failed to fetch invoice Data");
+                }
+            } catch (error) {
+                console.error("Error fetching invoice Data:", error);
+                message.error("Error fetching invoice Data");
+            } finally {
+                setLoading(false);
+            }
+        };
+
         fetchPurchaseOrders();
+        fetchInvoiceAssignments();
     }, []);
 
     const handleEditPO = (po_number) => {
-        // Replace colon and spaces with single underscore
-        // const cleanPONum = po_number.replace(/[: ]/g, '_');
         navigate(`/new-assets/edit-po/${po_number}`, {
             state: {
                 po_number: po_number
             }
         });
     };
+    const handleEditInvoice = (po_number) => {
+        navigate(`/new-assets/edit-invoice/${po_number}`, {
+            state: {
+                po_number: po_number
+            }
+        });
+    };
+
 
     const handleAddNewPO = () => {
         navigate("/new-assets/create-po");
@@ -73,7 +99,6 @@ const POMain = ({ isDropped }) => {
         setSearchText(e.target.value.toLowerCase());
     };
     const handleInvoiceUpload = (po_number) => {
-        // navigate("/new-assets/upload-invoice");
         navigate(`/new-assets/upload-invoice/${po_number}`, {
             state: {
                 po_number: po_number
@@ -154,23 +179,6 @@ const POMain = ({ isDropped }) => {
                 <Tag color={statusColors[status] || "orange"}>{status || 'Pending'}</Tag>
             ),
         },
-        // {
-        //     title: "Actions",
-        //     key: "actions",
-        //     onHeaderCell: () => ({
-        //         style: { backgroundColor: "#F4F6F8", color: "black" }
-        //     }),
-        //     render: (_, record) => (
-        //         <EditOutlined
-        //             style={{ 
-        //                 fontSize: '18px',
-        //                 color: '#1890ff',
-        //                 cursor: 'pointer'
-        //             }}
-        //             onClick={() => handleEditPO(record.po_number)}
-        //         />
-        //     ),
-        // },
         {
             title: "Actions",
             key: "actions",
@@ -206,63 +214,63 @@ const POMain = ({ isDropped }) => {
                 style: { backgroundColor: "#F4F6F8", color: "black" }
             }),
             render: (_, record) => {
-                const isDisabled = record.po_status === "Pending" || record.po_status === "Rejected";
-                const iconStyle = {
+                const invoice = invoiceData.find(inv => inv.po_num === record.po_number);
+                const invoiceStatus = invoice?.invoice_status || 'Upload File';
+
+                const isUploadStatus = !invoiceStatus; // status: Upload (no invoice yet)
+
+                const disableUpload =
+                    record.po_status === "Pending" ||
+                    record.po_status === "Rejected" ||
+                    invoiceStatus === "Pending" ||
+                    invoiceStatus === "Rejected" ||
+                    invoiceStatus === "Approved";
+
+                // BUT allow upload if no invoice exists (i.e., status is "Upload")
+                const finalDisableUpload = disableUpload && !isUploadStatus;
+
+                const disableEdit =
+                    record.po_status === "Pending" ||
+                    record.po_status === "Rejected" ||
+                    invoiceStatus === "Approved" ||
+                    invoiceStatus === 'Upload File';
+
+                const uploadIconStyle = {
                     fontSize: '18px',
-                    cursor: isDisabled ? 'not-allowed' : 'pointer',
-                    color: isDisabled ? '#d9d9d9' : '#1890ff',
+                    cursor: finalDisableUpload ? 'not-allowed' : 'pointer',
+                    color: finalDisableUpload ? '#d9d9d9' : '#1890ff',
+                    marginRight: '10px'
+                };
+
+                const editIconStyle = {
+                    fontSize: '18px',
+                    cursor: disableEdit ? 'not-allowed' : 'pointer',
+                    color: disableEdit ? '#d9d9d9' : '#1890ff'
                 };
 
                 return (
-                    <span style={{ display: 'flex', gap: '8px' }}>
-                        <UploadOutlined
-                            style={{ ...iconStyle }}
-                            onClick={() => {
-                                if (!isDisabled) handleInvoiceUpload(record.po_number);
-                            }}
-                        />
-                        {/* <EditOutlined
-                            style={{ ...iconStyle }}
-                            onClick={() => {
-                                if (!isDisabled) handleEditPO(record.po_number);
-                            }}
-                        /> */}
-                    </span>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+                        <span style={{ display: 'flex', gap: '8px' }}>
+                            <UploadOutlined
+                                style={uploadIconStyle}
+                                onClick={() => {
+                                    if (!finalDisableUpload) handleInvoiceUpload(record.po_number);
+                                }}
+                            />
+                            <EditOutlined
+                                style={editIconStyle}
+                                onClick={() => {
+                                    if (!disableEdit) handleEditInvoice(record.po_number);
+                                }}
+                            />
+                        </span>
+                        <span style={{ fontSize: '12px', color: '#555' }}>
+                            Status: {invoiceStatus}
+                        </span>
+                    </div>
                 );
             }
-        },
-        // {
-        //     title: "Payment",
-        //     key: "payment",
-        //     onHeaderCell: () => ({
-        //         style: { backgroundColor: "#F4F6F8", color: "black" }
-        //     }),
-        //     render: (_, record) => {
-        //         const isDisabled = record.po_status === "Pending" || record.po_status === "Rejected";
-        //         const iconStyle = {
-        //             fontSize: '18px',
-        //             cursor: isDisabled ? 'not-allowed' : 'pointer',
-        //             color: isDisabled ? '#d9d9d9' : '#1890ff',
-        //         };
-
-        //         return (
-        //             <span style={{ display: 'flex', gap: '8px' }}>
-        //                 <UploadOutlined
-        //                     style={{ ...iconStyle }}
-        //                     onClick={() => {
-        //                         if (!isDisabled) handleEditPO(record.po_number);
-        //                     }}
-        //                 />
-        //                 <EditOutlined
-        //                     style={{ ...iconStyle }}
-        //                     onClick={() => {
-        //                         if (!isDisabled) handleEditPO(record.po_number);
-        //                     }}
-        //                 />
-        //             </span>
-        //         );
-        //     }
-        // }
+        }
     ];
 
     return (

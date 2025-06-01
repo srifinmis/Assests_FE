@@ -17,8 +17,7 @@ const UploadInvoice = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const poNum = location.state?.po_number;
-  // console.log("po number is: ", poNum);
-  const [poNumber, setPoNumber] = useState("");
+  const [poNumber, setPoNumber] = useState(poNum || "");
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [invoiceDate, setInvoiceDate] = useState("");
   const [file, setFile] = useState(null);
@@ -43,11 +42,14 @@ const UploadInvoice = () => {
   const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
 
   useEffect(() => {
+    if (poNum) {
+      handlePoSelection(poNum);
+    }
     axios
       .get(`${API_CONFIG.APIURL}/invoices/po_no`)
       .then((res) => setPoOptions(res.data))
       .catch((err) => console.error("❌ Error fetching PO numbers:", err));
-  }, []);
+  }, [poNum]);
 
   const handlePoSelection = async (po) => {
     setPoNumber(po); // Store the selected PO number
@@ -289,7 +291,7 @@ const UploadInvoice = () => {
     formData.append("po_number", poNumber);
     formData.append("invoice_number", invoiceNumber);
     formData.append("invoice_date", invoiceDate);
-    formData.append("invoiceFile", file);
+    formData.append("invoice", file);
     formData.append("requested_by", requestedBy);
 
     if (assetCreationAt === "invoice") {
@@ -344,7 +346,8 @@ const UploadInvoice = () => {
 
     try {
       setLoading(true);
-      const response = await axios.post(`${API_CONFIG.APIURL}/invoices/upload_invoice`, formData, {
+      console.log("formdata: ", formData)
+      const response = await axios.post(`${API_CONFIG.APIURL}/invoices/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -352,6 +355,7 @@ const UploadInvoice = () => {
 
       if (response.data.message) {
         alert("✅ Invoice uploaded successfully!");
+        navigate("/new-assets/purchase-order")
         resetForm();
       } else {
         setError(response.data.message || "Something went wrong.");
@@ -388,11 +392,13 @@ const UploadInvoice = () => {
             <form onSubmit={handleSubmit}>
               <Grid container spacing={2} sx={{ mb: 2 }}>
                 <Grid item xs={12} md={4}>
-                  <Autocomplete
-                    options={poOptions}
+                  <TextField
+                    label="PO Number"
                     value={poNumber}
-                    onChange={(e, val) => handlePoSelection(val)}
-                    renderInput={(params) => <TextField {...params} label="PO Number" required />}
+                    onChange={(e) => handlePoSelection(e.target.value)}
+                    required
+                    fullWidth
+                    disabled={!!poNum}
                   />
                 </Grid>
                 <Grid item xs={12} md={4}>
