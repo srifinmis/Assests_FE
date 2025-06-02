@@ -4,10 +4,11 @@ import {
     Container, TextField, Button,
     Typography, Card,
     CardContent, Box,
-    Autocomplete, Grid,
+    Autocomplete, Grid, Dialog, DialogTitle, DialogContent, IconButton
 } from "@mui/material";
 import { useLocation, useNavigate } from 'react-router-dom';
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import CloseIcon from "@mui/icons-material/Close";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import axios from "axios";
@@ -18,6 +19,7 @@ const EditInvoice = () => {
     const navigate = useNavigate();
     const poNum = location.state?.po_number;
     const [poNumber, setPoNumber] = useState(poNum || "");
+    const [invoiceURL, setinvoiceURL] = useState("");
     const [invoiceNumber, setInvoiceNumber] = useState("");
     const [invoiceDate, setInvoiceDate] = useState("");
     const [file, setFile] = useState(null); // For the invoice PDF file
@@ -29,6 +31,10 @@ const EditInvoice = () => {
     const [stateOptions, setStateOptions] = useState([]);
     const [poOptions, setPoOptions] = useState([]); // Currently not used in Autocomplete, but kept for completeness
     const [products, setProducts] = useState([]);
+    const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+    const [openPreview, setOpenPreview] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState("");
+    const [loadingPreview, setLoadingPreview] = useState(false);
     const [assetType, setAssetType] = useState("");
     const [rowsByProductIndex, setRowsByProductIndex] = useState({}); // Stores asset_id and serial_number for each product
     const [productMetaData, setProductMetaData] = useState({}); // Stores brand and model for each product
@@ -46,13 +52,12 @@ const EditInvoice = () => {
 
     // --- Effect Hook for Initial Data Fetching ---
     useEffect(() => {
-        // Fetch PO details and invoice data when poNum is available
         if (poNum) {
-            handlePoSelection(poNum); // Populate products and asset IDs based on PO
+            handlePoSelection(poNum);
             axios
                 .get(`${API_CONFIG.APIURL}/invoices/pobyids`, {
                     params: {
-                        flag: 1, // Flag likely indicates a specific type of PO data
+                        flag: 1,
                         po_num: poNum,
                     },
                 })
@@ -66,18 +71,26 @@ const EditInvoice = () => {
                         const invoiceAssignment = res.data.invoiceAssignment;
                         if (invoiceAssignment && invoiceAssignment.length > 0) {
                             const existingInvoice = invoiceAssignment[0];
-                            console.log("data : ", existingInvoice);
+                            // console.log("data : ", existingInvoice);
 
                             setInvoiceNumber(existingInvoice.invoice_num || "");
+
+                            const poProcessinginvoiceurl = res.data.poProcessing?.invoice_url;
+                            console.log("processing: ", poProcessinginvoiceurl);
+
+                            // Extract only the part after '/uploads/'
+                            let extractedInvoiceFileName = "";
+                            if (poProcessinginvoiceurl && poProcessinginvoiceurl.includes('/uploads/')) {
+                                extractedInvoiceFileName = poProcessinginvoiceurl.split('/uploads/')[1];
+                            }
+
+                            console.log("Extracted File Name: ", extractedInvoiceFileName);
+                            setinvoiceURL(extractedInvoiceFileName);
 
                             // Use invoice_date from poProcessing (object), format to yyyy-mm-dd
                             const invoiceDateRaw = res.data.poProcessing?.invoice_date || "";
                             setInvoiceDate(invoiceDateRaw ? invoiceDateRaw.split('T')[0] : "");
 
-                            // You had baseLocation, state, Warranty - assuming these come from invoiceAssignment or assetMaster?  
-                            // Let's check assetMaster for those fields or fallback to empty string
-
-                            // Example: if assetMaster has base_location, state, Warranty_status at asset level or top level:
                             // Assuming assetMaster is an array - take first item for these fields (adjust if different)
                             const assetMaster = res.data.assetMaster;
                             if (assetMaster && assetMaster.length > 0) {
@@ -290,6 +303,35 @@ const EditInvoice = () => {
 
         if (field === "serial_no") {
             checkForDuplicateSerials(updatedRows);
+        }
+    };
+    const handlePreview = async (invoiceURL) => {
+        try {
+            setLoadingPreview(true);
+            const response = await axios.get(
+                `${API_CONFIG.APIURL}/invoice/get_invoice_pdf/${encodeURIComponent(invoiceURL)}`,
+                {
+                    responseType: 'blob',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            console.log("resp: invoice pdf: ", response)
+
+            const blob = new Blob([response.data], { type: "application/pdf" });
+            const url = window.URL.createObjectURL(blob);
+            setPreviewUrl(url);
+            setOpenPreview(true);
+        } catch (error) {
+            console.error("Error loading preview:", error);
+            setSnackbar({
+                open: true,
+                message: "Failed to load preview. Please try again.",
+                severity: "error"
+            });
+        } finally {
+            setLoadingPreview(false);
         }
     };
 
@@ -539,11 +581,42 @@ const EditInvoice = () => {
                                     <Box>
                                         <CloudUploadIcon sx={{ fontSize: 40, color: "#1976d2" }} />
                                         <Typography>Click or Drag PDF file here</Typography>
-                                        <Typography variant="body2" color="textSecondary"> Please upload the invoice file (Max 5MB, only PDF)</Typography>
+                                        <Typography variant="body2" color="textSecondary">
+                                            Please upload the invoice file (Max 5MB, only PDF)
+                                        </Typography>
                                     </Box>
                                 )}
                             </Box>
 
+                            {/* Example Preview Button (you can move this elsewhere) */}
+                            {/* Preview Dialog */}
+                            <Dialog open={openPreview} onClose={() => setOpenPreview(false)} fullWidth maxWidth="md">
+                                <DialogTitle>
+                                    Invoice Preview
+                                    <IconButton
+                                        aria-label="close"
+                                        onClick={() => setOpenPreview(false)}
+                                        sx={{ position: "absolute", right: 8, top: 8 }}
+                                    >
+                                        <CloseIcon />
+                                    </IconButton>
+                                </DialogTitle>
+                                <DialogContent dividers>
+                                    {loadingPreview ? (
+                                        <Typography>Loading preview...</Typography>
+                                    ) : (
+                                        previewUrl && (
+                                            <iframe
+                                                src={previewUrl}
+                                                title="Invoice PDF Preview"
+                                                width="100%"
+                                                height="600px"
+                                                style={{ border: "none" }}
+                                            />
+                                        )
+                                    )}
+                                </DialogContent>
+                            </Dialog>
                             {/* Base Location, State, and Warranty (only if products are loaded) */}
                             {products.length > 0 && (
                                 <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -687,6 +760,15 @@ const EditInvoice = () => {
 
                             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 3 }}>
                                 <Button
+                                    variant="outlined"
+                                    color="primary"
+                                    disabled={loading}
+                                    onClick={() => handlePreview(invoiceURL)}
+                                >
+                                    {loading ? 'Generating Preview...' : 'Preview Old PO'}
+                                </Button>
+
+                                <Button
                                     type="submit"
                                     variant="contained"
                                     color="primary"
@@ -694,15 +776,7 @@ const EditInvoice = () => {
                                 >
                                     {loading ? "Submitting..." : "Update Invoice"}
                                 </Button>
-                                <Button
-                                    type="button"
-                                    variant="outlined"
-                                    color="secondary"
-                                    onClick={resetForm}
-                                    disabled={loading}
-                                >
-                                    Reset
-                                </Button>
+                               
                             </Box>
                         </form>
                     </CardContent>
