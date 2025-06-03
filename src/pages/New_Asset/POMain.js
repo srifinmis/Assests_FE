@@ -394,9 +394,6 @@
 // export default POMain;
 
 
-
-
-
 import React, { useState, useEffect } from "react";
 import { Table, Spin, message, Button, Input, Select, Tag } from "antd";
 import { EditOutlined, UploadOutlined } from '@ant-design/icons';
@@ -587,8 +584,8 @@ const POMain = () => {
             onHeaderCell: () => ({ style: { backgroundColor: "#F4F6F8", color: "black" } }),
         },
         {
-            title: "Actions",
-            key: "actions",
+            title: "Edit",
+            key: "edit",
             render: (_, record) =>
                 record.po_status === "Approved" ? (
                     <EditOutlined
@@ -664,7 +661,7 @@ const POMain = () => {
             <Box sx={{ padding: 2 }}>
                 <div
                     style={{
-                        marginBottom: 10,
+                        marginBottom: 0,
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
@@ -697,6 +694,7 @@ const POMain = () => {
                     </div>
                 ) : (
                     <Table
+                        size="small"
                         columns={columns}
                         dataSource={displayedPOs}
                         rowKey="po_number"

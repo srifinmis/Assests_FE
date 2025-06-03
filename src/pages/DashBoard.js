@@ -49,7 +49,7 @@ const DashBoard = () => {
       })
       .catch((error) => {
         console.error("Error fetching asset data:", error);
-        setError("Failed to load assets");
+        setError("No Assets to load");
         setLoading(false);
       });
   }, []);  

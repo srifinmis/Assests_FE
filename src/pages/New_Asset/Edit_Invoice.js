@@ -2,13 +2,14 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../Navbar";
 import {
     Container, TextField, Button,
-    Typography, Card,
+    Typography, Card, Tooltip,
     CardContent, Box,
     Autocomplete, Grid, Dialog, DialogTitle, DialogContent, IconButton
 } from "@mui/material";
 import { useLocation, useNavigate } from 'react-router-dom';
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CloseIcon from "@mui/icons-material/Close";
+import DeleteIcon from "@mui/icons-material/Delete";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import axios from "axios";
@@ -22,32 +23,29 @@ const EditInvoice = () => {
     const [invoiceURL, setinvoiceURL] = useState("");
     const [invoiceNumber, setInvoiceNumber] = useState("");
     const [invoiceDate, setInvoiceDate] = useState("");
-    const [file, setFile] = useState(null); // For the invoice PDF file
+    const [file, setFile] = useState(null);
     const [baseLocation, setBaseLocation] = useState("");
     const [state, setState] = useState("");
     const [Warranty, setWarranty] = useState("");
-    const [excelFile, setExcelFile] = useState(null); // For the Excel file with serial numbers
+    const [excelFile, setExcelFile] = useState(null);
     const [baseLocationOptions, setBaseLocationOptions] = useState([]);
     const [stateOptions, setStateOptions] = useState([]);
-    const [poOptions, setPoOptions] = useState([]); // Currently not used in Autocomplete, but kept for completeness
+    const [poOptions, setPoOptions] = useState([]);
     const [products, setProducts] = useState([]);
     const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
     const [openPreview, setOpenPreview] = useState(false);
     const [previewUrl, setPreviewUrl] = useState("");
     const [loadingPreview, setLoadingPreview] = useState(false);
     const [assetType, setAssetType] = useState("");
-    const [rowsByProductIndex, setRowsByProductIndex] = useState({}); // Stores asset_id and serial_number for each product
-    const [productMetaData, setProductMetaData] = useState({}); // Stores brand and model for each product
-    const [assetCreationAt, setAssetCreationAt] = useState(""); // Determines if assets are created at PO or invoice
+    const [rowsByProductIndex, setRowsByProductIndex] = useState({});
+    const [productMetaData, setProductMetaData] = useState({});
+    const [assetCreationAt, setAssetCreationAt] = useState("");
 
-    // UI state
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [duplicateSerials, setDuplicateSerials] = useState(new Set());
-    const [invoice, setInvoice] = useState([]); // State to hold fetched invoice data
-    const [selectedProductIndex, setSelectedProductIndex] = useState(null); // This was the missing line!
-
-    // Configuration for API endpoints
+    const [invoice, setInvoice] = useState([]);
+    const [selectedProductIndex, setSelectedProductIndex] = useState(null);
     const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
 
     // --- Effect Hook for Initial Data Fetching ---
@@ -62,12 +60,10 @@ const EditInvoice = () => {
                     },
                 })
                 .then((res) => {
-                    setInvoice(res.data); // Set the raw invoice data
+                    setInvoice(res.data);
                     console.log("res api flag: ", res.data);
 
-                    // **Populate form fields with existing invoice data**
                     if (res.data) {
-                        // Get invoiceAssignment array, take first invoice record
                         const invoiceAssignment = res.data.invoiceAssignment;
                         if (invoiceAssignment && invoiceAssignment.length > 0) {
                             const existingInvoice = invoiceAssignment[0];
@@ -368,7 +364,13 @@ const EditInvoice = () => {
             setError("File size exceeds 5MB limit.");
             return;
         }
-        setFile(selectedFile);
+        if (selectedFile) {
+            setFile(selectedFile);
+            const preview = URL.createObjectURL(selectedFile);
+            setPreviewUrl(preview);
+            setOpenPreview(true);
+        }
+
         setError("");
     };
 
@@ -469,7 +471,6 @@ const EditInvoice = () => {
 
             formData.append("assetData", JSON.stringify(assetData));
         }
-
         try {
             setLoading(true);
             console.log("formdata: ", formData);
@@ -480,7 +481,7 @@ const EditInvoice = () => {
             });
 
             if (response.data.message) {
-                alert("✅ Invoice uploaded successfully!");
+                alert("✅ Invoice Updated successfully!");
                 navigate("/new-assets/purchase-order"); // Redirect on success
                 resetForm();
             } else {
@@ -504,7 +505,6 @@ const EditInvoice = () => {
             setLoading(false);
         }
     };
-
     // --- Render JSX ---
     return (
         <>
@@ -654,10 +654,10 @@ const EditInvoice = () => {
                                             type="number"
                                         />
                                     </Grid>
-                                    <Grid item xs={12} >
+                                    <Grid item xs={12}>
                                         {/* Excel File Upload for Serial Numbers */}
                                         <Box
-                                            onClick={() => document.getElementById("excelInput").click()}
+                                            onClick={() => !excelFile && document.getElementById("excelInput").click()}
                                             sx={{
                                                 border: "2px dashed #1976d2",
                                                 borderRadius: 2,
@@ -666,6 +666,7 @@ const EditInvoice = () => {
                                                 textAlign: "center",
                                                 backgroundColor: "#f5f5f5",
                                                 cursor: "pointer",
+                                                position: "relative"
                                             }}
                                         >
                                             <input
@@ -675,16 +676,31 @@ const EditInvoice = () => {
                                                 style={{ display: "none" }}
                                                 onChange={handleExcelUpload}
                                             />
+
                                             {excelFile ? (
-                                                <Box display="flex" justifyContent="center" alignItems="center">
+                                                <Box display="flex" justifyContent="center" alignItems="center" position="relative">
                                                     <InsertDriveFileIcon sx={{ fontSize: 40, color: "#1976d2" }} />
                                                     <Typography sx={{ ml: 2 }}>{excelFile.name}</Typography>
+                                                    <Tooltip title="Remove file">
+                                                        <IconButton
+                                                            onClick={(e) => {
+                                                                e.stopPropagation(); // prevent re-triggering upload
+                                                                setExcelFile(null);  // clear file from state
+                                                                document.getElementById("excelInput").value = null; // reset input value
+                                                            }}
+                                                            sx={{ ml: 2 }}
+                                                        >
+                                                            <DeleteIcon color="error" />
+                                                        </IconButton>
+                                                    </Tooltip>
                                                 </Box>
                                             ) : (
                                                 <Box>
                                                     <CloudUploadIcon sx={{ fontSize: 40, color: "#1976d2" }} />
                                                     <Typography>Click or Drag Excel file here</Typography>
-                                                    <Typography variant="body2" color="textSecondary"> Please upload the Excel file for serial numbers (Max 5MB, only .xlsx/.xls)</Typography>
+                                                    <Typography variant="body2" color="textSecondary">
+                                                        Please upload the Excel file for serial numbers (Max 5MB, only .xlsx/.xls)
+                                                    </Typography>
                                                 </Box>
                                             )}
                                         </Box>
@@ -763,7 +779,7 @@ const EditInvoice = () => {
                                     variant="outlined"
                                     color="primary"
                                     disabled={loading}
-                                    onClick={() => handlePreview(invoiceURL)}
+                                    onClick={() => handlePreview(invoiceURL || previewUrl)}
                                 >
                                     {loading ? 'Generating Preview...' : 'Preview Old PO'}
                                 </Button>
@@ -776,7 +792,7 @@ const EditInvoice = () => {
                                 >
                                     {loading ? "Submitting..." : "Update Invoice"}
                                 </Button>
-                               
+
                             </Box>
                         </form>
                     </CardContent>
