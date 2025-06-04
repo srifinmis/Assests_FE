@@ -294,6 +294,8 @@ import {
   RequestQuote,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import CorporateFareIcon from '@mui/icons-material/CorporateFare';
 import GroupIcon from "@mui/icons-material/Group";
 import SrifinLogo from "../assets/srifin_final.svg";
 import EditIcon from '@mui/icons-material/Edit';
@@ -344,7 +346,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
   ], []);
 
   const hoUserMenuItems = useMemo(() => [
-    { text: "Bulk Upload", icon: <CloudUpload />, path: "/ho-user/bulk-upload" },
+    { text: "Bulk Upload", icon: <CloudUpload />, path: "/ho-user/credit_bulk-upload" },
     { text: "RO", icon: <EditIcon />, path: "/ho-user/ro" },
     { text: "BO", icon: <RequestQuote />, path: "/ho-user/bo" },
     { text: "Customer", icon: <ReceiptLong />, path: "/ho-user/customer" },
@@ -537,7 +539,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
                 aria-haspopup="true"
               >
                 <ListItemIcon>
-                  <AddCircle sx={{ color: "#93C5FD" }} />
+                  <CorporateFareIcon sx={{ color: "#93C5FD" }} />
                 </ListItemIcon>
                 <ListItemText primary="HO USER" />
                 {activeDropdown === "hoUser" ? <ExpandLess /> : <ExpandMore />}
@@ -576,7 +578,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
                 <ListItemIcon>
                   <AddCircle sx={{ color: "#93C5FD" }} />
                 </ListItemIcon>
-                <ListItemText primary= "BO USER" />
+                <ListItemText primary="BO USER" />
                 {activeDropdown === "boUser" ? <ExpandLess /> : <ExpandMore />}
               </ListItemButton>
               <Collapse
