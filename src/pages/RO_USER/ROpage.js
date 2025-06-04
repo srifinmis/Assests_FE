@@ -150,8 +150,6 @@
 //     );
 // };
 // export default RO;
-
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
@@ -173,7 +171,7 @@ import {
 } from "@mui/material";
 import Navbar from "../Navbar";
 
-const RO = () => {
+const ROPage = () => {
     const [ros, setROs] = useState([]);
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(15);
@@ -220,11 +218,31 @@ const RO = () => {
         }));
     };
 
-    const handleAccept = () => {
-        const selected = ros.filter((row) => selectedRows[row.instakit_no]);
-        console.log("Accepted rows:", selected);
-        // Perform accept action here...
+    // const handleAccept = () => {
+    //     const selected = ros.filter((row) => selectedRows[row.instakit_no]);
+    //     console.log("Accepted rows:", selected);
+    //     // Perform accept action here...
+    // };
+    const handleAccept = async () => {
+        const selectedDocketIds = ros
+            .filter((row) => selectedRows[row.instakit_no])
+            .map((row) => row.instakit_no);
+
+        try {
+            const response = await axios.post("http://localhost:2727/api/ros/accept", {
+                docketIds: selectedDocketIds
+            });
+
+            console.log("Success:", response.data);
+            alert("Selected rows accepted successfully.");
+            fetchROs(); // Refresh the data
+            setSelectedRows({}); // Clear selection
+        } catch (error) {
+            console.error("Accept failed:", error);
+            alert("Failed to accept selected rows.");
+        }
     };
+
 
     return (
         <>
@@ -350,4 +368,4 @@ const RO = () => {
     );
 };
 
-export default RO;
+export default ROPage;

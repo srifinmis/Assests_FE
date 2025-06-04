@@ -353,7 +353,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
   ], []);
 
   const roUserMenuItems = useMemo(() => [
-    // { text: "Bulk Upload", icon: <CloudUpload />, path: "/ro-user/bulk-upload" },
+    { text: "Bulk Upload", icon: <CloudUpload />, path: "/ro-user/bulk-upload" },
     { text: "RO", icon: <EditIcon />, path: "/ho-user/ropage" },
     { text: "Assign TO BO", icon: <EditIcon />, path: "/ho-user/roassign " },
     { text: "BO", icon: <RequestQuote />, path: "/ro-user/bo" },
