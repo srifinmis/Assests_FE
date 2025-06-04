@@ -230,7 +230,7 @@ const BulkUpload = () => {
               startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <UploadFile />}
               onClick={handleUpload}
               disabled={Object.keys(excelData).length === 0 || loading}
-              sx={{ mt: 2, width: "100%" }}
+              sx={{ mt: 2, width: "30%" }}
             >
               {loading ? "Uploading..." : "Submit Data"}
             </Button>
@@ -238,7 +238,7 @@ const BulkUpload = () => {
             {Object.keys(excelData).length > 0 && (
               <>
                 <Typography variant="h6" sx={{ mt: 4, mb: 1, fontWeight: "bold" }}>
-                  📊 Preview
+                  📊 Preview Uploading Data
                 </Typography>
                 <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", mb: 2 }}>
                   <Tabs

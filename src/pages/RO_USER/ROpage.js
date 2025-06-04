@@ -30,7 +30,7 @@ const RO = () => {
         try {
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
             const emp_id = loggedInUser.emp_id;
-            const response = await axios.get("http://localhost:2727/api/ros/details", {
+            const response = await axios.get("http://localhost:2727/api/ros/detailslog", {
                 headers: {
                     "emp_id": emp_id
                 }
@@ -149,5 +149,4 @@ const RO = () => {
         </>
     );
 };
-
 export default RO;
