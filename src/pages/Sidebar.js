@@ -348,23 +348,23 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
   const hoUserMenuItems = useMemo(() => [
     { text: "Bulk Upload", icon: <CloudUpload />, path: "/ho-user/credit_bulk-upload" },
     { text: "RO", icon: <EditIcon />, path: "/ho-user/ro" },
-    { text: "BO", icon: <RequestQuote />, path: "/ho-user/bo" },
-    { text: "Customer", icon: <ReceiptLong />, path: "/ho-user/customer" },
+    // { text: "BO", icon: <RequestQuote />, path: "/ho-user/bo" },
+    // { text: "Customer", icon: <ReceiptLong />, path: "/ho-user/customer" },
   ], []);
 
   const roUserMenuItems = useMemo(() => [
-    { text: "Bulk Upload", icon: <CloudUpload />, path: "/ro-user/bulk-upload" },
+    // { text: "Bulk Upload", icon: <CloudUpload />, path: "/ro-user/bulk-upload" },
     { text: "RO Accept", icon: <EditIcon />, path: "/ho-user/ropage" },
-    { text: "Assign TO BO", icon: <EditIcon />, path: "/ho-user/roassign " },
-    { text: "BO", icon: <RequestQuote />, path: "/ro-user/bo" },
+    { text: "Assign TO Branch", icon: <ReceiptLong />, path: "/ho-user/roassign " },
+    // { text: "BO", icon: <RequestQuote />, path: "/ro-user/bo" },
     // { text: "Customer", icon: <ReceiptLong />, path: "/ro-user/customer" },
   ], []);
 
   const boUserMenuItems = useMemo(() => [
     // { text: "Bulk Upload", icon: <CloudUpload />, path: "/bo-user/bulk-upload" },
     // { text: "RO", icon: <EditIcon />, path: "/ho-user/ropage" },
-    { text: "BO", icon: <RequestQuote />, path: "/ro-user/bo" },
-    { text: "Customer", icon: <ReceiptLong />, path: "/bo-user/customer" },
+    { text: "BO Accept", icon: <RequestQuote />, path: "/ro-user/boaccept" },
+    { text: "Assign to Customer", icon: <ReceiptLong />, path: "/bo-user/customer" },
   ], []);
 
   return (

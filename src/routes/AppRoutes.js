@@ -251,12 +251,11 @@ const AppRoutes = () => {
                 {/* HO User Routes */}
                 <Route path="/ho-user/credit_bulk-upload" element={<CreditBulkUpload />} />
                 <Route path="/ro-user/bulk-upload" element={<ROBulkUpload />} />
-                <Route path="/ho-user/bo" element={<BO />} />
                 <Route path="/ho-user/ro" element={<RO />} />
                 <Route path="/ho-user/ropage" element={<ROpage />} />
                 <Route path="/ho-user/roassign" element={<Roassign />} />
-                <Route path="/ho-user/customer" element={<Customer />} />
-
+                <Route path="/ho-user/bo" element={<BO />} />
+                <Route path="/bo-user/customer" element={<Customer />} />
               </Routes>
             </ProtectedRoute>
           }
