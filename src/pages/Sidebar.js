@@ -363,7 +363,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
   const boUserMenuItems = useMemo(() => [
     // { text: "Bulk Upload", icon: <CloudUpload />, path: "/bo-user/bulk-upload" },
     // { text: "RO", icon: <EditIcon />, path: "/ho-user/ropage" },
-    { text: "BO Accept", icon: <RequestQuote />, path: "/ro-user/boaccept" },
+    { text: "BO Accept", icon: <RequestQuote />, path: "/bo-user/bopage" },
     { text: "Assign to Customer", icon: <ReceiptLong />, path: "/bo-user/customer" },
   ], []);
 

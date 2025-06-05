@@ -178,6 +178,7 @@ import RO from "../pages/HO_USER/RO";
 import ROpage from "../pages/RO_USER/ROpage"
 import Roassign from "../pages/RO_USER/Roassign"
 import BO from "../pages/HO_USER/BO";
+import BOpage from "../pages/BO_USER/BOpage";
 import Customer from "../pages/HO_USER/Customer";
 
 // CIC
@@ -255,6 +256,7 @@ const AppRoutes = () => {
                 <Route path="/ho-user/ropage" element={<ROpage />} />
                 <Route path="/ho-user/roassign" element={<Roassign />} />
                 <Route path="/ho-user/bo" element={<BO />} />
+                 <Route path="/bo-user/bopage" element={<BOpage />} />
                 <Route path="/bo-user/customer" element={<Customer />} />
               </Routes>
             </ProtectedRoute>
