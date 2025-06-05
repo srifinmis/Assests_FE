@@ -1,0 +1,145 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import {
+    Box,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper,
+    Typography,
+    TextField,
+    MenuItem,
+    Pagination,
+    PaginationItem,
+} from "@mui/material";
+import Navbar from "../Navbar";
+
+const HOReport = () => {
+    const [ros, setROs] = useState([]);
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(15);
+
+    useEffect(() => {
+        fetchReport();
+    }, []);
+
+    const { API_CONFIG } = require('../../configuration');
+
+    const fetchReport = async () => {
+        try {
+            // const user = JSON.parse(localStorage.getItem("user") || "{}");
+            // const emp_id = user.emp_id;
+
+            const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
+            const emp_id = loggedInUser.emp_id;
+            const res = await axios.get(`${API_CONFIG.APIURL}/ros/ho-report`, {
+                headers: { emp_id }
+            });
+            setData(res.data);
+        } catch (err) {
+            console.error("Failed to fetch HO report:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const totalPages = Math.ceil(data.length / rowsPerPage);
+    const visibleData = data.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+
+    const columnHeaders = ["InstaKit NO.", "RO ID", "RO Name", "Assigned Status", "POD"];
+
+    return (
+        <>
+            <Navbar />
+            <Box sx={{ p: 2, maxWidth: "1230px", mx: "auto" }}>
+                <Typography variant="h4" align="center" sx={{ mb: 2, fontWeight: "bold" }}>
+                    Report
+                </Typography>
+
+                <TableContainer component={Paper} sx={{ maxHeight: "calc(100vh - 240px)" }}>
+                    <Table stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                {columnHeaders.map((header) => (
+                                    <TableCell
+                                        key={header}
+                                        sx={{
+                                            p: "4px",
+                                            fontSize: "0.78rem",
+                                            fontWeight: "bold",
+                                            backgroundColor: "lightgrey",
+                                            borderRight: "1px solid white",
+                                            borderLeft: "1px solid white",
+                                        }}
+                                    >
+                                        {header}
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {visibleData.map((ro, index) => (
+                                <TableRow key={index} hover>
+                                    <TableCell>{ro.docket_id}</TableCell>
+                                    <TableCell>{ro.ho_assigned_to}</TableCell>
+                                    <TableCell>{ro.ro_name}</TableCell>
+                                    <TableCell>{ro.status}</TableCell>
+                                    <TableCell>{ro.pod}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+
+                {/* Pagination */}
+                <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
+                    <TextField
+                        select
+                        value={rowsPerPage}
+                        onChange={(e) => {
+                            setRowsPerPage(parseInt(e.target.value));
+                            setPage(1);
+                        }}
+                        size="small"
+                        sx={{ width: 100 }}
+                    >
+                        {[5, 10, 15, 20, 25].map((val) => (
+                            <MenuItem key={val} value={val}>
+                                {val}
+                            </MenuItem>
+                        ))}
+                    </TextField>
+
+                    <Pagination
+                        count={totalPages}
+                        page={page}
+                        onChange={(_, newPage) => setPage(newPage)}
+                        variant="outlined"
+                        shape="rounded"
+                        showFirstButton
+                        showLastButton
+                        color="primary"
+                    />
+                </Box>
+
+                <Box sx={{ mt: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                        {ros.length === 0
+                            ? "No entries found"
+                            : `Showing ${(page - 1) * rowsPerPage + 1} to ${Math.min(
+                                page * rowsPerPage,
+                                ros.length
+                            )} of ${ros.length} entries`}
+                    </Typography>
+                </Box>
+            </Box>
+        </>
+    );
+};
+
+export default HOReport;

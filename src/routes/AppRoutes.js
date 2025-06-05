@@ -186,6 +186,7 @@ import Customer from "../pages/HO_USER/Customer";
 // CIC
 import CICReports from "../Components/Reports";
 import CICReupload from "../Components/Reupload";
+import HOReport from "../pages/HO_USER/HOReport";
 
 const ProtectedRoute = ({ children }) => {
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
@@ -252,6 +253,7 @@ const AppRoutes = () => {
                 <Route path="/components/Reupload" element={<CICReupload />} />
 
                 {/* HO User Routes */}
+                <Route path="/ho-user/roreport" element={<HOReport />} />
                 <Route path="/ho-user/credit_bulk-upload" element={<CreditBulkUpload />} />
                 <Route path="/ro-user/bulk-upload" element={<ROBulkUpload />} />
                 <Route path="/ho-user/rounassign" element={<RO />} />

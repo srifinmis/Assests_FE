@@ -264,7 +264,6 @@ const ROAssign = () => {
         }
 
         setFileName(file.name);
-        console.log("file Name: ", file.name)
         setUploadedFile(file);
 
         const reader = new FileReader();
@@ -273,11 +272,42 @@ const ROAssign = () => {
             const data = e.target.result;
             const workbook = XLSX.read(data, { type: "binary" });
             const allSheets = {};
+            const requiredColumns = ["Instakit", "Unit ID", "Unit Name", "Assignment Status", "Pod", "Remarks"];
+            const requiredColumnSet = new Set(requiredColumns);
+
+            let isValid = true;
+            let errorSheet = "";
 
             workbook.SheetNames.forEach((sheetName) => {
                 const sheet = workbook.Sheets[sheetName];
-                allSheets[sheetName] = XLSX.utils.sheet_to_json(sheet);
+                const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+                if (jsonData.length === 0) return;
+
+                const headers = Object.keys(jsonData[0]);
+                const headerSet = new Set(headers);
+
+                const hasAllRequired = requiredColumns.every(col => headerSet.has(col));
+                const isExactMatch = headerSet.size === requiredColumnSet.size &&
+                    [...headerSet].every(col => requiredColumnSet.has(col));
+
+                if (!hasAllRequired || !isExactMatch) {
+                    isValid = false;
+                    errorSheet = sheetName;
+                } else {
+                    allSheets[sheetName] = jsonData;
+                }
             });
+
+            if (!isValid) {
+                setSnackbarMessage(`❌ Sheet "${errorSheet}" must contain exactly these 6 columns: ${requiredColumns.join(", ")}`);
+                setSnackbarSeverity("error");
+                setOpenSnackbar(true);
+                setExcelData({});
+                setUploadedFile(null);
+                setFileName("");
+                return;
+            }
 
             setExcelData(allSheets);
             setActiveSheet(workbook.SheetNames[0]);
@@ -328,7 +358,7 @@ const ROAssign = () => {
         try {
             setLoading(true);
             console.log("bulk accept upload: ", formData)
-            await axios.post(`${API_CONFIG.APIURL}/bulk/upload-assignbo`, formData, {
+            await axios.post(`${API_CONFIG.APIURL}/bulk/upload-roassignbo`, formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
@@ -601,6 +631,16 @@ const ROAssign = () => {
                             sx={{ mt: 2, width: "30%" }}
                         >
                             {loading ? "Uploading..." : "Submit Data"}
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="secondary"
+                            component="a"
+                            href="/Format.xlsx"
+                            download
+                            sx={{ mt: 2, ml: 2, width: "25%" }}
+                        >
+                            Download Format
                         </Button>
 
                         {Object.keys(excelData).length > 0 && (

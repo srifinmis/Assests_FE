@@ -11,7 +11,7 @@ import * as XLSX from "xlsx";
 import axios from "axios";
 import Navbar from "../Navbar";
 
-const FileUploadButton = ({ onFileUpload }) => (
+const FileUploadButton = ({ onFileUpload, disabled }) => (
   <label htmlFor="upload-input">
     <input
       type="file"
@@ -19,8 +19,15 @@ const FileUploadButton = ({ onFileUpload }) => (
       onChange={onFileUpload}
       style={{ display: "none" }}
       id="upload-input"
+      disabled={disabled}
     />
-    <Button variant="contained" color="primary" component="span" startIcon={<CloudUpload />}>
+    <Button
+      variant="contained"
+      color="primary"
+      component="span"
+      startIcon={<CloudUpload />}
+      disabled={disabled}
+    >
       Upload Excel
     </Button>
   </label>
@@ -64,6 +71,7 @@ const BulkUpload = () => {
   const [rowsPerPage, setRowsPerPage] = useState(20);
   const [activeSheet, setActiveSheet] = useState("");
   const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploadFlag, setUploadFlag] = useState(""); // "RO" or "HO"
 
   const handleFileUpload = useCallback((event) => {
     const file = event.target.files[0];
@@ -84,7 +92,6 @@ const BulkUpload = () => {
     }
 
     setFileName(file.name);
-    console.log("file Name: ", file.name)
     setUploadedFile(file);
 
     const reader = new FileReader();
@@ -93,11 +100,42 @@ const BulkUpload = () => {
       const data = e.target.result;
       const workbook = XLSX.read(data, { type: "binary" });
       const allSheets = {};
+      const requiredColumns = ["Instakit", "Unit ID", "Unit Name", "Assignment Status", "Pod", "Remarks"];
+      const requiredColumnSet = new Set(requiredColumns);
+
+      let isValid = true;
+      let errorSheet = "";
 
       workbook.SheetNames.forEach((sheetName) => {
         const sheet = workbook.Sheets[sheetName];
-        allSheets[sheetName] = XLSX.utils.sheet_to_json(sheet);
+        const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+        if (jsonData.length === 0) return;
+
+        const headers = Object.keys(jsonData[0]);
+        const headerSet = new Set(headers);
+
+        const hasAllRequired = requiredColumns.every(col => headerSet.has(col));
+        const isExactMatch = headerSet.size === requiredColumnSet.size &&
+          [...headerSet].every(col => requiredColumnSet.has(col));
+
+        if (!hasAllRequired || !isExactMatch) {
+          isValid = false;
+          errorSheet = sheetName;
+        } else {
+          allSheets[sheetName] = jsonData;
+        }
       });
+
+      if (!isValid) {
+        setSnackbarMessage(`❌ Sheet "${errorSheet}" must contain exactly these 6 columns: ${requiredColumns.join(", ")}`);
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+        setExcelData({});
+        setUploadedFile(null);
+        setFileName("");
+        return;
+      }
 
       setExcelData(allSheets);
       setActiveSheet(workbook.SheetNames[0]);
@@ -105,11 +143,18 @@ const BulkUpload = () => {
     };
   }, []);
 
-  const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
+  const { API_CONFIG } = require('../../configuration');
 
   const handleUpload = async () => {
     if (!fileName || !uploadedFile) {
       setSnackbarMessage("❌ No file uploaded.");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
+
+    if (!uploadFlag) {
+      setSnackbarMessage("❌ Please select RO or HO.");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
@@ -120,13 +165,6 @@ const BulkUpload = () => {
     const isValid = activeData.every(row =>
       requiredFields.every(field => row[field] !== undefined && row[field] !== "")
     );
-
-    // if (!isValid) {
-    //   setSnackbarMessage("❌ Some rows are missing required fields.");
-    //   setSnackbarSeverity("error");
-    //   setOpenSnackbar(true);
-    //   return;
-    // }
 
     const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
     const requestedBy = loggedInUser.emp_id;
@@ -141,13 +179,10 @@ const BulkUpload = () => {
     const formData = new FormData();
     formData.append("file", uploadedFile);
     formData.append("requested_by", requestedBy);
+    formData.append("flag", uploadFlag); // append the flag
 
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ':', pair[1]);
-    }
     try {
       setLoading(true);
-      console.log("bulk upload: ", formData)
       await axios.post(`${API_CONFIG.APIURL}/bulk/upload-ho`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -159,6 +194,7 @@ const BulkUpload = () => {
       setExcelData({});
       setFileName("");
       setUploadedFile(null);
+      setUploadFlag("");
     } catch (error) {
       const errMsg = error?.response?.data?.message || "❌ Error uploading data. Please try again.";
       setSnackbarMessage(errMsg);
@@ -182,15 +218,41 @@ const BulkUpload = () => {
       <Box sx={{ p: 4, maxWidth: 1000, mx: "auto" }}>
         <Card elevation={3} sx={{ p: 3, borderRadius: 2 }}>
           <CardContent>
-            <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold", color: "primary.main" }}>
-              📂 Bulk Upload Excel (.xlsx)
-            </Typography>
+            <Box xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+              Select Assign :
+              <label style={{ marginLeft: "1rem" }}>
+                <input
+                  type="checkbox"
+                  checked={uploadFlag === "RO"}
+                  onChange={() => setUploadFlag(uploadFlag === "RO" ? "" : "RO")}
+                  disabled={uploadFlag === "BO"}
+                  style={{ transform: "scale(1.5)", marginRight: "0.5rem" }}
+                />
+                RO
+              </label>
+              <label style={{ marginLeft: "1rem" }}>
+                <input
+                  type="checkbox"
+                  checked={uploadFlag === "BO"}
+                  onChange={() => setUploadFlag(uploadFlag === "BO" ? "" : "BO")}
+                  disabled={uploadFlag === "RO"}
+                  style={{ transform: "scale(1.5)", marginRight: "0.5rem" }}
+                />
+                BO
+              </label>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <Typography variant="h5" sx={{ fontWeight: "bold", color: "primary.main" }}>
+                📂 Bulk Upload Excel (.xlsx)
+              </Typography>
+
+            </Box>
 
             <Box
               onDrop={(e) => {
                 e.preventDefault();
                 const file = e.dataTransfer.files[0];
-                if (file && file.name.endsWith(".xlsx")) {
+                if (file && file.name.endsWith(".xlsx") && uploadFlag) {
                   handleFileUpload({ target: { files: [file] } });
                 }
               }}
@@ -204,7 +266,7 @@ const BulkUpload = () => {
               }}
             >
               <Typography>Drag & drop Excel file here or click below to upload</Typography>
-              <FileUploadButton onFileUpload={handleFileUpload} />
+              <FileUploadButton onFileUpload={handleFileUpload} disabled={!uploadFlag} />
             </Box>
 
             <Grid container spacing={2} alignItems="center">
@@ -233,6 +295,16 @@ const BulkUpload = () => {
               sx={{ mt: 2, width: "30%" }}
             >
               {loading ? "Uploading..." : "Submit Data"}
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              component="a"
+              href="/Format.xlsx"
+              download
+              sx={{ mt: 2,ml:2, width: "25%" }}
+            >
+              Download Format
             </Button>
 
             {Object.keys(excelData).length > 0 && (

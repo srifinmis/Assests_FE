@@ -327,7 +327,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
 
   const isModuleAllowed = (moduleName) => allowedModules.includes(moduleName);
 
-  // Memoized menu items to avoid re-creation on every render
   const approvalMenuItems = useMemo(() => [
     { text: "Free Pool", icon: <CheckCircle />, path: "/approval/free-pool" },
     { text: "Assigned", icon: <Assignment />, path: "/approval/assigned" },
@@ -346,7 +345,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
   ], []);
 
   const hoUserMenuItems = useMemo(() => [
-    { text: "Bulk Upload to RO", icon: <CloudUpload />, path: "/ho-user/credit_bulk-upload" },
+    { text: "Report", icon: <EditIcon />, path: "/ho-user/roreport" },
+    { text: "Assign", icon: <CloudUpload />, path: "/ho-user/credit_bulk-upload" },
     // { text: "RO Unassign", icon: <EditIcon />, path: "/ho-user/rounassign" },
     // { text: "BO", icon: <RequestQuote />, path: "/ho-user/bo" },
     // { text: "Customer", icon: <ReceiptLong />, path: "/ho-user/customer" },
