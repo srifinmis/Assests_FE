@@ -346,16 +346,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
   ], []);
 
   const hoUserMenuItems = useMemo(() => [
-    { text: "Bulk Upload", icon: <CloudUpload />, path: "/ho-user/credit_bulk-upload" },
-    { text: "RO", icon: <EditIcon />, path: "/ho-user/ro" },
+    { text: "Bulk Upload to RO", icon: <CloudUpload />, path: "/ho-user/credit_bulk-upload" },
+    // { text: "RO Unassign", icon: <EditIcon />, path: "/ho-user/rounassign" },
     // { text: "BO", icon: <RequestQuote />, path: "/ho-user/bo" },
     // { text: "Customer", icon: <ReceiptLong />, path: "/ho-user/customer" },
   ], []);
 
   const roUserMenuItems = useMemo(() => [
     // { text: "Bulk Upload", icon: <CloudUpload />, path: "/ro-user/bulk-upload" },
-    { text: "RO Accept", icon: <EditIcon />, path: "/ho-user/ropage" },
-    { text: "Assign TO Branch", icon: <ReceiptLong />, path: "/ho-user/roassign " },
+    { text: "Accept", icon: <EditIcon />, path: "/ho-user/ropage" },
+    // { text: "BO Unassign", icon: <EditIcon />, path: "/bo-user/bounassign" },
+    { text: "Assign", icon: <ReceiptLong />, path: "/ho-user/roassign" },
     // { text: "BO", icon: <RequestQuote />, path: "/ro-user/bo" },
     // { text: "Customer", icon: <ReceiptLong />, path: "/ro-user/customer" },
   ], []);
@@ -363,8 +364,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
   const boUserMenuItems = useMemo(() => [
     // { text: "Bulk Upload", icon: <CloudUpload />, path: "/bo-user/bulk-upload" },
     // { text: "RO", icon: <EditIcon />, path: "/ho-user/ropage" },
-    { text: "BO Accept", icon: <RequestQuote />, path: "/bo-user/bopage" },
-    { text: "Assign to Customer", icon: <ReceiptLong />, path: "/bo-user/customer" },
+    { text: "Accept", icon: <RequestQuote />, path: "/bo-user/bopage" },
+    { text: "Assign", icon: <ReceiptLong />, path: "/bo-user/customerMain" },
   ], []);
 
   return (
@@ -545,7 +546,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
                 <ListItemIcon>
                   <CorporateFareIcon sx={{ color: "#93C5FD" }} />
                 </ListItemIcon>
-                <ListItemText primary="HO USER" />
+                <ListItemText primary="MENU" />
                 {activeDropdown === "hoUser" ? <ExpandLess /> : <ExpandMore />}
               </ListItemButton>
               <Collapse
@@ -582,7 +583,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
                 <ListItemIcon>
                   <AddCircle sx={{ color: "#93C5FD" }} />
                 </ListItemIcon>
-                <ListItemText primary="BO USER" />
+                <ListItemText primary="MENU" />
                 {activeDropdown === "boUser" ? <ExpandLess /> : <ExpandMore />}
               </ListItemButton>
               <Collapse
@@ -619,7 +620,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
                 <ListItemIcon>
                   <AddCircle sx={{ color: "#93C5FD" }} />
                 </ListItemIcon>
-                <ListItemText primary="RO USER" />
+                <ListItemText primary="MENU" />
                 {activeDropdown === "roUser" ? <ExpandLess /> : <ExpandMore />}
               </ListItemButton>
               <Collapse

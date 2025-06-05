@@ -14,6 +14,8 @@ import {
     MenuItem,
     Pagination,
     PaginationItem,
+    Checkbox,
+    Button,
 } from "@mui/material";
 import Navbar from "../Navbar";
 
@@ -21,6 +23,7 @@ const RO = () => {
     const [ros, setROs] = useState([]);
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(15);
+    const [selectedRows, setSelectedRows] = useState({});
 
     useEffect(() => {
         fetchROs();
@@ -31,21 +34,72 @@ const RO = () => {
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
             const emp_id = loggedInUser.emp_id;
             const response = await axios.get("http://localhost:2727/api/ros/details", {
-                headers: {
-                    "emp_id": emp_id
-                }
+                headers: { emp_id }
             });
-            setROs(response.data);
+
+            const processedData = response.data.map((ro) => ({
+                ...ro,
+                assigned_status: ro.assigned_status 
+            }));
+
+            setROs(processedData);
         } catch (error) {
             console.error("Error fetching ros:", error);
         }
     };
 
-
     const totalPages = Math.ceil(ros.length / rowsPerPage);
     const visibleData = ros.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
     const columnHeaders = ["InstaKit NO.", "RO ID", "RO Name", "Assigned Status", "POD"];
+
+    const allVisibleSelected = visibleData.every(row => selectedRows[row.instakit_no]);
+    const anySelected = Object.values(selectedRows).some(Boolean);
+
+    const handleSelectAll = (e) => {
+        const checked = e.target.checked;
+        const updatedSelections = { ...selectedRows };
+        visibleData.forEach((row) => {
+            updatedSelections[row.instakit_no] = checked;
+        });
+        setSelectedRows(updatedSelections);
+    };
+
+    const handleRowSelect = (instakit_no) => {
+        setSelectedRows((prev) => ({
+            ...prev,
+            [instakit_no]: !prev[instakit_no]
+        }));
+    };
+
+
+    const handleUnassign = async () => {
+        const selectedDocketIds = ros
+            .filter((row) => selectedRows[row.instakit_no])
+            .map((row) => row.instakit_no);
+
+        try {
+            await axios.post("http://localhost:2727/api/ros/unassign", { docketIds: selectedDocketIds });
+            alert("Selected rows unassigned successfully.");
+            const updatedROs = ros.map((row) => {
+                if (selectedDocketIds.includes(row.instakit_no)) {
+                    return {
+                        ...row,
+                        assigned_status: "",
+                        unit_id: "",
+                        unit_name: "",
+                        po_number: ""
+                    };
+                }
+                return row;
+            });
+            setROs(updatedROs);
+            setSelectedRows({});
+        } catch (error) {
+            console.error("Unassign failed:", error);
+            alert("Failed to unassign selected rows.");
+        }
+    };
 
     return (
         <>
@@ -60,6 +114,22 @@ const RO = () => {
                     <Table stickyHeader>
                         <TableHead>
                             <TableRow>
+                                <TableCell padding="checkbox"
+                                    sx={{
+                                        p: "4px",
+                                        fontSize: "0.78rem",
+                                        fontWeight: "bold",
+                                        backgroundColor: "lightgrey",
+                                        borderRight: "1px solid white",
+                                        borderLeft: "1px solid white",
+                                    }}
+                                >
+                                    <Checkbox
+                                        checked={allVisibleSelected && visibleData.length > 0}
+                                        onChange={handleSelectAll}
+                                        indeterminate={anySelected && !allVisibleSelected}
+                                    />
+                                </TableCell>
                                 {columnHeaders.map((header) => (
                                     <TableCell
                                         key={header}
@@ -80,6 +150,12 @@ const RO = () => {
                         <TableBody>
                             {visibleData.map((ro, index) => (
                                 <TableRow key={index} hover>
+                                    <TableCell padding="checkbox">
+                                        <Checkbox
+                                            checked={!!selectedRows[ro.instakit_no]}
+                                            onChange={() => handleRowSelect(ro.instakit_no)}
+                                        />
+                                    </TableCell>
                                     <TableCell>{ro.instakit_no}</TableCell>
                                     <TableCell>{ro.unit_id}</TableCell>
                                     <TableCell>{ro.unit_name}</TableCell>
@@ -112,6 +188,15 @@ const RO = () => {
                             ))}
                         </TextField>
                     </Box>
+
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleUnassign}
+                        disabled={!anySelected}
+                    >
+                        Unassign
+                    </Button>
 
                     <Pagination
                         count={totalPages}

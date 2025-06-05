@@ -179,6 +179,8 @@ import ROpage from "../pages/RO_USER/ROpage"
 import Roassign from "../pages/RO_USER/Roassign"
 import BO from "../pages/HO_USER/BO";
 import BOpage from "../pages/BO_USER/BOpage";
+import CustomerMain from "../pages/BO_USER/CustomerMain"
+import Customermaker from "../pages/BO_USER/CustomerEdit"
 import Customer from "../pages/HO_USER/Customer";
 
 // CIC
@@ -252,11 +254,13 @@ const AppRoutes = () => {
                 {/* HO User Routes */}
                 <Route path="/ho-user/credit_bulk-upload" element={<CreditBulkUpload />} />
                 <Route path="/ro-user/bulk-upload" element={<ROBulkUpload />} />
-                <Route path="/ho-user/ro" element={<RO />} />
+                <Route path="/ho-user/rounassign" element={<RO />} />
                 <Route path="/ho-user/ropage" element={<ROpage />} />
                 <Route path="/ho-user/roassign" element={<Roassign />} />
                 <Route path="/ho-user/bo" element={<BO />} />
-                 <Route path="/bo-user/bopage" element={<BOpage />} />
+                <Route path="/bo-user/bopage" element={<BOpage />} />
+                <Route path="/bo-user/customerMain" element={<CustomerMain />} />
+                <Route path="/bo-user/customeredit/:docket_id" element={<Customermaker />} />
                 <Route path="/bo-user/customer" element={<Customer />} />
               </Routes>
             </ProtectedRoute>

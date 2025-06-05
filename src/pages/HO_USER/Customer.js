@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Grid, TextField, Button, Typography, Alert } from '@mui/material';
 import axios from 'axios';
 import Navbar from '../Navbar';
+import { useLocation, useNavigate } from "react-router-dom";
 
 const AssignToCustomer = () => {
     const [formData, setFormData] = useState({
@@ -10,7 +11,7 @@ const AssignToCustomer = () => {
         instakitNo: '',
         issuedDate: '',
     });
-
+    const navigate = useNavigate();
     const [errors, setErrors] = useState({});
     const [submitStatus, setSubmitStatus] = useState('');
     const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
@@ -52,6 +53,8 @@ const AssignToCustomer = () => {
         try {
             console.log("API Payload: ", payload);
             const response = await axios.post(`${API_CONFIG.APIURL}/bo/createcustomer`, payload);
+            alert('✅ Assigned successfully');
+            navigate("/bo-user/customerMain")
             setSubmitStatus('✅ Assigned successfully');
             console.log(response.data);
 
