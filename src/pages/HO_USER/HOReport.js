@@ -32,14 +32,13 @@ const HOReport = () => {
 
     const fetchReport = async () => {
         try {
-            // const user = JSON.parse(localStorage.getItem("user") || "{}");
-            // const emp_id = user.emp_id;
 
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
             const emp_id = loggedInUser.emp_id;
             const res = await axios.get(`${API_CONFIG.APIURL}/ros/ho-report`, {
                 headers: { emp_id }
             });
+            console.log("response report data: ", res.data.ho_assigned_to)
             setData(res.data);
         } catch (err) {
             console.error("Failed to fetch HO report:", err);
@@ -51,7 +50,7 @@ const HOReport = () => {
     const totalPages = Math.ceil(data.length / rowsPerPage);
     const visibleData = data.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-    const columnHeaders = ["InstaKit NO.", "Unit ID", "Unit Name", "Assigned Status", "POD"];
+    const columnHeaders = ["InstaKit NO.", "Unit ID", "Unit Name", "Assigned Date", "Status"];
 
     return (
         <>
@@ -88,8 +87,8 @@ const HOReport = () => {
                                     <TableCell>{ro.docket_id}</TableCell>
                                     <TableCell>{ro.ho_assigned_to}</TableCell>
                                     <TableCell>{ro.ro_name || ro.bo_name}</TableCell>
+                                    <TableCell>{ro.ho_assigned_date}</TableCell>
                                     <TableCell>{ro.status}</TableCell>
-                                    <TableCell>{ro.pod}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

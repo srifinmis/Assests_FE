@@ -181,6 +181,7 @@ import Roassign from "../pages/RO_USER/Roassign"
 import BOReport from "../pages/BO_USER/BOReport";
 import BO from "../pages/HO_USER/BO";
 import BOpage from "../pages/BO_USER/BOpage";
+import BOassign from "../pages/BO_USER/BOassign";
 import CustomerMain from "../pages/BO_USER/CustomerMain"
 import Customermaker from "../pages/BO_USER/CustomerEdit"
 import Customer from "../pages/HO_USER/Customer";
@@ -265,7 +266,8 @@ const AppRoutes = () => {
                 <Route path="/bo-user/boreport" element={<BOReport />} />
                 <Route path="/ho-user/bo" element={<BO />} />
                 <Route path="/bo-user/bopage" element={<BOpage />} />
-                <Route path="/bo-user/customerMain" element={<CustomerMain />} />
+                <Route path="/bo-user/boassign" element={<BOassign />} />
+                <Route path="/bo-user/assign-bo" element={<CustomerMain />} />
                 <Route path="/bo-user/customeredit/:docket_id" element={<Customermaker />} />
                 <Route path="/bo-user/customer" element={<Customer />} />
               </Routes>

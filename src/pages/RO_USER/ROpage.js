@@ -384,7 +384,7 @@ const ROPage = () => {
     const totalPages = Math.ceil(ros.length / rowsPerPage);
     const visibleData = ros.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-    const columnHeaders = ["InstaKit NO.", "RO ID", "RO Name", "Assigned Date", "Assigned Status", "POD"];
+    const columnHeaders = ["InstaKit NO.", "RO ID", "RO Name", "Assigned Date", "Status", "POD"];
 
     const allVisibleSelected = visibleData.every(row => selectedRows[row.instakit_no]);
     const anySelected = Object.values(selectedRows).some(Boolean);
@@ -621,7 +621,7 @@ const ROPage = () => {
                             variant="contained"
                             color="secondary"
                             component="a"
-                            href="/Format.xlsx"
+                            href="/Formate.xlsx"
                             download
                             sx={{ mt: 2, ml: 2, width: "25%" }}
                         >

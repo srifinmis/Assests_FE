@@ -51,7 +51,7 @@ const BOReport = () => {
     const totalPages = Math.ceil(data.length / rowsPerPage);
     const visibleData = data.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-    const columnHeaders = ["InstaKit NO.", "Unit ID", "Assigned Date", "Assigned Status", "POD"];
+    const columnHeaders = ["InstaKit NO.", "Unit ID", "Assigned Date", "Status", "POD"];
 
     return (
         <>

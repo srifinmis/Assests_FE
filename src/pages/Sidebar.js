@@ -353,21 +353,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
   ], []);
 
   const roUserMenuItems = useMemo(() => [
-    // { text: "Bulk Upload", icon: <CloudUpload />, path: "/ro-user/bulk-upload" },
     { text: "Report", icon: <Assignment />, path: "/ro-user/roreport" },
     { text: "Accept", icon: <EditIcon />, path: "/ho-user/ropage" },
-    // { text: "BO Unassign", icon: <EditIcon />, path: "/bo-user/bounassign" },
     { text: "Assign", icon: <ReceiptLong />, path: "/ho-user/roassign" },
-    // { text: "BO", icon: <RequestQuote />, path: "/ro-user/bo" },
-    // { text: "Customer", icon: <ReceiptLong />, path: "/ro-user/customer" },
   ], []);
 
   const boUserMenuItems = useMemo(() => [
-    // { text: "Bulk Upload", icon: <CloudUpload />, path: "/bo-user/bulk-upload" },
-    // { text: "RO", icon: <EditIcon />, path: "/ho-user/ropage" },
     { text: "Report", icon: <Assignment />, path: "/bo-user/boreport" },
     { text: "Accept", icon: <RequestQuote />, path: "/bo-user/bopage" },
-    { text: "Assign", icon: <ReceiptLong />, path: "/bo-user/customerMain" },
+    { text: "Assign", icon: <ReceiptLong />, path: "/bo-user/boassign" },
   ], []);
 
   return (

@@ -200,8 +200,9 @@ const ROReport = () => {
         "InstaKit NO.",
         "UNIT ID",
         "UNIT Name",
+        "Issued Date",
         "Assigned Date",
-        "Assigned Status",
+        "Status",
         "Remarks"
     ];
 
@@ -246,6 +247,7 @@ const ROReport = () => {
                                             <TableCell>{ro.docket_id}</TableCell>
                                             <TableCell>{ro.ro_assigned_to}</TableCell>
                                             <TableCell>{ro.bo_name}</TableCell>
+                                            <TableCell>{ro.ho_assigned_date}</TableCell>
                                             <TableCell>{ro.ro_assigned_date}</TableCell>
                                             <TableCell>{ro.ro_status}</TableCell>
                                             <TableCell>{ro.remarks}</TableCell>
