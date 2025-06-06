@@ -33,7 +33,7 @@ const RO = () => {
         try {
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
             const emp_id = loggedInUser.emp_id;
-            const response = await axios.get("http://localhost:2727/api/ros/details", {
+            const response = await axios.get(`${API_CONFIG.APIURL}/ros/details`, {
                 headers: { emp_id }
             });
 
@@ -79,7 +79,7 @@ const RO = () => {
             .map((row) => row.instakit_no);
 
         try {
-            await axios.post("http://localhost:2727/api/ros/unassign", { docketIds: selectedDocketIds });
+            await axios.post(`${API_CONFIG.APIURL}/ros/unassign`, { docketIds: selectedDocketIds });
             alert("Selected rows unassigned successfully.");
             const updatedROs = ros.map((row) => {
                 if (selectedDocketIds.includes(row.instakit_no)) {

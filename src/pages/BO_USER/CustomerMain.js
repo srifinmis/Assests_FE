@@ -232,7 +232,7 @@ const CustomerMain = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get("http://localhost:2727/api/bos/instakits")
+        axios.get(`${API_CONFIG.APIURL}//bos/instakits`)
             .then((res) => {
                 setInstakitOptions(res.data);
             })
@@ -265,7 +265,7 @@ const CustomerMain = () => {
                 requestedBy: loggedInUser.emp_id || "SYSTEM",
             };
 
-            const response = await axios.post("http://localhost:2727/api/bo/createcustomer", payload);
+            const response = await axios.post(`${API_CONFIG.APIURL}/bo/createcustomer`, payload);
             if (response.ok) {
                 alert(response.data.message);
                 navigate("/bo-user/boassign");

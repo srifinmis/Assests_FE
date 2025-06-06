@@ -15,7 +15,6 @@ const BOassign = () => {
     const [rowsPerPage, setRowsPerPage] = useState(15);
     const [selectedRows, setSelectedRows] = useState({});
     const navigate = useNavigate();
-
     useEffect(() => {
         fetchBOs();
     }, []);
@@ -24,7 +23,7 @@ const BOassign = () => {
         try {
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
             const emp_id = loggedInUser.emp_id;
-            const response = await axios.get("http://localhost:2727/api/bos/detailsassign", {
+            const response = await axios.get(`${API_CONFIG.APIURL}/bos/detailsassign`, {
                 headers: { "emp_id": emp_id }
             });
             setBOs(response.data);
@@ -91,7 +90,7 @@ const BOassign = () => {
                                             variant="contained"
                                             size="small"
                                             onClick={() => handleAssign(bo)}
-                                            // disabled={bo.assigned_status === "Y"}
+                                        // disabled={bo.assigned_status === "Y"}
                                         >
                                             Assign
                                         </Button>

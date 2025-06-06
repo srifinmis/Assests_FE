@@ -79,7 +79,7 @@ const BOPage = () => {
         try {
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
             const emp_id = loggedInUser.emp_id;
-            const response = await axios.get("http://localhost:2727/api/bos/detailslog", {
+            const response = await axios.get(`${API_CONFIG.APIURL}//bos/detailslog`, {
                 headers: { "emp_id": emp_id }
             });
             setBOs(response.data);
@@ -263,7 +263,7 @@ const BOPage = () => {
             .map((row) => row.instakit_no);
 
         try {
-            const response = await axios.post("http://localhost:2727/api/bos/accept", {
+            const response = await axios.post(`${API_CONFIG.APIURL}/bos/accept`, {
                 docketIds: selectedDocketIds
             });
 
