@@ -17,8 +17,8 @@ import {
 } from "@mui/material";
 import Navbar from "../Navbar";
 
-const HOReport = () => {
-    const [ros, setROs] = useState([]);
+const BOReport = () => {
+    const [bos, setBOs] = useState([]);
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
@@ -37,12 +37,12 @@ const HOReport = () => {
 
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
             const emp_id = loggedInUser.emp_id;
-            const res = await axios.get(`${API_CONFIG.APIURL}/ros/ho-report`, {
+            const res = await axios.get(`${API_CONFIG.APIURL}/bos/bo-report`, {
                 headers: { emp_id }
             });
             setData(res.data);
         } catch (err) {
-            console.error("Failed to fetch HO report:", err);
+            console.error("Failed to fetch BO report:", err);
         } finally {
             setLoading(false);
         }
@@ -51,7 +51,7 @@ const HOReport = () => {
     const totalPages = Math.ceil(data.length / rowsPerPage);
     const visibleData = data.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-    const columnHeaders = ["InstaKit NO.", "Unit ID", "Unit Name", "Assigned Status", "POD"];
+    const columnHeaders = ["InstaKit NO.", "Unit ID", "Assigned Date", "Assigned Status", "POD"];
 
     return (
         <>
@@ -83,13 +83,13 @@ const HOReport = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {visibleData.map((ro, index) => (
+                            {visibleData.map((bo, index) => (
                                 <TableRow key={index} hover>
-                                    <TableCell>{ro.docket_id}</TableCell>
-                                    <TableCell>{ro.ho_assigned_to}</TableCell>
-                                    <TableCell>{ro.ro_name || ro.bo_name}</TableCell>
-                                    <TableCell>{ro.status}</TableCell>
-                                    <TableCell>{ro.pod}</TableCell>
+                                    <TableCell>{bo.docket_id}</TableCell>
+                                    <TableCell>{bo.customer_id}</TableCell>
+                                    <TableCell>{bo.bo_assigned_date}</TableCell>                                   
+                                    <TableCell>{bo.bo_status}</TableCell>
+                                    <TableCell>{bo.pod}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -129,12 +129,12 @@ const HOReport = () => {
 
                 <Box sx={{ mt: 1 }}>
                     <Typography variant="body2" color="text.secondary">
-                        {ros.length === 0
+                        {bos.length === 0
                             ? "No entries found"
                             : `Showing ${(page - 1) * rowsPerPage + 1} to ${Math.min(
                                 page * rowsPerPage,
-                                ros.length
-                            )} of ${ros.length} entries`}
+                                bos.length
+                            )} of ${bos.length} entries`}
                     </Typography>
                 </Box>
             </Box>
@@ -142,4 +142,4 @@ const HOReport = () => {
     );
 };
 
-export default HOReport;
+export default BOReport;

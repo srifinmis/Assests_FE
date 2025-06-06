@@ -1,159 +1,6 @@
-// import React, { useState, useEffect } from "react";
-// import axios from "axios";
-// import {
-//     Box,
-//     Table,
-//     TableBody,
-//     TableCell,
-//     TableContainer,
-//     TableHead,
-//     TableRow,
-//     Paper,
-//     Typography,
-//     TextField,
-//     MenuItem,
-//     Pagination,
-//     PaginationItem,
-// } from "@mui/material";
-// import Navbar from "../Navbar";
-
-// const RO = () => {
-//     const [ros, setROs] = useState([]);
-//     const [page, setPage] = useState(1);
-//     const [rowsPerPage, setRowsPerPage] = useState(15);
-
-//     useEffect(() => {
-//         fetchROs();
-//     }, []);
-
-//     const fetchROs = async () => {
-//         try {
-//             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-//             const emp_id = loggedInUser.emp_id;
-//             const response = await axios.get("http://localhost:2727/api/ros/detailsassign", {
-//                 headers: {
-//                     "emp_id": emp_id
-//                 }
-//             });
-//             setROs(response.data);
-//         } catch (error) {
-//             console.error("Error fetching ros:", error);
-//         }
-//     };
-
-
-//     const totalPages = Math.ceil(ros.length / rowsPerPage);
-//     const visibleData = ros.slice((page - 1) * rowsPerPage, page * rowsPerPage);
-
-//     const columnHeaders = ["InstaKit NO.", "RO ID", "RO Name", "Assigned Status"];
-
-//     return (
-//         <>
-//             <Navbar />
-//             <Box sx={{ p: 2, width: "100%", maxWidth: "1230px", margin: "auto" }}>
-//                 {/* Centered Page Title Outside Table */}
-//                 <Typography variant="h4" align="center" sx={{ mb: 2, fontWeight: "bold" }}>
-//                     RO Assign
-//                 </Typography>
-
-//                 <TableContainer component={Paper} sx={{ maxHeight: "calc(100vh - 240px)", overflowY: "auto" }}>
-//                     <Table stickyHeader>
-//                         <TableHead>
-//                             <TableRow>
-//                                 {columnHeaders.map((header) => (
-//                                     <TableCell
-//                                         key={header}
-//                                         sx={{
-//                                             p: "4px",
-//                                             fontSize: "0.78rem",
-//                                             fontWeight: "bold",
-//                                             backgroundColor: "lightgrey",
-//                                             borderRight: "1px solid white",
-//                                             borderLeft: "1px solid white",
-//                                         }}
-//                                     >
-//                                         {header}
-//                                     </TableCell>
-//                                 ))}
-//                             </TableRow>
-//                         </TableHead>
-//                         <TableBody>
-//                             {visibleData.map((ro, index) => (
-//                                 <TableRow key={index} hover>
-//                                     <TableCell>{ro.instakit_no}</TableCell>
-//                                     <TableCell>{ro.unit_id}</TableCell>
-//                                     <TableCell>{ro.unit_name}</TableCell>
-//                                     <TableCell>{ro.assigned_status}</TableCell>
-//                                     {/* <TableCell>{ro.po_number}</TableCell> */}
-//                                 </TableRow>
-//                             ))}
-//                         </TableBody>
-//                     </Table>
-//                 </TableContainer>
-
-//                 {/* Pagination and Footer */}
-//                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", my: 2, px: 2 }}>
-//                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-//                         <Typography variant="body2">Rows per page:</Typography>
-//                         <TextField
-//                             select
-//                             size="small"
-//                             value={rowsPerPage}
-//                             onChange={(e) => {
-//                                 setRowsPerPage(parseInt(e.target.value, 10));
-//                                 setPage(1);
-//                             }}
-//                             sx={{ width: 80 }}
-//                         >
-//                             {[5, 10, 15, 20, 25, 50, 75].map((option) => (
-//                                 <MenuItem key={option} value={option}>
-//                                     {option}
-//                                 </MenuItem>
-//                             ))}
-//                         </TextField>
-//                     </Box>
-
-//                     <Pagination
-//                         count={totalPages}
-//                         page={page}
-//                         onChange={(_, newPage) => setPage(newPage)}
-//                         variant="outlined"
-//                         shape="rounded"
-//                         color="primary"
-//                         showFirstButton
-//                         showLastButton
-//                         renderItem={(item) => (
-//                             <PaginationItem
-//                                 components={{ first: "span", last: "span" }}
-//                                 {...item}
-//                                 slots={{
-//                                     first: () => <span>{"<<"}</span>,
-//                                     last: () => <span>{">>"}</span>,
-//                                 }}
-//                             />
-//                         )}
-//                     />
-//                 </Box>
-
-//                 <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 1, ml: 1 }}>
-//                     <Typography variant="body2" color="text.secondary">
-//                         {ros.length === 0
-//                             ? "No entries found"
-//                             : `Showing ${(page - 1) * rowsPerPage + 1} to ${Math.min(
-//                                 page * rowsPerPage,
-//                                 ros.length
-//                             )} of ${ros.length} entries`}
-//                     </Typography>
-//                 </Box>
-//             </Box>
-//         </>
-//     );
-// };
-// export default RO;
-
-
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import { Autocomplete } from "@mui/material";
 import {
     Box, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, TablePagination, Tabs, Tab,
@@ -209,12 +56,14 @@ const ExcelTable = ({ tableData, page, rowsPerPage }) => (
 
 const ROAssign = () => {
     const [ros, setROs] = useState([]);
+    const [bos, setBOIds] = useState([]);
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(15);
     const [selectedRows, setSelectedRows] = useState({});
     const [boId, setBoId] = useState("");
     const [boName, setBoName] = useState("");
-
+    const [boData, setBoData] = React.useState({});
+    const [selectedDocketIds, setSelectedDocketIds] = React.useState({});
     const [excelData, setExcelData] = useState({});
     const [fileName, setFileName] = useState("");
     const [loading, setLoading] = useState(false);
@@ -227,18 +76,29 @@ const ROAssign = () => {
 
     useEffect(() => {
         fetchROs();
+        fetchBOIds();
     }, []);
 
     const fetchROs = async () => {
         try {
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
             const emp_id = loggedInUser.emp_id;
-            const response = await axios.get("http://localhost:2727/api/ros/detailsassign", {
+            const response = await axios.get(`${API_CONFIG.APIURL}/ros/detailsassign`, {
                 headers: {
                     "emp_id": emp_id
                 }
             });
             setROs(response.data);
+        } catch (error) {
+            console.error("Error fetching ros:", error);
+        }
+    }
+
+    const fetchBOIds = async () => {
+        try {
+            const response = await axios.get(`${API_CONFIG.APIURL}/bos/boiddropdown`);
+            console.log('response bousers: ', response)
+            setBOIds(response.data);
         } catch (error) {
             console.error("Error fetching ros:", error);
         }
@@ -331,13 +191,6 @@ const ROAssign = () => {
             requiredFields.every(field => row[field] !== undefined && row[field] !== "")
         );
 
-        // if (!isValid) {
-        //   setSnackbarMessage("❌ Some rows are missing required fields.");
-        //   setSnackbarSeverity("error");
-        //   setOpenSnackbar(true);
-        //   return;
-        // }
-
         const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
         const requestedBy = loggedInUser.emp_id;
 
@@ -389,7 +242,7 @@ const ROAssign = () => {
     const totalPages = Math.ceil(ros.length / rowsPerPage);
     const visibleData = ros.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-    const columnHeaders = ["InstaKit NO.", "RO ID", "RO Name", "Assigned Status"];
+    const columnHeaders = ["InstaKit NO.", "RO ID", "RO Name", "Assigned Status", "BO ID"];
 
     const allVisibleSelected = visibleData.every(row => selectedRows[row.instakit_no]);
     const anySelected = Object.values(selectedRows).some(Boolean);
@@ -410,26 +263,31 @@ const ROAssign = () => {
         }));
     };
     const handleAssign = async () => {
-        const selectedDocketIds = ros
-            .filter((row) => selectedRows[row.instakit_no])
-            .map((row) => row.instakit_no);
+        const selectedDocketIds = Object.keys(selectedRows).filter(id => selectedRows[id]);
+
+        const boIds = selectedDocketIds.map(id => boData[id]?.boId || "");
+        console.log("Form data: ", selectedDocketIds, boIds);
 
         try {
-            const response = await axios.post("http://localhost:2727/api/ros/assign", {
+            const response = await axios.post(`${API_CONFIG.APIURL}/ros/assign`, {
                 docketIds: selectedDocketIds,
-                ro_assigned_to: boId,
-                bo_name: boName
+                ro_assigned_to: boIds
             });
 
             console.log("Success:", response.data);
             alert("Selected rows assigned successfully.");
             setROs((prevRos) => prevRos.filter((row) => !selectedDocketIds.includes(row.instakit_no)));
-            setSelectedRows({}); // Clear selection
+            setSelectedRows({});
         } catch (error) {
             console.error("Assign failed:", error);
             alert("Failed to assign selected rows.");
         }
     };
+    const isAssignDisabled = !anySelected || !Object.entries(selectedRows).every(([id, selected]) => {
+        if (!selected) return true;
+        const data = boData[id];
+        return data && data.boId;
+    });
 
     return (
         <>
@@ -437,7 +295,7 @@ const ROAssign = () => {
             <Box sx={{ p: 2, width: "100%", maxWidth: "1230px", margin: "auto" }}>
                 {/* Centered Page Title Outside Table */}
                 <Typography variant="h5" align="center" sx={{ mb: 2, fontWeight: "bold" }}>
-                    RO ASSIGN TO BRANCH
+                    ASSIGN
                 </Typography>
 
                 <TableContainer component={Paper} sx={{ maxHeight: "calc(100vh - 240px)", overflowY: "auto" }}>
@@ -489,8 +347,41 @@ const ROAssign = () => {
                                     <TableCell>{ro.instakit_no}</TableCell>
                                     <TableCell>{ro.unit_id}</TableCell>
                                     <TableCell>{ro.unit_name}</TableCell>
-                                    <TableCell>{ro.assigned_status}</TableCell>
-                                    {/* <TableCell>{ro.po_number}</TableCell> */}
+                                    <TableCell>{ro.ro_status}</TableCell>
+
+                                    {/* NEW: BO ID input field */}
+                                    <TableCell sx={{ width: '250px' }}>
+                                        <Autocomplete
+                                            options={bos}
+                                            getOptionLabel={(option) =>
+                                                option?.emp_id && option?.emp_name ? `${option.emp_id} - ${option.emp_name}` : ""
+                                            }
+                                            isOptionEqualToValue={(option, value) => option.emp_id === value.emp_id}
+                                            disabled={!selectedRows[ro.instakit_no]}
+                                            value={
+                                                bos.find((bo) => bo.emp_id === boData[ro.instakit_no]?.boId) || null
+                                            }
+                                            onChange={(event, newValue) => {
+                                                setBoData((prev) => ({
+                                                    ...prev,
+                                                    [ro.instakit_no]: {
+                                                        ...prev[ro.instakit_no],
+                                                        boId: newValue ? newValue.emp_id : "",
+                                                    },
+                                                }));
+                                            }}
+                                            renderInput={(params) => (
+                                                <TextField
+                                                    {...params}
+                                                    label="BO ID"
+                                                    variant="outlined"
+                                                    size="small"
+                                                    placeholder="Select BO"
+                                                />
+                                            )}
+                                        />
+                                    </TableCell>
+
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -519,7 +410,7 @@ const ROAssign = () => {
                         </TextField>
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        <TextField
+                        {/* <TextField
                             label="BO ID"
                             variant="outlined"
                             size="small"
@@ -532,15 +423,16 @@ const ROAssign = () => {
                             size="small"
                             value={boName}
                             onChange={(e) => setBoName(e.target.value)}
-                        />
+                        /> */}
                         <Button
                             variant="contained"
                             color="primary"
                             onClick={handleAssign}
-                            disabled={!anySelected || !boId || !boName}
+                            disabled={isAssignDisabled}
                         >
                             Assign
                         </Button>
+
                     </Box>
                     <Pagination
                         count={totalPages}

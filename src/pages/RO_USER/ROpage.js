@@ -384,7 +384,7 @@ const ROPage = () => {
     const totalPages = Math.ceil(ros.length / rowsPerPage);
     const visibleData = ros.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-    const columnHeaders = ["InstaKit NO.", "RO ID", "RO Name", "Assigned Status", "POD"];
+    const columnHeaders = ["InstaKit NO.", "RO ID", "RO Name", "Assigned Date", "Assigned Status", "POD"];
 
     const allVisibleSelected = visibleData.every(row => selectedRows[row.instakit_no]);
     const anySelected = Object.values(selectedRows).some(Boolean);
@@ -416,7 +416,7 @@ const ROPage = () => {
             .map((row) => row.instakit_no);
 
         try {
-            const response = await axios.post("http://localhost:2727/api/ros/accept", {
+            const response = await axios.post(`${API_CONFIG.APIURL}/ros/accept`, {
                 docketIds: selectedDocketIds
             });
 
@@ -435,7 +435,7 @@ const ROPage = () => {
         <>
             <Navbar />
             <Box sx={{ p: 2, width: "100%", maxWidth: "1230px", margin: "auto" }}>
-                <Typography variant="h4" align="center" sx={{ mb: 2, fontWeight: "bold" }}>
+                <Typography variant="h5" align="center" sx={{ mb: 2, fontWeight: "bold" }}>
                     RO ACCEPTANCE
                 </Typography>
 
@@ -489,6 +489,7 @@ const ROPage = () => {
                                     <TableCell>{ro.instakit_no}</TableCell>
                                     <TableCell>{ro.unit_id}</TableCell>
                                     <TableCell>{ro.unit_name}</TableCell>
+                                    <TableCell>{ro.ho_assigned_date}</TableCell>
                                     <TableCell>{ro.assigned_status}</TableCell>
                                     <TableCell>{ro.po_number}</TableCell>
                                 </TableRow>
