@@ -1,23 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
-    Box,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    Typography,
-    TextField,
-    MenuItem,
-    Pagination,
-    PaginationItem,
-    Checkbox,
-    Button,
+    Box, Table, TableBody, TableCell,
+    TableContainer, TableHead, TableRow,
+    Paper, Typography, TextField,
+    MenuItem, Pagination, PaginationItem,
+    Checkbox, Button,
 } from "@mui/material";
 import Navbar from "../Navbar";
+import { API_CONFIG } from '../../configuration';
 
 const RO = () => {
     const [ros, setROs] = useState([]);
@@ -39,7 +30,7 @@ const RO = () => {
 
             const processedData = response.data.map((ro) => ({
                 ...ro,
-                assigned_status: ro.assigned_status 
+                assigned_status: ro.assigned_status
             }));
 
             setROs(processedData);

@@ -50,7 +50,7 @@ const HOReport = () => {
     const totalPages = Math.ceil(data.length / rowsPerPage);
     const visibleData = data.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-    const columnHeaders = ["InstaKit NO.", "Unit ID", "Unit Name", "Assigned Date", "Status"];
+    const columnHeaders = ["InstaKit NO.", "Unit ID", "Unit Name", "Assigned Date", "Pod", "Status"];
 
     return (
         <>
@@ -74,6 +74,7 @@ const HOReport = () => {
                                             backgroundColor: "lightgrey",
                                             borderRight: "1px solid white",
                                             borderLeft: "1px solid white",
+                                            textAlign: 'center'
                                         }}
                                     >
                                         {header}
@@ -84,11 +85,18 @@ const HOReport = () => {
                         <TableBody>
                             {visibleData.map((ro, index) => (
                                 <TableRow key={index} hover>
-                                    <TableCell>{ro.docket_id}</TableCell>
-                                    <TableCell>{ro.ho_assigned_to}</TableCell>
-                                    <TableCell>{ro.ro_name || ro.bo_name}</TableCell>
-                                    <TableCell>{ro.ho_assigned_date}</TableCell>
-                                    <TableCell>{ro.status}</TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>{ro.docket_id}</TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>{ro.ho_assigned_to}</TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>
+                                        {ro.ho_assigned_to === "ROUSER"
+                                            ? ro.ro_name
+                                            : ro.ho_assigned_to === "BOUSER" || "BOUSER2"
+                                                ? ro.bo_name
+                                                : "-"}
+                                    </TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>{ro.ho_assigned_date}</TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>{ro.pod}</TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>{ro.status}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

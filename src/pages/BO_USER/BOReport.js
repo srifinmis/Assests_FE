@@ -32,9 +32,6 @@ const BOReport = () => {
 
     const fetchReport = async () => {
         try {
-            // const user = JSON.parse(localStorage.getItem("user") || "{}");
-            // const emp_id = user.emp_id;
-
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
             const emp_id = loggedInUser.emp_id;
             const res = await axios.get(`${API_CONFIG.APIURL}/bos/bo-report`, {
@@ -51,7 +48,8 @@ const BOReport = () => {
     const totalPages = Math.ceil(data.length / rowsPerPage);
     const visibleData = data.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-    const columnHeaders = ["InstaKit NO.", "Unit ID", "Assigned Date", "Status", "POD"];
+    const columnHeaders = ["InstaKit NO.", "Unit ID", "Unit Name", "Received Date",
+        "Accepted Date", "Assigned Date", "Customer ID", "Issued Date", "Status"];
 
     return (
         <>
@@ -86,10 +84,14 @@ const BOReport = () => {
                             {visibleData.map((bo, index) => (
                                 <TableRow key={index} hover>
                                     <TableCell>{bo.docket_id}</TableCell>
+                                    <TableCell>{bo.ro_assigned_to}</TableCell>
+                                    <TableCell>{bo.bo_name}</TableCell>
+                                    <TableCell>{bo.ro_assigned_date}</TableCell>
+                                    <TableCell>{bo.bo_accepted_date}</TableCell>
+                                    <TableCell>{bo.bo_assigned_date}</TableCell>
                                     <TableCell>{bo.customer_id}</TableCell>
-                                    <TableCell>{bo.bo_assigned_date}</TableCell>                                   
+                                    <TableCell>{bo.issue_date}</TableCell>
                                     <TableCell>{bo.bo_status}</TableCell>
-                                    <TableCell>{bo.pod}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

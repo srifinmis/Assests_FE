@@ -216,6 +216,7 @@ import {
 } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../Navbar";
+import { API_CONFIG } from '../../configuration';
 
 const CustomerMain = () => {
     const location = useLocation();
@@ -270,7 +271,8 @@ const CustomerMain = () => {
                 alert(response.data.message);
                 navigate("/bo-user/boassign");
             } else {
-                alert(response.data.message || "Assignment failed.");
+                alert(`${response.data.message}` || "Assignment failed.");
+                navigate("/bo-user/boassign");
             }
         } catch (error) {
             console.error("Assignment error:", error);
