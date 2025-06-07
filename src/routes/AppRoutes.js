@@ -256,19 +256,22 @@ const AppRoutes = () => {
                 <Route path="/components/Reupload" element={<CICReupload />} />
 
                 {/* HO User Routes */}
-                <Route path="/ho-user/roreport" element={<HOReport />} />
+                <Route path="/ho-user/horeport" element={<HOReport />} />
                 <Route path="/ho-user/credit_bulk-upload" element={<CreditBulkUpload />} />
-                <Route path="/ro-user/bulk-upload" element={<ROBulkUpload />} />
+                {/* <Route path="/ro-user/bulk-upload" element={<ROBulkUpload />} /> */}
+
+                {/* <Route path="/ho-user/rounassign" element={<RO />} /> */}
                 <Route path="/ro-user/roreport" element={<ROReport />} />
-                <Route path="/ho-user/rounassign" element={<RO />} />
                 <Route path="/ho-user/ropage" element={<ROpage />} />
                 <Route path="/ho-user/roassign" element={<Roassign />} />
+
+                {/* <Route path="/ho-user/bo" element={<BO />} /> */}
                 <Route path="/bo-user/boreport" element={<BOReport />} />
-                <Route path="/ho-user/bo" element={<BO />} />
                 <Route path="/bo-user/bopage" element={<BOpage />} />
                 <Route path="/bo-user/boassign" element={<BOassign />} />
+
                 <Route path="/bo-user/assign-bo" element={<CustomerMain />} />
-                <Route path="/bo-user/customeredit/:docket_id" element={<Customermaker />} />
+                {/* <Route path="/bo-user/customeredit/:docket_id" element={<Customermaker />} /> */}
                 <Route path="/bo-user/customer" element={<Customer />} />
               </Routes>
             </ProtectedRoute>

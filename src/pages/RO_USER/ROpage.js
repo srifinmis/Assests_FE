@@ -282,7 +282,7 @@ const ROPage = () => {
             <Navbar />
             <Box sx={{ p: 2, width: "100%", maxWidth: "1230px", margin: "auto" }}>
                 <Typography variant="h5" align="center" sx={{ mb: 2, fontWeight: "bold" }}>
-                    RO ACCEPTANCE
+                    ACCEPT
                 </Typography>
 
                 <TableContainer component={Paper} sx={{ maxHeight: "calc(100vh - 240px)", overflowY: "auto" }}>

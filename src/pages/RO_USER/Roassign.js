@@ -354,12 +354,12 @@ const ROAssign = () => {
                                         <Autocomplete
                                             options={bos}
                                             getOptionLabel={(option) =>
-                                                option?.emp_id && option?.emp_name ? `${option.emp_id} - ${option.emp_name}` : ""
+                                                option?.branchid_name && option?.emp_name ? `${option.branchid_name} - ${option.emp_name}` : ""
                                             }
-                                            isOptionEqualToValue={(option, value) => option.emp_id === value.emp_id}
+                                            isOptionEqualToValue={(option, value) => option.branchid_name === value.branchid_name}
                                             disabled={!selectedRows[ro.instakit_no]}
                                             value={
-                                                bos.find((bo) => bo.emp_id === boData[ro.instakit_no]?.boId) || null
+                                                bos.find((bo) => bo.branchid_name === boData[ro.instakit_no]?.boId) || null
                                             }
                                             onChange={(event, newValue) => {
                                                 setBoData((prev) => ({

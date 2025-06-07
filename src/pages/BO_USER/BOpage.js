@@ -79,7 +79,7 @@ const BOPage = () => {
         try {
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
             const emp_id = loggedInUser.emp_id;
-            const response = await axios.get(`${API_CONFIG.APIURL}//bos/detailslog`, {
+            const response = await axios.get(`${API_CONFIG.APIURL}/bos/detailslog`, {
                 headers: { "emp_id": emp_id }
             });
             setBOs(response.data);
@@ -181,7 +181,7 @@ const BOPage = () => {
         // }
 
         const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-        const requestedBy = loggedInUser.emp_id;
+        const requestedBy = loggedInUser.emp_id2;
 
         if (!requestedBy) {
             setSnackbarMessage("❌ User not logged in. Please log in and try again.");
@@ -282,8 +282,8 @@ const BOPage = () => {
         <>
             <Navbar />
             <Box sx={{ p: 2, width: "100%", maxWidth: "1230px", margin: "auto" }}>
-                <Typography variant="h4" align="center" sx={{ mb: 2, fontWeight: "bold" }}>
-                    BO Acceptance
+                <Typography variant="h5" align="center" sx={{ mb: 2, fontWeight: "bold" }}>
+                    ACCEPT
                 </Typography>
 
                 <TableContainer component={Paper} sx={{ maxHeight: "calc(100vh - 240px)", overflowY: "auto" }}>
