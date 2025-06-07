@@ -231,7 +231,7 @@ const BOPage = () => {
     const totalPages = Math.ceil(bos.length / rowsPerPage);
     const visibleData = bos.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-    const columnHeaders = ["InstaKit NO.", "BO ID", "BO Name", "Assigned Status", "POD"];
+    const columnHeaders = ["InstaKit NO.", "Unit ID", "Unit Name", "Received Date", "Status"];
 
     const allVisibleSelected = visibleData.every(row => selectedRows[row.instakit_no]);
     const anySelected = Object.values(selectedRows).some(Boolean);
@@ -335,8 +335,8 @@ const BOPage = () => {
                                     <TableCell>{bo.instakit_no}</TableCell>
                                     <TableCell>{bo.bo_id}</TableCell>
                                     <TableCell>{bo.bo_name}</TableCell>
+                                    <TableCell>{bo.ro_assigned_date}</TableCell>
                                     <TableCell>{bo.assigned_status}</TableCell>
-                                    <TableCell>{bo.po_number}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

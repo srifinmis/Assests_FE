@@ -230,7 +230,7 @@ const ROPage = () => {
     const totalPages = Math.ceil(ros.length / rowsPerPage);
     const visibleData = ros.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-    const columnHeaders = ["InstaKit NO.", "RO ID", "RO Name", "Assigned Date", "Status", "POD"];
+    const columnHeaders = ["InstaKit NO.", "Unit ID", "Unit Name", "Received Date", "Status"];
 
     const allVisibleSelected = visibleData.every(row => selectedRows[row.instakit_no]);
     const anySelected = Object.values(selectedRows).some(Boolean);
@@ -337,7 +337,6 @@ const ROPage = () => {
                                     <TableCell>{ro.unit_name}</TableCell>
                                     <TableCell>{ro.ho_assigned_date}</TableCell>
                                     <TableCell>{ro.assigned_status}</TableCell>
-                                    <TableCell>{ro.po_number}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

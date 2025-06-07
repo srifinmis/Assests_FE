@@ -213,7 +213,7 @@ const HOReport = () => {
             "Unit Name":
                 ro.ho_assigned_to === "ROUSER"
                     ? ro.ro_name
-                    : ro.ho_assigned_to === "BOUSER" || ro.ho_assigned_to === "BOUSER2"
+                    : ro.ho_assigned_to === "B179" || ro.ho_assigned_to === "B179"
                         ? ro.bo_name
                         : "-",
             "Assigned Date": ro.ho_assigned_date,

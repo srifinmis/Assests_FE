@@ -202,6 +202,7 @@ const ROReport = () => {
             "Received Date": ro.ho_assigned_date,
             "Accepted Date": ro.ro_accepted_date,
             "Assigned Date": ro.ro_assigned_date,
+            "Ho Assigned To": ro.ho_assigned_to,
             "Status": ro.ro_status,
             "Remarks": ro.remarks,
         }));
@@ -218,6 +219,7 @@ const ROReport = () => {
     const filteredData = data.filter((row) => {
         const valuesToSearch = [
             row.docket_id,
+            row.ho_by,
             row.ro_assigned_to,
             row.bo_name,
             row.ho_assigned_date,
@@ -234,11 +236,12 @@ const ROReport = () => {
 
     const columnHeaders = [
         "InstaKit NO.",
-        "Unit ID",
-        "Unit Name",
+        "Received From",
         "Received Date",
         "Accepted Date",
         "Assigned Date",
+        "Unit ID",
+        "Unit Name",
         "Status",
         "Remarks"
     ];
@@ -332,11 +335,12 @@ const ROReport = () => {
                                     {visibleData.map((ro, index) => (
                                         <TableRow key={index} hover>
                                             <TableCell>{ro.docket_id}</TableCell>
-                                            <TableCell>{ro.ro_assigned_to}</TableCell>
-                                            <TableCell>{ro.bo_name}</TableCell>
+                                            <TableCell>{ro.ho_by}</TableCell>
                                             <TableCell>{ro.ho_assigned_date}</TableCell>
                                             <TableCell>{ro.ro_accepted_date}</TableCell>
                                             <TableCell>{ro.ro_assigned_date}</TableCell>
+                                            <TableCell>{ro.ro_assigned_to}</TableCell>
+                                            <TableCell>{ro.bo_name}</TableCell>
                                             <TableCell>{ro.ro_status}</TableCell>
                                             <TableCell>{ro.remarks}</TableCell>
                                         </TableRow>

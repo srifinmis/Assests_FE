@@ -46,7 +46,7 @@ const BOassign = () => {
     const totalPages = Math.ceil(bos.length / rowsPerPage);
     const visibleData = bos.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-    const columnHeaders = ["InstaKit NO.", "Unit ID", "Unit Name", "Status", "POD", "Action"];
+    const columnHeaders = ["InstaKit NO.", "Unit ID", "Unit Name", "Received Date", "Action"];
 
     return (
         <>
@@ -83,8 +83,7 @@ const BOassign = () => {
                                     <TableCell>{bo.instakit_no}</TableCell>
                                     <TableCell>{bo.unit_id}</TableCell>
                                     <TableCell>{bo.unit_name}</TableCell>
-                                    <TableCell>{bo.assigned_status}</TableCell>
-                                    <TableCell>{bo.po_number}</TableCell>
+                                    <TableCell>{bo.ro_assigned_date}</TableCell>
                                     <TableCell>
                                         <Button
                                             variant="contained"

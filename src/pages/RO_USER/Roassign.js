@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { Autocomplete } from "@mui/material";
 import {
@@ -82,7 +82,7 @@ const ROAssign = () => {
     const fetchROs = async () => {
         try {
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-            const emp_id = loggedInUser.emp_id;
+            const emp_id = loggedInUser.emp_id2;
             const response = await axios.get(`${API_CONFIG.APIURL}/ros/detailsassign`, {
                 headers: {
                     "emp_id": emp_id
@@ -257,15 +257,20 @@ const ROAssign = () => {
     };
 
     const handleRowSelect = (instakit_no) => {
-        setSelectedRows((prev) => ({
-            ...prev,
-            [instakit_no]: !prev[instakit_no]
-        }));
+        setSelectedRows((prev) => {
+            const updated = {
+                ...prev,
+                [instakit_no]: !prev[instakit_no],
+            };
+            console.log("Updated selectedRows:", updated);
+            return updated;
+        });
     };
+
     const handleAssign = async () => {
         const selectedDocketIds = Object.keys(selectedRows).filter(id => selectedRows[id]);
-
-        const boIds = selectedDocketIds.map(id => boData[id]?.boId || "");
+        console.log('selected row: ', selectedDocketIds)
+        const boIds = selectedDocketIds.map(id => boData[id]?.branchid_name || "");
         console.log("Form data: ", selectedDocketIds, boIds);
 
         try {
@@ -288,6 +293,14 @@ const ROAssign = () => {
         const data = boData[id];
         return data && data.boId;
     });
+    const uniqueBOs = useMemo(() => {
+        const seen = new Set();
+        return bos.filter((bo) => {
+            if (seen.has(bo.branchid_name)) return false;
+            seen.add(bo.branchid_name);
+            return true;
+        });
+    }, [bos]);
 
     return (
         <>
@@ -352,14 +365,14 @@ const ROAssign = () => {
                                     {/* NEW: BO ID input field */}
                                     <TableCell sx={{ width: '250px' }}>
                                         <Autocomplete
-                                            options={bos}
+                                            options={uniqueBOs}
                                             getOptionLabel={(option) =>
-                                                option?.branchid_name && option?.emp_name ? `${option.branchid_name} - ${option.emp_name}` : ""
+                                                option?.branchid_name ? `${option.branchid_name}` : ""
                                             }
                                             isOptionEqualToValue={(option, value) => option.branchid_name === value.branchid_name}
                                             disabled={!selectedRows[ro.instakit_no]}
                                             value={
-                                                bos.find((bo) => bo.branchid_name === boData[ro.instakit_no]?.boId) || null
+                                                uniqueBOs.find((bo) => bo.emp_id === boData[ro.instakit_no]?.boId) || null
                                             }
                                             onChange={(event, newValue) => {
                                                 setBoData((prev) => ({
@@ -367,6 +380,7 @@ const ROAssign = () => {
                                                     [ro.instakit_no]: {
                                                         ...prev[ro.instakit_no],
                                                         boId: newValue ? newValue.emp_id : "",
+                                                        branchid_name: newValue ? newValue.branchid_name : "",
                                                     },
                                                 }));
                                             }}
@@ -381,7 +395,6 @@ const ROAssign = () => {
                                             )}
                                         />
                                     </TableCell>
-
                                 </TableRow>
                             ))}
                         </TableBody>
