@@ -242,7 +242,7 @@ const ROAssign = () => {
     const totalPages = Math.ceil(ros.length / rowsPerPage);
     const visibleData = ros.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-    const columnHeaders = ["InstaKit NO.", "RO ID", "RO Name", "Assigned Status", "BO ID"];
+    const columnHeaders = ["InstaKit NO.", "Unit ID", "Unit Name", "Status", "BO ID"];
 
     const allVisibleSelected = visibleData.every(row => selectedRows[row.instakit_no]);
     const anySelected = Object.values(selectedRows).some(Boolean);
@@ -341,6 +341,7 @@ const ROAssign = () => {
                                             backgroundColor: "lightgrey",
                                             borderRight: "1px solid white",
                                             borderLeft: "1px solid white",
+                                            textAlign: "center"
                                         }}
                                     >
                                         {header}
@@ -351,16 +352,16 @@ const ROAssign = () => {
                         <TableBody>
                             {visibleData.map((ro, index) => (
                                 <TableRow key={index} hover>
-                                    <TableCell padding="checkbox">
+                                    <TableCell padding="checkbox" sx={{textAlign: "center"}}>
                                         <Checkbox
                                             checked={!!selectedRows[ro.instakit_no]}
                                             onChange={() => handleRowSelect(ro.instakit_no)}
                                         />
                                     </TableCell>
-                                    <TableCell>{ro.instakit_no}</TableCell>
-                                    <TableCell>{ro.unit_id}</TableCell>
-                                    <TableCell>{ro.unit_name}</TableCell>
-                                    <TableCell>{ro.ro_status}</TableCell>
+                                    <TableCell sx={{textAlign: "center"}}>{ro.instakit_no}</TableCell>
+                                    <TableCell sx={{textAlign: "center"}}>{ro.unit_id}</TableCell>
+                                    <TableCell sx={{textAlign: "center"}}>{ro.unit_name}</TableCell>
+                                    <TableCell sx={{textAlign: "center"}}>{ro.ro_status}</TableCell>
 
                                     {/* NEW: BO ID input field */}
                                     <TableCell sx={{ width: '250px' }}>

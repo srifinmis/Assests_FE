@@ -11,9 +11,13 @@ import { useNavigate } from "react-router-dom";
 
 const BOassign = () => {
     const [bos, setBOs] = useState([]);
+    const [data, setData] = useState([]);
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(15);
     const [selectedRows, setSelectedRows] = useState({});
+    const [searchTerm, setSearchTerm] = useState("");
+
+
     const navigate = useNavigate();
     useEffect(() => {
         fetchBOs();
@@ -27,6 +31,7 @@ const BOassign = () => {
                 headers: { "emp_id": emp_id }
             });
             setBOs(response.data);
+            setData(response.data);
         } catch (error) {
             console.error("Error fetching bos:", error);
         }
@@ -40,11 +45,25 @@ const BOassign = () => {
         });
     };
 
-
     const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
 
-    const totalPages = Math.ceil(bos.length / rowsPerPage);
-    const visibleData = bos.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+    const filteredData = data.filter((row) => {
+        const valuesToSearch = [
+            row.instakit_no,
+            row.unit_id,
+            row.unit_name,
+            row.asigned_status,
+            row.ro_assigned_date,
+            row.ro_status,
+        ].map(val => val?.toString().toLowerCase());
+        return valuesToSearch.some(value => value?.includes(searchTerm.toLowerCase()));
+    });
+
+    const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+    const visibleData = filteredData.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+
+    // const totalPages = Math.ceil(bos.length / rowsPerPage);
+    // const visibleData = bos.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
     const columnHeaders = ["InstaKit NO.", "Unit ID", "Unit Name", "Received Date", "Action"];
 
@@ -55,6 +74,26 @@ const BOassign = () => {
                 <Typography variant="h5" align="center" sx={{ mb: 2, fontWeight: "bold" }}>
                     Assign Customer
                 </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", flex: 1, mb: 2, mt: -2 }}>
+                    <TextField
+                        label="Search"
+                        variant="outlined"
+                        value={searchTerm}
+                        onChange={(e) => {
+                            setSearchTerm(e.target.value);
+                            setPage(1);
+                        }}
+                        size="small"
+                        sx={{
+                            backgroundColor: "#f0f0f0",
+                            borderRadius: 1,
+                            maxWidth: 250,
+                            mx: 1,
+                        }}
+                        InputLabelProps={{ sx: { fontSize: "1rem" } }}
+                        inputProps={{ style: { fontSize: "1rem" } }}
+                    />
+                </Box>
 
                 <TableContainer component={Paper} sx={{ maxHeight: "calc(100vh - 240px)", overflowY: "auto" }}>
                     <Table stickyHeader>
@@ -70,6 +109,7 @@ const BOassign = () => {
                                             backgroundColor: "lightgrey",
                                             borderRight: "1px solid white",
                                             borderLeft: "1px solid white",
+                                            textAlign: 'center'
                                         }}
                                     >
                                         {header}
@@ -80,11 +120,11 @@ const BOassign = () => {
                         <TableBody>
                             {visibleData.map((bo, index) => (
                                 <TableRow key={index} hover>
-                                    <TableCell>{bo.instakit_no}</TableCell>
-                                    <TableCell>{bo.unit_id}</TableCell>
-                                    <TableCell>{bo.unit_name}</TableCell>
-                                    <TableCell>{bo.ro_assigned_date}</TableCell>
-                                    <TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>{bo.instakit_no}</TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>{bo.unit_id}</TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>{bo.unit_name}</TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>{bo.ro_assigned_date}</TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>
                                         <Button
                                             variant="contained"
                                             size="small"

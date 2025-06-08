@@ -250,12 +250,6 @@ const ROPage = () => {
             [instakit_no]: !prev[instakit_no]
         }));
     };
-
-    // const handleAccept = () => {
-    //     const selected = ros.filter((row) => selectedRows[row.instakit_no]);
-    //     console.log("Accepted rows:", selected);
-    //     // Perform accept action here...
-    // };
     const handleAccept = async () => {
         const selectedDocketIds = ros
             .filter((row) => selectedRows[row.instakit_no])
@@ -297,6 +291,7 @@ const ROPage = () => {
                                         backgroundColor: "lightgrey",
                                         borderRight: "1px solid white",
                                         borderLeft: "1px solid white",
+                                        textAlign: "center"
                                     }}
                                 >
                                     <Checkbox
@@ -316,6 +311,7 @@ const ROPage = () => {
                                             backgroundColor: "lightgrey",
                                             borderRight: "1px solid white",
                                             borderLeft: "1px solid white",
+                                            textAlign: "center"
                                         }}
                                     >
                                         {header}
@@ -326,17 +322,17 @@ const ROPage = () => {
                         <TableBody>
                             {visibleData.map((ro, index) => (
                                 <TableRow key={index} hover>
-                                    <TableCell padding="checkbox">
+                                    <TableCell padding="checkbox" sx={{textAlign: "center"}}>
                                         <Checkbox
                                             checked={!!selectedRows[ro.instakit_no]}
                                             onChange={() => handleRowSelect(ro.instakit_no)}
                                         />
                                     </TableCell>
-                                    <TableCell>{ro.instakit_no}</TableCell>
-                                    <TableCell>{ro.unit_id}</TableCell>
-                                    <TableCell>{ro.unit_name}</TableCell>
-                                    <TableCell>{ro.ho_assigned_date}</TableCell>
-                                    <TableCell>{ro.assigned_status}</TableCell>
+                                    <TableCell sx={{textAlign: "center"}}>{ro.instakit_no}</TableCell>
+                                    <TableCell sx={{textAlign: "center"}}>{ro.unit_id}</TableCell>
+                                    <TableCell sx={{textAlign: "center"}}>{ro.unit_name}</TableCell>
+                                    <TableCell sx={{textAlign: "center"}}>{ro.ho_assigned_date}</TableCell>
+                                    <TableCell sx={{textAlign: "center"}}>{ro.assigned_status}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
