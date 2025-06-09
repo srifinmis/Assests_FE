@@ -179,24 +179,62 @@ const BulkUpload = () => {
     const formData = new FormData();
     formData.append("file", uploadedFile);
     formData.append("requested_by", requestedBy);
-    formData.append("flag", uploadFlag); // append the flag
+    formData.append("flag", uploadFlag);
 
     try {
       setLoading(true);
-      await axios.post(`${API_CONFIG.APIURL}/bulk/upload-ho`, formData, {
+
+      const response = await axios.post(`${API_CONFIG.APIURL}/bulk/upload-ho`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        responseType: "blob",
       });
 
-      setSnackbarMessage("✅ Upload file Successful!");
-      setSnackbarSeverity("success");
+      const contentType = response.headers["content-type"];
+      const isExcel = contentType.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+      if (isExcel) {
+        const blob = new Blob([response.data], { type: contentType });
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.download = "missing_File.xlsx";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        setSnackbarMessage("❌ Upload aborted. Some Data Missmatch found. Excel downloaded.");
+        setSnackbarSeverity("error");
+        return;
+      } else {
+        const text = await response.data.text(); // Convert blob to text
+        const result = JSON.parse(text);
+        setSnackbarMessage(result.message || "✅ Upload file successful!");
+        setSnackbarSeverity("success");
+      }
+
       setExcelData({});
       setFileName("");
       setUploadedFile(null);
       setUploadFlag("");
     } catch (error) {
-      const errMsg = error?.response?.data?.message || "❌ Error uploading data. Please try again.";
+      console.error("Upload error:", error);
+
+      let errMsg = "❌ Error uploading data. Please try again.";
+
+      try {
+        // If error responseType is blob, convert to JSON
+        const blob = error?.response?.data;
+        if (blob instanceof Blob) {
+          const text = await blob.text();
+          const data = JSON.parse(text);
+          errMsg = data.message || errMsg;
+        }
+      } catch (err) {
+        console.error("Failed to parse error blob:", err);
+      }
+
       setSnackbarMessage(errMsg);
       setSnackbarSeverity("error");
     } finally {
@@ -215,6 +253,7 @@ const BulkUpload = () => {
   return (
     <>
       <Navbar />
+      <h2 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: -2 }}>Assign</h2>
       <Box sx={{ p: 4, maxWidth: 1000, mx: "auto" }}>
         <Card elevation={3} sx={{ p: 3, borderRadius: 2 }}>
           <CardContent>
@@ -302,7 +341,7 @@ const BulkUpload = () => {
               component="a"
               href="/Formate.xlsx"
               download
-              sx={{ mt: 2,ml:2, width: "25%" }}
+              sx={{ mt: 2, ml: 2, width: "25%" }}
             >
               Download Format
             </Button>

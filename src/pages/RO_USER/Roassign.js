@@ -211,19 +211,52 @@ const ROAssign = () => {
         try {
             setLoading(true);
             console.log("bulk accept upload: ", formData)
-            await axios.post(`${API_CONFIG.APIURL}/bulk/upload-roassignbo`, formData, {
+            const response = await axios.post(`${API_CONFIG.APIURL}/bulk/upload-roassignbo`, formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
+                responseType: "blob",
             });
 
-            setSnackbarMessage("✅ Upload Sent to Branch Successful!");
-            setSnackbarSeverity("success");
+            const contentType = response.headers["content-type"];
+            const isExcel = contentType.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            if (isExcel) {
+                const blob = new Blob([response.data], { type: contentType });
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = downloadUrl;
+                link.download = "missing_File.xlsx";
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+
+                setSnackbarMessage("❌ Upload aborted. Some Data Missmatch found. Excel downloaded.");
+                setSnackbarSeverity("error");
+                return;
+            } else {
+                const text = await response.data.text(); // Convert blob to text
+                const result = JSON.parse(text);
+                setSnackbarMessage(result.message || "✅ Upload file successful!");
+                setSnackbarSeverity("success");
+            }
+            // setSnackbarMessage("✅ Upload Sent to Branch Successful!");
+            // setSnackbarSeverity("success");
             setExcelData({});
             setFileName("");
             setUploadedFile(null);
         } catch (error) {
-            const errMsg = error?.response?.data?.message || "❌ Error uploading data. Please try again.";
+            let errMsg = "❌ Error uploading data. Please try again.";
+            try {
+                const blob = error?.response?.data;
+                if (blob instanceof Blob) {
+                    const text = await blob.text();
+                    const data = JSON.parse(text);
+                    errMsg = data.message || errMsg;
+                }
+            } catch (err) {
+                console.error("Failed to parse error blob:", err);
+            }
             setSnackbarMessage(errMsg);
             setSnackbarSeverity("error");
         } finally {
@@ -352,16 +385,16 @@ const ROAssign = () => {
                         <TableBody>
                             {visibleData.map((ro, index) => (
                                 <TableRow key={index} hover>
-                                    <TableCell padding="checkbox" sx={{textAlign: "center"}}>
+                                    <TableCell padding="checkbox" sx={{ textAlign: "center" }}>
                                         <Checkbox
                                             checked={!!selectedRows[ro.instakit_no]}
                                             onChange={() => handleRowSelect(ro.instakit_no)}
                                         />
                                     </TableCell>
-                                    <TableCell sx={{textAlign: "center"}}>{ro.instakit_no}</TableCell>
-                                    <TableCell sx={{textAlign: "center"}}>{ro.unit_id}</TableCell>
-                                    <TableCell sx={{textAlign: "center"}}>{ro.unit_name}</TableCell>
-                                    <TableCell sx={{textAlign: "center"}}>{ro.ro_status}</TableCell>
+                                    <TableCell sx={{ textAlign: "center" }}>{ro.instakit_no}</TableCell>
+                                    <TableCell sx={{ textAlign: "center" }}>{ro.unit_id}</TableCell>
+                                    <TableCell sx={{ textAlign: "center" }}>{ro.unit_name}</TableCell>
+                                    <TableCell sx={{ textAlign: "center" }}>{ro.ro_status}</TableCell>
 
                                     {/* NEW: BO ID input field */}
                                     <TableCell sx={{ width: '250px' }}>

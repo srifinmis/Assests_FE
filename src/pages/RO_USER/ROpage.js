@@ -158,6 +158,7 @@ const ROPage = () => {
     }, []);
 
     const { API_CONFIG, REFRESH_CONFIG } = require('../../configuration');
+
     const handleUpload = async () => {
         if (!fileName || !uploadedFile) {
             setSnackbarMessage("❌ No file uploaded.");
@@ -171,14 +172,6 @@ const ROPage = () => {
         const isValid = activeData.every(row =>
             requiredFields.every(field => row[field] !== undefined && row[field] !== "")
         );
-
-        // if (!isValid) {
-        //   setSnackbarMessage("❌ Some rows are missing required fields.");
-        //   setSnackbarSeverity("error");
-        //   setOpenSnackbar(true);
-        //   return;
-        // }
-
         const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
         const requestedBy = loggedInUser.emp_id;
 
@@ -199,19 +192,54 @@ const ROPage = () => {
         try {
             setLoading(true);
             console.log("bulk upload: ", formData)
-            await axios.post(`${API_CONFIG.APIURL}/bulk/upload-ro`, formData, {
+            const response = await axios.post(`${API_CONFIG.APIURL}/bulk/upload-ro`, formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
+                responseType: "blob",
             });
+            const contentType = response.headers["content-type"];
+            const isExcel = contentType.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
-            setSnackbarMessage("✅ Upload file Successful!");
-            setSnackbarSeverity("success");
+            if (isExcel) {
+                const blob = new Blob([response.data], { type: contentType });
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = downloadUrl;
+                link.download = "missing_File.xlsx";
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+
+                setSnackbarMessage("❌ Upload aborted. Some Data Missmatch found. Excel downloaded.");
+                setSnackbarSeverity("error");
+                return;
+            } else {
+                const text = await response.data.text(); // Convert blob to text
+                const result = JSON.parse(text);
+                setSnackbarMessage(result.message || "✅ Upload file successful!");
+                setSnackbarSeverity("success");
+            }
+
+            // setSnackbarMessage("✅ Upload file Successful!");
+            // setSnackbarSeverity("success");
             setExcelData({});
             setFileName("");
             setUploadedFile(null);
         } catch (error) {
-            const errMsg = error?.response?.data?.message || "❌ Error uploading data. Please try again.";
+            let errMsg = "❌ Error uploading data. Please try again.";
+
+            try {
+                // If error responseType is blob, convert to JSON
+                const blob = error?.response?.data;
+                if (blob instanceof Blob) {
+                    const text = await blob.text();
+                    const data = JSON.parse(text);
+                    errMsg = data.message || errMsg;
+                }
+            } catch (err) {
+                console.error("Failed to parse error blob:", err);
+            }
             setSnackbarMessage(errMsg);
             setSnackbarSeverity("error");
         } finally {
@@ -322,17 +350,17 @@ const ROPage = () => {
                         <TableBody>
                             {visibleData.map((ro, index) => (
                                 <TableRow key={index} hover>
-                                    <TableCell padding="checkbox" sx={{textAlign: "center"}}>
+                                    <TableCell padding="checkbox" sx={{ textAlign: "center" }}>
                                         <Checkbox
                                             checked={!!selectedRows[ro.instakit_no]}
                                             onChange={() => handleRowSelect(ro.instakit_no)}
                                         />
                                     </TableCell>
-                                    <TableCell sx={{textAlign: "center"}}>{ro.instakit_no}</TableCell>
-                                    <TableCell sx={{textAlign: "center"}}>{ro.unit_id}</TableCell>
-                                    <TableCell sx={{textAlign: "center"}}>{ro.unit_name}</TableCell>
-                                    <TableCell sx={{textAlign: "center"}}>{ro.ho_assigned_date}</TableCell>
-                                    <TableCell sx={{textAlign: "center"}}>{ro.assigned_status}</TableCell>
+                                    <TableCell sx={{ textAlign: "center" }}>{ro.instakit_no}</TableCell>
+                                    <TableCell sx={{ textAlign: "center" }}>{ro.unit_id}</TableCell>
+                                    <TableCell sx={{ textAlign: "center" }}>{ro.unit_name}</TableCell>
+                                    <TableCell sx={{ textAlign: "center" }}>{ro.ho_assigned_date}</TableCell>
+                                    <TableCell sx={{ textAlign: "center" }}>{ro.assigned_status}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

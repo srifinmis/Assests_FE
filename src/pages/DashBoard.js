@@ -24,7 +24,7 @@ const DashBoard = () => {
   useEffect(() => {
     const rawStates = localStorage.getItem("statesAssigned");
     let statesAssigned = [];
-  
+
     try {
       const parsed = JSON.parse(rawStates);
       // Ensure it's always an array
@@ -36,7 +36,7 @@ const DashBoard = () => {
     } catch (err) {
       console.error("Invalid statesAssigned in localStorage:", rawStates);
     }
-  
+
     axios
       .get(`${API_CONFIG.APIURL}/dashboard/summary`, {
         headers: {
@@ -49,11 +49,11 @@ const DashBoard = () => {
       })
       .catch((error) => {
         console.error("Error fetching asset data:", error);
-        setError("No Assets to load");
+        setError("Welcome To Asset Management");
         setLoading(false);
       });
-  }, []);  
-  
+  }, []);
+
   return (
     <Box sx={{ minHeight: "100vh", backgroundColor: "#F8F9FA", display: "flex", flexDirection: "column" }}>
       <Navbar setSidebarOpen={setSidebarOpen} />
