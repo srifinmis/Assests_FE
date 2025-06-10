@@ -2,7 +2,7 @@
 
 // API Configuration
 const API_CONFIG = {
-    APIURL: 'http://localhost:2727/api', // Asset API
+    APIURL: 'http://192.168.80.38:2727/api', // Asset API
   };
   
   // Refresh Intervals and Timeouts
@@ -12,7 +12,7 @@ const API_CONFIG = {
   
   // UI Configuration (if any UI-related settings are needed)
   const UI_CONFIG = {
-    BASE_UI_URL: 'http://localhost:3333', // UI base URL
+    BASE_UI_URL: 'http://192.168.80.38:3333', // UI base URL
   };
   
   module.exports = { API_CONFIG, REFRESH_CONFIG, UI_CONFIG };
