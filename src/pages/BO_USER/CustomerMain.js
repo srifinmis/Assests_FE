@@ -237,9 +237,9 @@ const CustomerMain = () => {
         <>
             <Navbar />
 
-            <Box sx={{ maxWidth: 500, mx: "auto", mt: 5 }}>
+            <Box sx={{ maxWidth: 500, align: "center", mx: "auto", mt: 5 }}>
                 <Typography variant="h5" gutterBottom>
-                    Customer Assign Details
+                    Assign to Customer
                 </Typography>
 
                 <TextField

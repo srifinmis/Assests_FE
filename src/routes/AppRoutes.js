@@ -173,18 +173,14 @@ import LUCReport from "../Components/LUCReport";
 
 // HO USER
 import CreditBulkUpload from "../pages/HO_USER/HObulkupload";
-import ROBulkUpload from "../pages/RO_USER/RObulkupload"
 import ROReport from "../pages/RO_USER/ROReport";
-import RO from "../pages/HO_USER/RO";
 import ROpage from "../pages/RO_USER/ROpage"
 import Roassign from "../pages/RO_USER/Roassign"
 import BOReport from "../pages/BO_USER/BOReport";
-import BO from "../pages/HO_USER/BO";
 import BOpage from "../pages/BO_USER/BOpage";
 import BOassign from "../pages/BO_USER/BOassign";
 import CustomerMain from "../pages/BO_USER/CustomerMain"
 import Customermaker from "../pages/BO_USER/CustomerEdit"
-import Customer from "../pages/HO_USER/Customer";
 
 // CIC
 import CICReports from "../Components/Reports";
@@ -272,7 +268,7 @@ const AppRoutes = () => {
 
                 <Route path="/bo-user/assign-bo" element={<CustomerMain />} />
                 {/* <Route path="/bo-user/customeredit/:docket_id" element={<Customermaker />} /> */}
-                <Route path="/bo-user/customer" element={<Customer />} />
+
               </Routes>
             </ProtectedRoute>
           }
