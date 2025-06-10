@@ -184,9 +184,9 @@ const BOReport = () => {
     const fetchReport = async () => {
         try {
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-            const emp_id = loggedInUser.emp_id;
+            const emp_id2 = loggedInUser.emp_id2;
             const res = await axios.get(`${API_CONFIG.APIURL}/bos/bo-report`, {
-                headers: { emp_id }
+                headers: { emp_id2 }
             });
             setData(res.data);
         } catch (err) {

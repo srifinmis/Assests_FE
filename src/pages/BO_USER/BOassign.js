@@ -26,9 +26,9 @@ const BOassign = () => {
     const fetchBOs = async () => {
         try {
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-            const emp_id = loggedInUser.emp_id;
+            const emp_id2 = loggedInUser.emp_id2;
             const response = await axios.get(`${API_CONFIG.APIURL}/bos/detailsassign`, {
-                headers: { "emp_id": emp_id }
+                headers: { emp_id2 }
             });
             setBOs(response.data);
             setData(response.data);

@@ -167,9 +167,10 @@ const BulkUpload = () => {
     );
 
     const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-    const requestedBy = loggedInUser.emp_id;
+    const requestedBy = loggedInUser.emp_id2;
+    const requestedByemp = loggedInUser.emp_id;
 
-    if (!requestedBy) {
+    if (!requestedBy || !requestedByemp) {
       setSnackbarMessage("❌ User not logged in. Please log in and try again.");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
@@ -179,6 +180,7 @@ const BulkUpload = () => {
     const formData = new FormData();
     formData.append("file", uploadedFile);
     formData.append("requested_by", requestedBy);
+    formData.append("requested_byemp", requestedByemp);
     formData.append("flag", uploadFlag);
 
     try {

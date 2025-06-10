@@ -77,9 +77,9 @@ const ROPage = () => {
     const fetchROs = async () => {
         try {
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-            const emp_id = loggedInUser.emp_id;
+            const emp_id2 = loggedInUser.emp_id2;
             const response = await axios.get(`${API_CONFIG.APIURL}/ros/detailslog`, {
-                headers: { "emp_id": emp_id }
+                headers: { emp_id2 }
             });
             setROs(response.data);
         } catch (error) {
@@ -173,7 +173,8 @@ const ROPage = () => {
             requiredFields.every(field => row[field] !== undefined && row[field] !== "")
         );
         const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-        const requestedBy = loggedInUser.emp_id;
+        const requestedBy = loggedInUser.emp_id2;
+        const acceptedEmp = loggedInUser.emp_id;
 
         if (!requestedBy) {
             setSnackbarMessage("❌ User not logged in. Please log in and try again.");
@@ -185,6 +186,7 @@ const ROPage = () => {
         const formData = new FormData();
         formData.append("file", uploadedFile);
         formData.append("requested_by", requestedBy);
+        formData.append("accepted_by", acceptedEmp);
 
         for (let pair of formData.entries()) {
             console.log(pair[0] + ':', pair[1]);
@@ -192,7 +194,7 @@ const ROPage = () => {
         try {
             setLoading(true);
             console.log("bulk upload: ", formData)
-            const response = await axios.post(`${API_CONFIG.APIURL}/bulk/upload-ro`, formData, {
+            const response = await axios.post(`${API_CONFIG.APIURL}/bulk/acceptupload-ro`, formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
@@ -283,9 +285,14 @@ const ROPage = () => {
             .filter((row) => selectedRows[row.instakit_no])
             .map((row) => row.instakit_no);
 
+        const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
+        const requestedByEmp = loggedInUser.emp_id;
+        console.log('emp details: ', requestedByEmp)
+
         try {
             const response = await axios.post(`${API_CONFIG.APIURL}/ros/accept`, {
-                docketIds: selectedDocketIds
+                docketIds: selectedDocketIds,
+                roAcceptedBy: requestedByEmp
             });
 
             console.log("Success:", response.data);

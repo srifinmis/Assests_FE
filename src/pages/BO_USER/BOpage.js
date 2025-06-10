@@ -64,12 +64,8 @@ const BOPage = () => {
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-    // const [page, setPage] = useState(0);
-    // const [rowsPerPage, setRowsPerPage] = useState(20);
     const [activeSheet, setActiveSheet] = useState("");
     const [uploadedFile, setUploadedFile] = useState(null);
-
-
 
     useEffect(() => {
         fetchBOs();
@@ -78,9 +74,9 @@ const BOPage = () => {
     const fetchBOs = async () => {
         try {
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-            const emp_id = loggedInUser.emp_id;
+            const emp_id2 = loggedInUser.emp_id2;
             const response = await axios.get(`${API_CONFIG.APIURL}/bos/detailslog`, {
-                headers: { "emp_id": emp_id }
+                headers: { emp_id2 }
             });
             setBOs(response.data);
         } catch (error) {
@@ -182,6 +178,7 @@ const BOPage = () => {
 
         const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
         const requestedBy = loggedInUser.emp_id2;
+        const acceptedEmp = loggedInUser.emp_id;
 
         if (!requestedBy) {
             setSnackbarMessage("❌ User not logged in. Please log in and try again.");
@@ -193,6 +190,7 @@ const BOPage = () => {
         const formData = new FormData();
         formData.append("file", uploadedFile);
         formData.append("requested_by", requestedBy);
+        formData.append("accepted_by", acceptedEmp);
 
         for (let pair of formData.entries()) {
             console.log(pair[0] + ':', pair[1]);
@@ -200,7 +198,7 @@ const BOPage = () => {
         try {
             setLoading(true);
             console.log("bulk bo upload: ", formData)
-            const response = await axios.post(`${API_CONFIG.APIURL}/bulk/upload-bo`, formData, {
+            const response = await axios.post(`${API_CONFIG.APIURL}/bulk/acceptupload-bo`, formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
@@ -297,9 +295,14 @@ const BOPage = () => {
             .filter((row) => selectedRows[row.instakit_no])
             .map((row) => row.instakit_no);
 
+        const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
+        const acceptedEmp = loggedInUser.emp_id;
+        console.log('emp details: ', acceptedEmp)
+
         try {
             const response = await axios.post(`${API_CONFIG.APIURL}/bos/accept`, {
-                docketIds: selectedDocketIds
+                docketIds: selectedDocketIds,
+                acceptedEmp: acceptedEmp
             });
 
             console.log("Success:", response.data);
