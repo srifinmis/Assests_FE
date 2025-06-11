@@ -26,7 +26,7 @@ const MODULES = {
   BULK_UPLOAD: "IT-Bulk Upload",
   ASSET_DEPRECIATION: "IT-Asset Depreciation",
   USER_ROLES: "IT-User Roles",
-  HO_REPORT: "HO_Report", HO_ASSIGN: "HO_Assign",
+  HO_REPORT: "HO_Report", HO_ASSIGN: "HO_Assign", HO_RECORN: 'HO_Recorn',
   RO_REPORT: "RO_Report", RO_ACCEPT: "RO_Accept", RO_ASSIGN: "RO_Assign",
   BO_REPORT: "BO_Report", BO_ACCEPT: "BO_Accept", BO_ASSIGN: "BO_Assign",
 };
@@ -353,6 +353,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
                 <BusinessIcon sx={{ color: "#93C5FD" }} />
               </ListItemIcon>
               <ListItemText primary="Assign" />
+            </ListItemButton>
+          )}
+          {/* RECORN Customer Details */}
+          {isModuleAllowed(MODULES.HO_RECORN) && (
+            <ListItemButton
+              sx={menuItemStyles}
+              onClick={() => handleNavigate("/recorn")}
+              aria-label="Navigate to HO Recorn"
+            >
+              <ListItemIcon>
+                <BusinessIcon sx={{ color: "#93C5FD" }} />
+              </ListItemIcon>
+              <ListItemText primary="Recorn" />
             </ListItemButton>
           )}
         </List>
