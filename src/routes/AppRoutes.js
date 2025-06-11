@@ -182,6 +182,9 @@ import BOassign from "../pages/BO_USER/BOassign";
 import CustomerMain from "../pages/BO_USER/CustomerMain"
 import Customermaker from "../pages/BO_USER/CustomerEdit"
 
+//Recorn
+import Recorncustomer from '../pages/RecornUpload/Recorncustomer'
+
 // CIC
 import CICReports from "../Components/Reports";
 import CICReupload from "../Components/Reupload";
@@ -267,6 +270,9 @@ const AppRoutes = () => {
                 <Route path="/bo-user/boassign" element={<BOassign />} />
 
                 <Route path="/bo-user/assign-bo" element={<CustomerMain />} />
+
+                <Route path="/recorn" element={<Recorncustomer />} />
+
                 {/* <Route path="/bo-user/customeredit/:docket_id" element={<Customermaker />} /> */}
 
               </Routes>
