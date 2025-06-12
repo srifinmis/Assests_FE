@@ -190,32 +190,10 @@ const BulkUpload = () => {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        responseType: "blob",
       });
 
-      const contentType = response.headers["content-type"];
-      const isExcel = contentType.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-
-      if (isExcel) {
-        const blob = new Blob([response.data], { type: contentType });
-        const downloadUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = downloadUrl;
-        link.download = "missing_File.xlsx";
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-
-        setSnackbarMessage("❌ Upload aborted. Some Data Missmatch found. Excel downloaded.");
-        setSnackbarSeverity("error");
-        return;
-      } else {
-        const text = await response.data.text(); // Convert blob to text
-        const result = JSON.parse(text);
-        setSnackbarMessage(result.message || "✅ Upload file successful!");
-        setSnackbarSeverity("success");
-      }
-
+      setSnackbarMessage("✅ Upload file Successful!");
+      setSnackbarSeverity("success");
       setExcelData({});
       setFileName("");
       setUploadedFile(null);
