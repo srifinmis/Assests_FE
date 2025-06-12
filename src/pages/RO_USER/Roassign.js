@@ -63,6 +63,7 @@ const ROAssign = () => {
     const [boId, setBoId] = useState("");
     const [boName, setBoName] = useState("");
     const [boData, setBoData] = React.useState({});
+    const [selectedBoId, setSelectedBoId] = useState("");
     const [selectedDocketIds, setSelectedDocketIds] = React.useState({});
     const [excelData, setExcelData] = useState({});
     const [fileName, setFileName] = useState("");
@@ -95,8 +96,15 @@ const ROAssign = () => {
     }
 
     const fetchBOIds = async () => {
+        const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
+        const requested = loggedInUser.emp_id2;
+        console.log('requestedby : ', requested)
         try {
-            const response = await axios.get(`${API_CONFIG.APIURL}/bos/boiddropdown`);
+            const response = await axios.get(`${API_CONFIG.APIURL}/bos/boiddropdown`, {
+                headers: {
+                    "requested": requested
+                }
+            });
             console.log('response bousers: ', response)
             setBOIds(response.data);
         } catch (error) {
@@ -405,36 +413,49 @@ const ROAssign = () => {
 
                                     {/* NEW: BO ID input field */}
                                     <TableCell sx={{ width: '250px' }}>
-                                        <Autocomplete
-                                            options={uniqueBOs}
-                                            getOptionLabel={(option) =>
-                                                option?.branchid_name ? `${option.branchid_name}` : ""
-                                            }
-                                            isOptionEqualToValue={(option, value) => option.branchid_name === value.branchid_name}
-                                            disabled={!selectedRows[ro.instakit_no]}
-                                            value={
-                                                uniqueBOs.find((bo) => bo.emp_id === boData[ro.instakit_no]?.boId) || null
-                                            }
-                                            onChange={(event, newValue) => {
-                                                setBoData((prev) => ({
-                                                    ...prev,
-                                                    [ro.instakit_no]: {
-                                                        ...prev[ro.instakit_no],
-                                                        boId: newValue ? newValue.emp_id : "",
-                                                        branchid_name: newValue ? newValue.branchid_name : "",
-                                                    },
-                                                }));
-                                            }}
-                                            renderInput={(params) => (
-                                                <TextField
-                                                    {...params}
-                                                    label="BO ID"
-                                                    variant="outlined"
-                                                    size="small"
-                                                    placeholder="Select BO"
-                                                />
-                                            )}
-                                        />
+                                        {selectedRows[ro.instakit_no] ? (
+                                            <Autocomplete
+                                                disablePortal
+                                                id={`bo-id-autocomplete-${ro.instakit_no}`}
+                                                options={bos}
+                                                getOptionLabel={(option) => option.branchid_name}
+                                                value={bos.find((bo) => bo.branchid_name === boData[ro.instakit_no]?.boId) || null}
+                                                onChange={(event, newValue) => {
+                                                    setBoData((prev) => ({
+                                                        ...prev,
+                                                        [ro.instakit_no]: {
+                                                            boId: newValue ? newValue.branchid_name : "",
+                                                            branchid_name: newValue ? newValue.branchid_name : "",
+                                                        },
+                                                    }));
+                                                }}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label="BO ID"
+                                                        variant="outlined"
+                                                        size="small"
+                                                        fullWidth
+                                                        placeholder="Select BO or Search"
+                                                    />
+                                                )}
+                                                // Optional: Add an empty option at the top if needed for "Select BO"
+                                                renderOption={(props, option) => (
+                                                    <MenuItem {...props} key={option.branchid_name} value={option.branchid_name}>
+                                                        {option.branchid_name}
+                                                    </MenuItem>
+                                                )}
+                                            />
+                                        ) : (
+                                            <TextField
+                                                label="BO ID"
+                                                variant="outlined"
+                                                size="small"
+                                                disabled
+                                                placeholder="Select BO ID"
+                                                fullWidth
+                                            />
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -464,20 +485,6 @@ const ROAssign = () => {
                         </TextField>
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        {/* <TextField
-                            label="BO ID"
-                            variant="outlined"
-                            size="small"
-                            value={boId}
-                            onChange={(e) => setBoId(e.target.value)}
-                        />
-                        <TextField
-                            label="BO Name"
-                            variant="outlined"
-                            size="small"
-                            value={boName}
-                            onChange={(e) => setBoName(e.target.value)}
-                        /> */}
                         <Button
                             variant="contained"
                             color="primary"
