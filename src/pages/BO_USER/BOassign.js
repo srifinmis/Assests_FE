@@ -62,9 +62,6 @@ const BOassign = () => {
     const totalPages = Math.ceil(filteredData.length / rowsPerPage);
     const visibleData = filteredData.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-    // const totalPages = Math.ceil(bos.length / rowsPerPage);
-    // const visibleData = bos.slice((page - 1) * rowsPerPage, page * rowsPerPage);
-
     const columnHeaders = ["InstaKit NO.", "Unit ID", "Unit Name", "Received Date", "Action"];
 
     return (

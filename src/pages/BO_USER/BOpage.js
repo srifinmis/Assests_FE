@@ -227,8 +227,6 @@ const BOPage = () => {
                 setSnackbarSeverity("success");
             }
 
-            // setSnackbarMessage("✅ Upload file Successful!");
-            // setSnackbarSeverity("success");
             setExcelData({});
             setFileName("");
             setUploadedFile(null);
@@ -285,11 +283,6 @@ const BOPage = () => {
         }));
     };
 
-    // const handleAccept = () => {
-    //     const selected = ros.filter((row) => selectedRows[row.instakit_no]);
-    //     console.log("Accepted rows:", selected);
-    //     // Perform accept action here...
-    // };
     const handleAccept = async () => {
         const selectedDocketIds = bos
             .filter((row) => selectedRows[row.instakit_no])

@@ -131,113 +131,116 @@ const Login = () => {
           </Box>
 
           {/* Right Section (Login Form) */}
-          <Box
-            sx={{
-              flex: 1,
-              minWidth: "280px",
-              maxWidth: "380px",
-              background: "#FAFAFA",
-              padding: "35px",
-              borderRadius: "0 20px 20px 0",
-              boxShadow: "8px 8px 20px rgba(0, 0, 0, 0.15)",
-              textAlign: "center",
-              "&:hover": {
-                boxShadow: "10px 10px 25px rgba(0, 0, 0, 0.2)",
-              },
-            }}
-          >
-            <Typography
-              variant="h4"
+          <form onSubmit={handleLogin}>
+            <Box
               sx={{
-                fontWeight: "bold",
-                mb: 3,
-                fontSize: "24px",
-                textTransform: "uppercase",
-                color: "#2A5F9E",
-              }}
-            >
-              LOGIN
-            </Typography>
-
-            {/* emp_id Field */}
-            <TextField
-              label="Employee Id"
-              variant="outlined"
-              fullWidth
-              value={emp_id}
-              onChange={(e) => setemp_id(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <AccountCircleIcon sx={{ color: "#3A78C9" }} />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ mb: 2 }}
-            />
-
-            {/* Password Field with Show/Hide Option */}
-            <TextField
-              label="Password"
-              type={showPassword ? "text" : "password"}
-              variant="outlined"
-              fullWidth
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <LockIcon sx={{ color: "#3A78C9" }} />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={togglePasswordVisibility} edge="end">
-                      {showPassword ? <VisibilityOff sx={{ color: "#3A78C9" }} /> : <Visibility sx={{ color: "#3A78C9" }} />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ mb: 2 }}
-            />
-
-            {/* Remember Me & Forgot Password */}
-            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-              <FormControlLabel
-                control={<Checkbox checked={rememberMe} onChange={() => setRememberMe(!rememberMe)} />}
-                label="Remember me"
-              />
-              <Link to="/ForgotPassword" style={{ color: "#1c5789", fontSize: "12px" }}>
-                <MailOutlineIcon sx={{ mr: 1, fontSize: "20px" }} /> Forgot Password?
-              </Link>
-            </Box>
-
-            {/* Login Button */}
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              onClick={handleLogin}
-              disabled={loading}
-              sx={{
-                mb: 2,
-                textTransform: "none",
-                backgroundColor: "#1c5789",
+                flex: 1,
+                minWidth: "280px",
+                maxWidth: "380px",
+                background: "#FAFAFA",
+                padding: "35px",
+                borderRadius: "0 20px 20px 0",
+                boxShadow: "8px 8px 20px rgba(0, 0, 0, 0.15)",
+                textAlign: "center",
                 "&:hover": {
-                  backgroundColor: "#154A6A",
+                  boxShadow: "10px 10px 25px rgba(0, 0, 0, 0.2)",
                 },
               }}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : "Login"}
-            </Button>
-
-            {/* Message */}
-            {message && (
-              <Typography variant="body2" sx={{ color: "red", fontSize: "14px" }}>
-                {message}
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: "bold",
+                  mb: 3,
+                  fontSize: "24px",
+                  textTransform: "uppercase",
+                  color: "#2A5F9E",
+                }}
+              >
+                LOGIN
               </Typography>
-            )}
-          </Box>
+
+              {/* emp_id Field */}
+              <TextField
+                label="Employee Id"
+                variant="outlined"
+                fullWidth
+                value={emp_id}
+                onChange={(e) => setemp_id(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <AccountCircleIcon sx={{ color: "#3A78C9" }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ mb: 2 }}
+              />
+
+              {/* Password Field with Show/Hide Option */}
+              <TextField
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                variant="outlined"
+                fullWidth
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockIcon sx={{ color: "#3A78C9" }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={togglePasswordVisibility} edge="end">
+                        {showPassword ? <VisibilityOff sx={{ color: "#3A78C9" }} /> : <Visibility sx={{ color: "#3A78C9" }} />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ mb: 2 }}
+              />
+
+              {/* Remember Me & Forgot Password */}
+              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+                <FormControlLabel
+                  control={<Checkbox checked={rememberMe} onChange={() => setRememberMe(!rememberMe)} />}
+                  label="Remember me"
+                />
+                <Link to="/ForgotPassword" style={{ color: "#1c5789", fontSize: "12px" }}>
+                  <MailOutlineIcon sx={{ mr: 1, fontSize: "20px" }} /> Forgot Password?
+                </Link>
+              </Box>
+
+              {/* Login Button */}
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                // onClick={handleLogin}
+                type="submit"
+                disabled={loading}
+                sx={{
+                  mb: 2,
+                  textTransform: "none",
+                  backgroundColor: "#1c5789",
+                  "&:hover": {
+                    backgroundColor: "#154A6A",
+                  },
+                }}
+              >
+                {loading ? <CircularProgress size={24} color="inherit" /> : "Login"}
+              </Button>
+
+              {/* Message */}
+              {message && (
+                <Typography variant="body2" sx={{ color: "red", fontSize: "14px" }}>
+                  {message}
+                </Typography>
+              )}
+            </Box>
+          </form>
         </Box>
       </Container>
     </Box>
