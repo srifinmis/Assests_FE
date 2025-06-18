@@ -46,34 +46,25 @@ const HOReport = () => {
 
         const rows = exportData.map((ro) => ({
             "InstaKit NO.": ro.docket_id,
-            "From": ro.ho_by,
+            "Sent From": ro.ho_by,
             "Assigned HO User": ro.ho_asigned_by,
             "Assigned Date": ro.ho_assigned_date,
             "Assigned To": ro.ho_assigned_to,
             "Status": ro.status,
             "Region Accepted By": ro.ro_accepted_by,
             "Region Accepted Date": ro.ro_accepted_date,
-            "Region Assigned To": ro.ro_assigned_to,
             "Region Assigned By": ro.ro_asigned_by,
             "Region Assigned Date": ro.ro_assigned_date,
+            "Region Assigned To": ro.ro_assigned_to,
             "Region Status": ro.ro_status,
             "Branch Accepted By": ro.bo_accepted_by,
             "Branch Accepted Date": ro.bo_accepted_date,
-            "Branch Assigned To Customer ID": ro.customer_id,
             "Branch Assigned By": ro.bo_asigned_by,
             "Branch Assigned Date": ro.bo_assigned_date,
             "Branch Status": ro.bo_status,
-            "Loan Application Number":ro.loan_app_no,
-            "Issued Date":ro.issue_date,
-
-            // "Unit Name":
-            //     ro.ho_assigned_to?.startsWith("B")
-            //         ? ro.bo_name
-            //         : ro.ho_assigned_to?.startsWith("R")
-            //             ? ro.ro_name
-            //             : "-",
-            // "Assigned Date": ro.ho_assigned_date,
-            // "Pod": ro.pod,
+            "Customer ID": ro.customer_id,
+            "Loan Application Number": ro.loan_app_no,
+            "Issued Date": ro.issue_date,
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(rows);
