@@ -53,16 +53,16 @@ const HOReport = () => {
             "Status": ro.status,
             "Region Accepted By": ro.ro_accepted_by,
             "Region Accepted Date": ro.ro_accepted_date,
-            "Region Assigned To": ro.ro_assigned_to,
             "Region Assigned By": ro.ro_asigned_by,
             "Region Assigned Date": ro.ro_assigned_date,
+            "Region Assigned To": ro.ro_assigned_to,
             "Region Status": ro.ro_status,
             "Branch Accepted By": ro.bo_accepted_by,
             "Branch Accepted Date": ro.bo_accepted_date,
-            "Branch Assigned To Customer ID": ro.customer_id,
             "Branch Assigned By": ro.bo_asigned_by,
             "Branch Assigned Date": ro.bo_assigned_date,
             "Branch Status": ro.bo_status,
+<<<<<<< HEAD
             "Loan Application Number": ro.loan_app_no,
             "Issued Date": ro.issue_date,
 
@@ -74,6 +74,11 @@ const HOReport = () => {
             //             : "-",
             // "Assigned Date": ro.ho_assigned_date,
             // "Pod": ro.pod,
+=======
+            "Customer ID": ro.customer_id,
+            "Loan Application Number": ro.loan_app_no,
+            "Issued Date": ro.issue_date,
+>>>>>>> f2e6d3e77da7b41689fb4859033893a79d620f9d
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(rows);
