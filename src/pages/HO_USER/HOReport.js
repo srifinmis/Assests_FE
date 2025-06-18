@@ -43,7 +43,7 @@ const HOReport = () => {
 
     const handleDownload = () => {
         const exportData = filteredData.length ? filteredData : data;
-        console.log("exportData handledownload: ", exportData);
+
         const rows = exportData.map((ro) => ({
             "InstaKit NO.": ro.docket_id,
             "Sent From": ro.ho_by,
@@ -62,23 +62,9 @@ const HOReport = () => {
             "Branch Assigned By": ro.bo_asigned_by,
             "Branch Assigned Date": ro.bo_assigned_date,
             "Branch Status": ro.bo_status,
-<<<<<<< HEAD
-            "Loan Application Number": ro.loan_app_no,
-            "Issued Date": ro.issue_date,
-
-            // "Unit Name":
-            //     ro.ho_assigned_to?.startsWith("B")
-            //         ? ro.bo_name
-            //         : ro.ho_assigned_to?.startsWith("R")
-            //             ? ro.ro_name
-            //             : "-",
-            // "Assigned Date": ro.ho_assigned_date,
-            // "Pod": ro.pod,
-=======
             "Customer ID": ro.customer_id,
             "Loan Application Number": ro.loan_app_no,
             "Issued Date": ro.issue_date,
->>>>>>> f2e6d3e77da7b41689fb4859033893a79d620f9d
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(rows);
