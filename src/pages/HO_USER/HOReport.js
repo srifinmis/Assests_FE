@@ -43,10 +43,10 @@ const HOReport = () => {
 
     const handleDownload = () => {
         const exportData = filteredData.length ? filteredData : data;
-
+        console.log("exportData handledownload: ", exportData);
         const rows = exportData.map((ro) => ({
             "InstaKit NO.": ro.docket_id,
-            "From": ro.ho_by,
+            "Sent From": ro.ho_by,
             "Assigned HO User": ro.ho_asigned_by,
             "Assigned Date": ro.ho_assigned_date,
             "Assigned To": ro.ho_assigned_to,
@@ -63,8 +63,8 @@ const HOReport = () => {
             "Branch Assigned By": ro.bo_asigned_by,
             "Branch Assigned Date": ro.bo_assigned_date,
             "Branch Status": ro.bo_status,
-            "Loan Application Number":ro.loan_app_no,
-            "Issued Date":ro.issue_date,
+            "Loan Application Number": ro.loan_app_no,
+            "Issued Date": ro.issue_date,
 
             // "Unit Name":
             //     ro.ho_assigned_to?.startsWith("B")
