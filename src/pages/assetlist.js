@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar"; // Ensure correct path
 import axios from "axios";
 import * as XLSX from "xlsx";
-import { Search, IosShare  } from "@mui/icons-material";
+import { Search, IosShare } from "@mui/icons-material";
 import { InfoOutlined } from "@mui/icons-material";
 import { Tooltip } from "@mui/material";
 
@@ -30,8 +30,8 @@ const AssetList = () => {
   const [filteredAssets, setFilteredAssets] = useState([]); // For search functionality
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [searchQuery, setSearchQuery] = useState(""); 
-  const [allowedModules, setAllowedModules] = useState([]); 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [allowedModules, setAllowedModules] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,6 +44,7 @@ const AssetList = () => {
       .get(`${API_CONFIG.APIURL}/assetlist/details/${category}/${type}`)
       .then((response) => {
         setAssets(response.data);
+        console.log('response :-------', response.data)
         setFilteredAssets(response.data);
         setLoading(false);
       })
@@ -95,13 +96,13 @@ const AssetList = () => {
       "Cluster": asset.assigned_to?.clusterid_name || "N/A",
       "State": asset.assigned_to?.state || "N/A",
     }));
-  
+
     const worksheet = XLSX.utils.json_to_sheet(formattedData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Assets");
     XLSX.writeFile(workbook, `Asset_List_${category}_${type}.xlsx`);
   };
-  
+
 
   if (loading)
     return (
@@ -125,58 +126,58 @@ const AssetList = () => {
     <>
       <Navbar />
       <Box sx={{ padding: 4 }}>
-      <Typography
-        variant="h5"
-        sx={{
-          mb: 3,
-          fontWeight: "bold",
-          textTransform: "capitalize",
-          color: "#1976D2",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        {category.replace("-", " ")} - {type}
+        <Typography
+          variant="h5"
+          sx={{
+            mb: 3,
+            fontWeight: "bold",
+            textTransform: "capitalize",
+            color: "#1976D2",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          {category.replace("-", " ")} - {type}
 
-        {/* Search & Export Buttons (Side by Side) */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          {/* Search Bar */}
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              backgroundColor: "#FFFFFF",
-              borderRadius: "30px",
-              padding: "6px 12px",
-              boxShadow: "0px 3px 8px rgba(0, 0, 0, 0.15)",
-              width: "350px",
-              border: "1px solid #ccc",
-            }}
-          >
-            <Search sx={{ color: "#757575", marginRight: "8px" }} />
-            <TextField
-              placeholder="Search assets..."
-              variant="standard"
-              InputProps={{ disableUnderline: true }}
-              value={searchQuery}
-              onChange={handleSearch}
-              sx={{ flex: 1 }}
-            />
+          {/* Search & Export Buttons (Side by Side) */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            {/* Search Bar */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                backgroundColor: "#FFFFFF",
+                borderRadius: "30px",
+                padding: "6px 12px",
+                boxShadow: "0px 3px 8px rgba(0, 0, 0, 0.15)",
+                width: "350px",
+                border: "1px solid #ccc",
+              }}
+            >
+              <Search sx={{ color: "#757575", marginRight: "8px" }} />
+              <TextField
+                placeholder="Search assets..."
+                variant="standard"
+                InputProps={{ disableUnderline: true }}
+                value={searchQuery}
+                onChange={handleSearch}
+                sx={{ flex: 1 }}
+              />
+            </Box>
+
+            {/* Export Button (Next to Search Bar) */}
+            <IconButton sx={{ color: "#1976D2" }} onClick={exportToExcel}>
+              <IosShare />
+            </IconButton>
           </Box>
-
-          {/* Export Button (Next to Search Bar) */}
-          <IconButton sx={{ color: "#1976D2" }} onClick={exportToExcel}>
-            <IosShare />
-          </IconButton>
-        </Box>
-      </Typography>
+        </Typography>
 
         <TableContainer component={Paper} elevation={4} sx={{ borderRadius: 3 }}>
           <Table>
             <TableHead>
               <TableRow sx={{ backgroundColor: "#F4F6F8" }}>
-              {["Asset ID", "Name", "IMEI Number", "Status", "Assigned To", ...(showActions ? ["Actions"] : [])].map((header) => (
+                {["Asset ID", "Name", "IMEI Number", "Status", "Assigned To", ...(showActions ? ["Actions"] : [])].map((header) => (
                   <TableCell key={header} sx={{ fontWeight: "bold", color: "#37474F" }}>
                     {header}
                   </TableCell>
@@ -197,23 +198,23 @@ const AssetList = () => {
                         display: "inline-block",
                         fontSize: "0.85rem",
                         backgroundColor:
-                        assignment_status === "Assigned"
-                          ? "#D1E8FF" // Light blue
-                          : assignment_status === "Under Maintenance"
-                          ? "#FFF3CD" // Light orange
-                          : assignment_status === "In Progress"
-                          ? "#FFE082" // Soft Amber (Better contrast)
-                          : "#E8F5E9", // Light green
-                      
-                      color:
-                        assignment_status === "Assigned"
-                          ? "#1976D2" // Deep blue
-                          : assignment_status === "Under Maintenance"
-                          ? "#FF9800" // Orange
-                          : assignment_status === "In Progress"
-                          ? "#795548" // Brown (Better contrast on yellow)
-                          : "#388E3C", // Dark green
-                      
+                          assignment_status === "Assigned"
+                            ? "#D1E8FF" // Light blue
+                            : assignment_status === "Under Maintenance"
+                              ? "#FFF3CD" // Light orange
+                              : assignment_status === "In Progress"
+                                ? "#FFE082" // Soft Amber (Better contrast)
+                                : "#E8F5E9", // Light green
+
+                        color:
+                          assignment_status === "Assigned"
+                            ? "#1976D2" // Deep blue
+                            : assignment_status === "Under Maintenance"
+                              ? "#FF9800" // Orange
+                              : assignment_status === "In Progress"
+                                ? "#795548" // Brown (Better contrast on yellow)
+                                : "#388E3C", // Dark green
+
                       }}
                     >
                       {assignment_status}
@@ -251,60 +252,60 @@ const AssetList = () => {
                   </TableCell>
                   {showActions && (
 
-                  <TableCell>
-                    {category === "assigned" && (
-                      <Button 
-                        variant="contained"
-                        sx={{ backgroundColor: "#388E3C", color: "white", "&:hover": { backgroundColor: "#1B5E20" }, mr: 1 }}
-                        onClick={() => handleAction(asset_id, "Free Pool")}
-                        disabled={(isApprovalModule && !isAdmin) || assignment_status === "In Progress"}
-
-                      >
-                        Free Pool
-                      </Button>                      
-                    )}
-                    {category === "free-pool" && (
-                      <Box display="flex" gap={2}>
+                    <TableCell>
+                      {category === "assigned" && (
                         <Button
                           variant="contained"
-                          sx={{
-                            backgroundColor: "#1976D2",
-                            color: "white",
-                            "&:hover": { backgroundColor: "#0D47A1" }
-                          }}
-                          onClick={() => handleAction(asset_id, "Assign")}
+                          sx={{ backgroundColor: "#388E3C", color: "white", "&:hover": { backgroundColor: "#1B5E20" }, mr: 1 }}
+                          onClick={() => handleAction(asset_id, "Free Pool")}
                           disabled={(isApprovalModule && !isAdmin) || assignment_status === "In Progress"}
-                          >
-                          Assign
-                        </Button>
-                        <Button
-                          variant="contained"
-                          sx={{
-                            backgroundColor: "#FF9800",
-                            color: "white",
-                            "&:hover": { backgroundColor: "#E65100" }
-                          }}
-                          onClick={() => handleAction(asset_id, "Maintenance")}
-                          disabled={(isApprovalModule && !isAdmin) || assignment_status === "In Progress"}
-                          >
-                          Maintenance
-                        </Button>
-                      </Box>
-                    )}
 
-                    {category === "maintenance" && (
-                      <Button
-                        variant="contained"
-                        sx={{ backgroundColor: "#388E3C", color: "white", "&:hover": { backgroundColor: "#1B5E20" } }}
-                        onClick={() => handleAction(asset_id, "Free Pool")}
-                        disabled={(isApprovalModule && !isAdmin) || assignment_status === "In Progress"}
                         >
-                        Free Pool
-                      </Button>
-                    )}
+                          Free Pool
+                        </Button>
+                      )}
+                      {category === "free-pool" && (
+                        <Box display="flex" gap={2}>
+                          <Button
+                            variant="contained"
+                            sx={{
+                              backgroundColor: "#1976D2",
+                              color: "white",
+                              "&:hover": { backgroundColor: "#0D47A1" }
+                            }}
+                            onClick={() => handleAction(asset_id, "Assign")}
+                            disabled={(isApprovalModule && !isAdmin) || assignment_status === "In Progress"}
+                          >
+                            Assign
+                          </Button>
+                          <Button
+                            variant="contained"
+                            sx={{
+                              backgroundColor: "#FF9800",
+                              color: "white",
+                              "&:hover": { backgroundColor: "#E65100" }
+                            }}
+                            onClick={() => handleAction(asset_id, "Maintenance")}
+                            disabled={(isApprovalModule && !isAdmin) || assignment_status === "In Progress"}
+                          >
+                            Maintenance
+                          </Button>
+                        </Box>
+                      )}
 
-                    
-                  </TableCell>
+                      {category === "maintenance" && (
+                        <Button
+                          variant="contained"
+                          sx={{ backgroundColor: "#388E3C", color: "white", "&:hover": { backgroundColor: "#1B5E20" } }}
+                          onClick={() => handleAction(asset_id, "Free Pool")}
+                          disabled={(isApprovalModule && !isAdmin) || assignment_status === "In Progress"}
+                        >
+                          Free Pool
+                        </Button>
+                      )}
+
+
+                    </TableCell>
                   )}
                 </TableRow>
               ))}
