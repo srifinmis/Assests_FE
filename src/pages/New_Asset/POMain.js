@@ -474,11 +474,11 @@ const POMain = () => {
     }, []);
 
     const handleEditPO = (po_number) => {
-        navigate(`/new-assets/edit-po/${po_number}`, { state: { po_number } });
+        navigate(`/new-assets/edit-po/:${po_number}`, { state: { po_number } });
     };
 
     const handleEditInvoice = (po_number) => {
-        navigate(`/new-assets/edit-invoice/${po_number}`, { state: { po_number } });
+        navigate(`/new-assets/edit-invoice/:${po_number}`, { state: { po_number } });
     };
 
     const handleAddNewPO = () => {
@@ -490,7 +490,7 @@ const POMain = () => {
     };
 
     const handleInvoiceUpload = (po_number) => {
-        navigate(`/new-assets/upload-invoice/${po_number}`, { state: { po_number } });
+        navigate(`/new-assets/upload-invoice/:${po_number}`, { state: { po_number } });
     };
 
     const handlePreview = async (po_number) => {

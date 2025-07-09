@@ -60,6 +60,7 @@ const MaintenanceApproval = () => {
   
     try {
       const res = await axios.get(`${API_CONFIG.APIURL}/underapproval/free-under-assets`);
+      console.log("res",res);
       if (Array.isArray(res.data)) {
         const metadata = {
           timestamp: Date.now(),
@@ -288,25 +289,7 @@ const MaintenanceApproval = () => {
                       <TableCell>{asset.asset_name}</TableCell>
                       <TableCell>{asset.imei_num}</TableCell>
                       <TableCell>
-                         {`${asset?.system?.emp_id || "N/A"} - ${asset?.system?.emp_name || "N/A"}`}
-                         <Tooltip
-                         title={
-                           <Box sx={{ textAlign: "left" }}>
-                             <Typography variant="body2">Designation: {asset?.system?.designation_name || "N/A"}</Typography>
-                             <Typography variant="body2">Department: {asset?.system?.department_name || "N/A"}</Typography>
-                             <Typography variant="body2">Branch: {asset?.system?.branchid_name || "N/A"}</Typography>
-                             <Typography variant="body2">Area: {asset?.system?.areaid_name || "N/A"}</Typography>
-                             <Typography variant="body2">Region: {asset?.system?.regionid_name || "N/A"}</Typography>
-                             <Typography variant="body2">Cluster: {asset?.system?.clusterid_name || "N/A"}</Typography>
-                             <Typography variant="body2">State: {asset?.system?.state || "N/A"}</Typography>
-                           </Box>
-                         }
-                         arrow
-                         >
-                          <IconButton size="small" sx={{ color: "#1976D2", ml: 1 }}>
-                             <InfoOutlined fontSize="small" />
-                         </IconButton>
-                         </Tooltip>
+                         {`${asset.assigned_to || "N/A"}`}
                        </TableCell>
                       <TableCell>{asset.assignment_status}</TableCell>
                       <TableCell>
