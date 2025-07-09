@@ -53,10 +53,10 @@ const BOReport = () => {
 
         const rows = exportData.map((bo) => ({
             "InstaKit NO.": bo.docket_id,
-            "Unit ID": bo.ro_assigned_to,
-            "Unit Name": bo.bo_name,
             "Received Date": bo.ro_assigned_date,
             "Accepted Date": bo.bo_accepted_date,
+            "Unit ID": bo.ro_assigned_to,
+            "Unit Name": bo.bo_name,
             "Assigned Date": bo.bo_assigned_date,
             "Customer ID": bo.customer_id,
             "Issued Date": bo.issue_date,
@@ -75,10 +75,10 @@ const BOReport = () => {
     const filteredData = data.filter((row) => {
         const valuesToSearch = [
             row.docket_id,
-            row.ro_assigned_to,
-            row.bo_name,
             row.ro_assigned_date,
             row.bo_accepted_date,
+            row.ro_assigned_to,
+            row.bo_name,
             row.bo_assigned_date,
             row.customer_id,
             row.issue_date,
@@ -90,8 +90,8 @@ const BOReport = () => {
     const totalPages = Math.ceil(filteredData.length / rowsPerPage);
     const visibleData = filteredData.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-    const columnHeaders = ["InstaKit NO.", "Unit ID", "Unit Name", "Received Date",
-        "Accepted Date", "Assigned Date", "Customer ID", "Issued Date", "Status"];
+    const columnHeaders = ["InstaKit NO.", "Received Date", "Accepted Date",
+        "Unit ID", "Unit Name", "Assigned Date", "Customer ID", "Issued Date", "Status"];
 
     return (
         <>
@@ -175,10 +175,10 @@ const BOReport = () => {
                             {visibleData.map((bo, index) => (
                                 <TableRow key={index} hover>
                                     <TableCell>{bo.docket_id}</TableCell>
-                                    <TableCell>{bo.ro_assigned_to}</TableCell>
-                                    <TableCell>{bo.bo_name}</TableCell>
                                     <TableCell>{bo.ro_assigned_date}</TableCell>
                                     <TableCell>{bo.bo_accepted_date}</TableCell>
+                                    <TableCell>{bo.ro_assigned_to}</TableCell>
+                                    <TableCell>{bo.bo_name}</TableCell>
                                     <TableCell>{bo.bo_assigned_date}</TableCell>
                                     <TableCell>{bo.customer_id}</TableCell>
                                     <TableCell>{bo.issue_date}</TableCell>

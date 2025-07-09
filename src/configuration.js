@@ -6,8 +6,8 @@
 //   };
 
 const API_CONFIG = {
-  APIURL: 'http://localhost:2730/api',  
-};
+    APIURL: 'http://192.168.80.38:2727/api',
+  };
 
 // Refresh Intervals and Timeouts
 const REFRESH_CONFIG = {

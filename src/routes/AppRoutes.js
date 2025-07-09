@@ -175,6 +175,7 @@ import LUCReport from "../Components/LUCReport";
 
 // HO USER
 import CreditBulkUpload from "../pages/HO_USER/HObulkupload";
+import RORecornUpload from "../pages/RecornUpload/Recorncustomer";
 import ROReport from "../pages/RO_USER/ROReport";
 import ROpage from "../pages/RO_USER/ROpage"
 import Roassign from "../pages/RO_USER/Roassign"
@@ -261,7 +262,7 @@ const AppRoutes = () => {
                 {/* HO User Routes */}
                 <Route path="/ho-user/horeport" element={<HOReport />} />
                 <Route path="/ho-user/credit_bulk-upload" element={<CreditBulkUpload />} />
-                {/* <Route path="/ro-user/bulk-upload" element={<ROBulkUpload />} /> */}
+                <Route path="/ro-user/recorn-upload" element={<RORecornUpload />} />
 
                 {/* <Route path="/ho-user/rounassign" element={<RO />} /> */}
                 <Route path="/ro-user/roreport" element={<ROReport />} />

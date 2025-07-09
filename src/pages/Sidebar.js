@@ -67,6 +67,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
   const hoUserMenuItems = useMemo(() => [
     { text: "Report", icon: <EditIcon />, path: "/ho-user/roreport" },
     { text: "Assign", icon: <CloudUpload />, path: "/ho-user/credit_bulk-upload" },
+    { text: "Recorn", icon: <BusinessIcon />, path: "/ro-user/recorn-upload" },
   ], []);
 
   const roUserMenuItems = useMemo(() => [
