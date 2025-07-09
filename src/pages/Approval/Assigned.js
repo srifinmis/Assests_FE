@@ -63,8 +63,8 @@ const AssignApproval = () => {
       String(asset.asset_id).toLowerCase().includes(query) ||
       asset?.asset?.brand.toLowerCase().includes(query) ||
       asset?.asset?.model.toLowerCase().includes(query) ||
-      asset?.system?.emp_id.toLowerCase().includes(query) ||
-      asset?.system?.emp_name.toLowerCase().includes(query)
+      asset?.emp_id.toLowerCase().includes(query) ||
+      asset?.emp_name.toLowerCase().includes(query)
     );
     setFilteredAssetData(filtered);
   };
@@ -264,17 +264,17 @@ const AssignApproval = () => {
                       <TableCell>{asset.asset_name}</TableCell>
                       <TableCell>{asset.imei_num}</TableCell>
                       <TableCell>
-                        {`${asset?.system?.emp_id || "N/A"} - ${asset?.system?.emp_name || "N/A"}`}
+                        {`${asset?.emp_id || "N/A"} - ${asset?.emp_name || "N/A"}`}
                         <Tooltip
                           title={
                             <Box sx={{ textAlign: "left" }}>
-                              <Typography variant="body2">Designation: {asset?.system?.designation_name || "N/A"}</Typography>
-                              <Typography variant="body2">Department: {asset?.system?.department_name || "N/A"}</Typography>
-                              <Typography variant="body2">Branch: {asset?.system?.branchid_name || "N/A"}</Typography>
-                              <Typography variant="body2">Area: {asset?.system?.areaid_name || "N/A"}</Typography>
-                              <Typography variant="body2">Region: {asset?.system?.regionid_name || "N/A"}</Typography>
-                              <Typography variant="body2">Cluster: {asset?.system?.clusterid_name || "N/A"}</Typography>
-                              <Typography variant="body2">State: {asset?.system?.state || "N/A"}</Typography>
+                              <Typography variant="body2">Designation: {asset?.designation_name || "N/A"}</Typography>
+                              <Typography variant="body2">Department: {asset?.department_name || "N/A"}</Typography>
+                              <Typography variant="body2">Branch: {asset?.branchid_name || "N/A"}</Typography>
+                              <Typography variant="body2">Area: {asset?.areaid_name || "N/A"}</Typography>
+                              <Typography variant="body2">Region: {asset?.regionid_name || "N/A"}</Typography>
+                              <Typography variant="body2">Cluster: {asset?.clusterid_name || "N/A"}</Typography>
+                              <Typography variant="body2">State: {asset?.state || "N/A"}</Typography>
                             </Box>
                           }
                           arrow

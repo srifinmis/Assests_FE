@@ -27,10 +27,14 @@ const MaintenanceAsset = () => {
 
   const { API_CONFIG, REFRESH_CONFIG } = require('../configuration');
 
+  const [assignedTo, setAssignedTo] = useState(
+    asset?.emp_name && asset?.emp_id ? `${asset.emp_name} - ${asset.emp_id}` : "N/A"
+  );
+
   useEffect(() => {
     const encodedAssetIds = encodeURIComponent(encodedAssetId);
     const cacheKey = `assetDetailsMetadata_${encodedAssetIds}`;
-  
+
     const fetchAssetDetails = () => {
       axios
         .get(`${API_CONFIG.APIURL}/assignasset/details/${encodedAssetIds}`)
@@ -49,7 +53,7 @@ const MaintenanceAsset = () => {
           setLoading(false);
         });
     };
-  
+
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
       try {
@@ -64,10 +68,10 @@ const MaintenanceAsset = () => {
         console.warn("Failed to parse asset details cache:", err);
       }
     }
-  
+
     fetchAssetDetails();
   }, [encodedAssetId, API_CONFIG.APIURL, REFRESH_CONFIG.DROPDOWN_REFRESH_INTERVAL]);
-  
+
 
   const handleMoveToMaintenance = async () => {
     if (isProcessing) return;
@@ -93,6 +97,7 @@ const MaintenanceAsset = () => {
       const response = await axios.post(`${API_CONFIG.APIURL}/maintenanceasset/maintenance`, {
         asset_id: encodedAssetId,
         requested_by: requestedBy,
+        assigned_to: assignedTo
       });
 
       if (response.status === 200 && response.data.message) {
@@ -148,15 +153,22 @@ const MaintenanceAsset = () => {
           <TextField fullWidth label="Brand" value={asset?.brand || "N/A"} variant="outlined" disabled sx={{ mb: 2 }} />
           <TextField fullWidth label="Model" value={asset?.model || "N/A"} variant="outlined" disabled sx={{ mb: 2 }} />
           <TextField fullWidth label="IMEI Number" value={asset?.imei_num || "N/A"} variant="outlined" disabled sx={{ mb: 2 }} />
-          <TextField
+          {/* <TextField
             fullWidth
             label="Assigned To"
             value={asset?.emp_name && asset?.emp_id ? `${asset.emp_name} - ${asset.emp_id}` : "N/A"}
             variant="outlined"
             disabled
             sx={{ mb: 2 }}
+          /> */}
+          <TextField
+            fullWidth
+            label="Assigned To"
+            value={assignedTo}
+            onChange={(e) => setAssignedTo(e.target.value)}
+            variant="outlined"
+            sx={{ mb: 2 }}
           />
-
           <Button
             type="submit"
             variant="contained"
