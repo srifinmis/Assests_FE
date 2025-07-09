@@ -57,6 +57,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, allowedModules = [] }) => {
   ], []);
 
   const newAssetsMenuItems = useMemo(() => [
+    { text: "Purches Order", icon: <AddCircle />, path: "/new-assets/purchesorder" },
     { text: "Create PO", icon: <AddCircle />, path: "/new-assets/create-po" },
     { text: "Edit PO", icon: <EditIcon />, path: "/new-assets/edit-po" },
     { text: "Upload Invoice", icon: <RequestQuote />, path: "/new-assets/upload-invoice" },

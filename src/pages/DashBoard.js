@@ -5,6 +5,36 @@ import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import LaptopMacIcon from '@mui/icons-material/LaptopMac';
+import SmartphoneIcon from '@mui/icons-material/Smartphone';
+import FingerprintIcon from '@mui/icons-material/Fingerprint';
+import PrintIcon from '@mui/icons-material/Print';
+import SimCardIcon from '@mui/icons-material/SimCard';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+import BadgeIcon from '@mui/icons-material/Badge';
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
+
+const assetIcons = {
+  laptop: LaptopMacIcon,
+  mobile: SmartphoneIcon,
+  biometric: FingerprintIcon,
+  printer: PrintIcon,
+  'data card': CreditCardIcon,
+  'sim card': SimCardIcon,
+  'cug sim card': BadgeIcon,
+  license: AssignmentIndIcon,
+};
+
+const assetColors = {
+  laptop: '#4CAF50',        // Green
+  mobile: '#009688',        // Teal (changed from Deep Orange)
+  biometric: '#FF9800',     // Orange
+  printer: '#FF5722',       // Deep Orange (changed from Indigo)
+  'data card': '#9C27B0',   // Purple (changed from Teal)
+  'sim card': '#3F51B5',    // Indigo (changed from Purple)
+  'cug sim card': '#607D8B',// Blue Grey
+  license: '#8D6E63',       // Brown
+};
 
 const DashBoard = () => {
   const navigate = useNavigate();
@@ -71,103 +101,165 @@ const DashBoard = () => {
           </Typography>
         ) : (
           <Grid container spacing={3} justifyContent="center">
-            {assets.map((asset, index) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-                <Card
-                  sx={{
-                    backgroundColor: "#ECF0F1",
-                    color: "#1C2833",
-                    borderRadius: 3,
-                    p: 2,
-                    boxShadow: "0px 4px 10px rgba(0,0,0,0.1)",
-                    transition: "transform 0.3s, box-shadow 0.3s",
-                    "&:hover": {
-                      transform: "scale(1.05)",
-                      backgroundColor: "#D5DBDB",
-                      boxShadow: "0px 6px 12px rgba(0,0,0,0.2)",
-                    },
-                  }}
-                >
-                  <CardContent>
-                    <Typography variant="h6" sx={{ fontWeight: "bold", textAlign: "center", mb: 2 }}>
-                      {asset.name}
-                    </Typography>
+            {assets.map((asset, index) => {
+              const IconComponent = assetIcons[asset.name.toLowerCase()] || LaptopMacIcon;
+              const accentColor = assetColors[asset.name.toLowerCase()] || '#1976d2';
+              
+              // Create gradient based on accent color
+              const gradientColors = {
+                laptop: 'linear-gradient(135deg, #E8F5E8 0%, #C8E6C9 50%, #A5D6A7 100%)',
+                mobile: 'linear-gradient(135deg, #E0F2F1 0%, #B2DFDB 50%, #80CBC4 100%)',
+                biometric: 'linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 50%, #FFCC80 100%)',
+                printer: 'linear-gradient(135deg, #FBE9E7 0%, #FFCCBC 50%, #FFAB91 100%)',
+                'data card': 'linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 50%, #CE93D8 100%)',
+                'sim card': 'linear-gradient(135deg, #E8EAF6 0%, #C5CAE9 50%, #9FA8DA 100%)',
+                'cug sim card': 'linear-gradient(135deg, #ECEFF1 0%, #CFD8DC 50%, #B0BEC5 100%)',
+                license: 'linear-gradient(135deg, #EFEBE9 0%, #D7CCC8 50%, #BCAAA4 100%)',
+              };
+              
+              const cardGradient = gradientColors[asset.name.toLowerCase()] || gradientColors.laptop;
+              
+              return (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                  <Card
+                    sx={{
+                      background: cardGradient,
+                      color: '#2c3e50',
+                      borderRadius: 4,
+                      border: `1px solid ${accentColor}40`,
+                      boxShadow: `0 8px 24px 0 ${accentColor}20, 0 4px 12px 0 rgba(0,0,0,0.08)`,
+                      p: 2,
+                      minHeight: 260,
+                      position: 'relative',
+                      overflow: 'hidden',
+                      transition: 'box-shadow 0.3s, transform 0.2s',
+                      '&:hover': {
+                        boxShadow: `0 16px 40px 0 ${accentColor}40, 0 8px 20px 0 rgba(0,0,0,0.15)`,
+                        transform: 'translateY(-4px) scale(1.02)',
+                      },
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <CardContent sx={{ position: 'relative', minHeight: 120, zIndex: 1 }}>
+                      {/* Elegant background icon */}
+                      <IconComponent
+                        sx={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          fontSize: 100,
+                          opacity: 0.12,
+                          color: accentColor,
+                          filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.1))',
+                          transform: 'translate(-50%, -50%)',
+                          pointerEvents: 'none',
+                          zIndex: 0,
+                        }}
+                      />
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontWeight: 700,
+                          textAlign: 'center',
+                          mb: 2,
+                          color: accentColor,
+                          position: 'relative',
+                          zIndex: 1,
+                          fontSize: '1.2rem',
+                          letterSpacing: 0.5,
+                        }}
+                      >
+                        {asset.name}
+                      </Typography>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-end',
+                          position: 'relative',
+                          zIndex: 1,
+                          gap: 2,
+                        }}
+                      >
+                        {/* Hide Assigned & Maintenance in Total Assets Page */}
+                        {!isTotalAssetsPage && (
+                          <Box sx={{ textAlign: 'center', flex: 1 }}>
+                            <Typography
+                              variant="h4"
+                              sx={{
+                                fontWeight: 800,
+                                color: accentColor,
+                                mb: 0.5,
+                                cursor: 'pointer',
+                                transition: 'transform 0.2s',
+                                '&:hover': { transform: 'scale(1.15)' },
+                              }}
+                              onClick={() => navigate(`/assigned/${asset.name.toLowerCase()}`)}
+                            >
+                              {asset.assigned}
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: accentColor, fontWeight: 600, fontSize: '0.9rem' }}>Assigned</Typography>
 
-                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      {/* Hide Assigned & Maintenance in Total Assets Page */}
-                      {!isTotalAssetsPage && (
-                        <Box sx={{ textAlign: "center", flex: 1 }}>
+                            <Typography
+                              variant="h4"
+                              sx={{
+                                fontWeight: 800,
+                                color: '#d32f2f',
+                                mt: 1.5,
+                                cursor: 'pointer',
+                                transition: 'transform 0.2s',
+                                '&:hover': { transform: 'scale(1.15)' },
+                              }}
+                              onClick={() => navigate(`/maintenance/${asset.name.toLowerCase()}`)}
+                            >
+                              {asset.underMaintenance}
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: '#d32f2f', fontWeight: 600, fontSize: '0.8rem' }}>Under Maintenance</Typography>
+                          </Box>
+                        )}
+
+                        {/* Free Pool & Total */}
+                        <Box sx={{ textAlign: 'center', flex: 1 }}>
                           <Typography
                             variant="h4"
                             sx={{
-                              fontWeight: "bold",
-                              color: "#2ECC71",
-                              cursor: "pointer",
-                              transition: "transform 0.2s ease-in-out",
-                              "&:hover": { transform: "scale(1.2)" },
+                              fontWeight: 800,
+                              color: '#1976d2',
+                              mb: 0.5,
+                              cursor: 'pointer',
+                              transition: 'transform 0.2s',
+                              '&:hover': { transform: 'scale(1.15)' },
                             }}
-                            onClick={() => navigate(`/assigned/${asset.name.toLowerCase()}`)}
+                            onClick={() => navigate(`/free-pool/${asset.name.toLowerCase()}`)}
                           >
-                            {asset.assigned}
+                            {asset.free}
                           </Typography>
-                          <Typography variant="body2" sx={{ color: "#27AE60" }}>Assigned</Typography>
+                          <Typography variant="body2" sx={{ color: '#1976d2', fontWeight: 600, fontSize: '0.9rem' }}>Free Pool</Typography>
 
                           <Typography
                             variant="h4"
                             sx={{
-                              fontWeight: "bold",
-                              color: "#E74C3C",
-                              cursor: "pointer",
-                              transition: "transform 0.2s ease-in-out",
-                              mt: 1,
-                              "&:hover": { transform: "scale(1.2)" },
+                              fontWeight: 800,
+                              color: '#2c3e50',
+                              mt: 1.5,
+                              cursor: 'pointer',
+                              transition: 'transform 0.2s',
+                              '&:hover': { transform: 'scale(1.15)' },
                             }}
-                            onClick={() => navigate(`/maintenance/${asset.name.toLowerCase()}`)}
+                            onClick={() => navigate(`/total-assets/${asset.name.toLowerCase()}`)}
                           >
-                            {asset.underMaintenance}
+                            {asset.total}
                           </Typography>
-                          <Typography variant="body2" sx={{ color: "#C0392B", fontSize: "12px" }}>Under Maintenance</Typography>
+                          <Typography variant="body2" sx={{ color: '#2c3e50', fontWeight: 600, fontSize: '0.9rem' }}>Total</Typography>
                         </Box>
-                      )}
-
-                      {/* Free Pool & Total */}
-                      <Box sx={{ textAlign: "center", flex: 1 }}>
-                        <Typography
-                          variant="h4"
-                          sx={{
-                            fontWeight: "bold",
-                            color: "#2980B9",
-                            cursor: "pointer",
-                            transition: "transform 0.2s ease-in-out",
-                            "&:hover": { transform: "scale(1.2)" },
-                          }}
-                          onClick={() => navigate(`/free-pool/${asset.name.toLowerCase()}`)}
-                        >
-                          {asset.free}
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: "#3498DB" }}>Free Pool</Typography>
-
-                        <Typography
-                          variant="h4"
-                          sx={{
-                            fontWeight: "bold",
-                            color: "#34495E",
-                            cursor: "pointer",
-                            transition: "transform 0.2s ease-in-out",
-                            "&:hover": { transform: "scale(1.2)" },
-                            mt: 1,
-                          }}
-                          onClick={() => navigate(`/total-assets/${asset.name.toLowerCase()}`)}
-                        >
-                          {asset.total}
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: "#2C3E50" }}>Total</Typography>
                       </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })}
           </Grid>
         )}
       </Box>
