@@ -167,7 +167,7 @@ const BulkUpload = () => {
     );
 
     const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-    const requestedBy = loggedInUser.emp_id2;
+    const requestedBy = loggedInUser.emp_id_second;
     const requestedByemp = loggedInUser.emp_id;
 
     if (!requestedBy || !requestedByemp) {

@@ -83,10 +83,10 @@ const ROAssign = () => {
     const fetchROs = async () => {
         try {
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-            const emp_id2 = loggedInUser.emp_id2;
+            const emp_id_second = loggedInUser.emp_id_second;
             const response = await axios.get(`${API_CONFIG.APIURL}/ros/rodetailsassign`, {
                 headers: {
-                    emp_id2
+                    emp_id_second
                 }
             });
             setROs(response.data);
@@ -97,7 +97,7 @@ const ROAssign = () => {
 
     const fetchBOIds = async () => {
         const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-        const requested = loggedInUser.emp_id2;
+        const requested = loggedInUser.emp_id_second;
         console.log('requestedby : ', requested)
         try {
             const response = await axios.get(`${API_CONFIG.APIURL}/bos/boiddropdown`, {
@@ -200,7 +200,7 @@ const ROAssign = () => {
         );
 
         const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-        const requestedBy = loggedInUser.emp_id2;
+        const requestedBy = loggedInUser.emp_id_second;
         const acceptedEmp = loggedInUser.emp_id;
 
         if (!requestedBy) {
@@ -317,7 +317,7 @@ const ROAssign = () => {
         console.log("Form data: ", selectedDocketIds, boIds);
 
         const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-        // const requestedBy = loggedInUser.emp_id2;
+        // const requestedBy = loggedInUser.emp_id_second;
         const acceptedEmp = loggedInUser.emp_id;
 
         try {

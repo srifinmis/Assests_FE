@@ -161,7 +161,7 @@ const ROAssign = () => {
         );
 
         const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-        const requestedBy = loggedInUser.emp_id2;
+        const requestedBy = loggedInUser.emp_id_second;
         const acceptedEmp = loggedInUser.emp_id;
 
         if (!requestedBy) {

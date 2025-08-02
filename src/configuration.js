@@ -2,12 +2,12 @@
 
 // API Configuration
 const API_CONFIG = {
-    APIURL: 'http://192.168.80.38:2727/api',
+    APIURL: 'https://amsapi.srifincredit.com/api',
   };
 
 // const API_CONFIG = {
-//   APIURL: 'http://localhost:2720/api',
-// };
+//     APIURL: 'http://192.168.80.38:2728/api',
+//   };
 
 // Refresh Intervals and Timeouts
 const REFRESH_CONFIG = {
@@ -16,7 +16,7 @@ const REFRESH_CONFIG = {
 
 // UI Configuration (if any UI-related settings are needed)
 const UI_CONFIG = {
-  BASE_UI_URL: 'http://192.168.80.38:3333', // UI base URL
+  BASE_UI_URL: 'https://ams.srifincredit.com/', // UI base URL
 };
 
 module.exports = { API_CONFIG, REFRESH_CONFIG, UI_CONFIG };

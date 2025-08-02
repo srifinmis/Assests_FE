@@ -25,9 +25,9 @@ const ROReport = () => {
     const fetchReport = async () => {
         try {
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-            const emp_id2 = loggedInUser.emp_id2;
+            const emp_id_second = loggedInUser.emp_id_second;
             const res = await axios.get(`${API_CONFIG.APIURL}/ros/ro-report`, {
-                headers: { emp_id2 }
+                headers: { emp_id_second }
             });
             console.log('api response : ', res)
             setData(res.data);
