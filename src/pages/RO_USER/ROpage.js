@@ -79,7 +79,7 @@ const ROPage = () => {
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
             const emp_id_second = loggedInUser.emp_id_second;
             const response = await axios.get(`${API_CONFIG.APIURL}/ros/detailslog`, {
-                headers: { emp_id_second }
+                params: { emp_id_second }
             });
             setROs(response.data);
         } catch (error) {

@@ -85,7 +85,7 @@ const ROAssign = () => {
             const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
             const emp_id_second = loggedInUser.emp_id_second;
             const response = await axios.get(`${API_CONFIG.APIURL}/ros/rodetailsassign`, {
-                headers: {
+                params: {
                     emp_id_second
                 }
             });
