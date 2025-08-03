@@ -197,7 +197,7 @@ const BOPage = () => {
         }
         try {
             setLoading(true);
-            console.log("bulk bo upload: ", formData)
+            // console.log("bulk bo upload: ", formData)
             const response = await axios.post(`${API_CONFIG.APIURL}/bulk/acceptupload-bo`, formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
@@ -290,7 +290,7 @@ const BOPage = () => {
 
         const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
         const acceptedEmp = loggedInUser.emp_id;
-        console.log('emp details: ', acceptedEmp)
+        // console.log('emp details: ', acceptedEmp)
 
         try {
             const response = await axios.post(`${API_CONFIG.APIURL}/bos/accept`, {
@@ -298,7 +298,7 @@ const BOPage = () => {
                 acceptedEmp: acceptedEmp
             });
 
-            console.log("Success:", response.data);
+            // console.log("Success:", response.data);
             alert("Selected rows accepted successfully.");
             fetchBOs(); // Refresh the data
             setSelectedRows({}); // Clear selection

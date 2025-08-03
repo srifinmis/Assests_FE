@@ -193,7 +193,7 @@ const ROPage = () => {
         }
         try {
             setLoading(true);
-            console.log("bulk upload: ", formData)
+            // console.log("bulk upload: ", formData)
             const response = await axios.post(`${API_CONFIG.APIURL}/bulk/acceptupload-ro`, formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
@@ -287,7 +287,7 @@ const ROPage = () => {
 
         const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
         const requestedByEmp = loggedInUser.emp_id;
-        console.log('emp details: ', requestedByEmp)
+        // console.log('emp details: ', requestedByEmp)
 
         try {
             const response = await axios.post(`${API_CONFIG.APIURL}/ros/accept`, {
@@ -295,7 +295,7 @@ const ROPage = () => {
                 roAcceptedBy: requestedByEmp
             });
 
-            console.log("Success:", response.data);
+            // console.log("Success:", response.data);
             alert("Selected rows accepted successfully.");
             fetchROs();
             setSelectedRows({});

@@ -33,7 +33,7 @@ const HOReport = () => {
                 params: { emp_id_second }  // ✅ move to query params
             });
 
-            console.log("response report data: ", res.data);
+            // console.log("response report data: ", res.data);
             setData(res.data);
         } catch (err) {
             console.error("Failed to fetch HO report:", err);

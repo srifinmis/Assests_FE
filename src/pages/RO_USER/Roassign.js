@@ -98,14 +98,14 @@ const ROAssign = () => {
     const fetchBOIds = async () => {
         const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
         const requested = loggedInUser.emp_id_second;
-        console.log('requestedby : ', requested)
+        // console.log('requestedby : ', requested)
         try {
             const response = await axios.get(`${API_CONFIG.APIURL}/bos/boiddropdown`, {
                 headers: {
                     "requested": requested
                 }
             });
-            console.log('response bousers: ', response)
+            // console.log('response bousers: ', response)
             setBOIds(response.data);
         } catch (error) {
             console.error("Error fetching ros:", error);
@@ -220,7 +220,7 @@ const ROAssign = () => {
         }
         try {
             setLoading(true);
-            console.log("bulk accept upload: ", formData)
+            // console.log("bulk accept upload: ", formData)
             const response = await axios.post(`${API_CONFIG.APIURL}/bulk/upload-roassignbo`, formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
@@ -305,16 +305,16 @@ const ROAssign = () => {
                 ...prev,
                 [instakit_no]: !prev[instakit_no],
             };
-            console.log("Updated selectedRows:", updated);
+            // console.log("Updated selectedRows:", updated);
             return updated;
         });
     };
 
     const handleAssign = async () => {
         const selectedDocketIds = Object.keys(selectedRows).filter(id => selectedRows[id]);
-        console.log('selected row: ', selectedDocketIds)
+        // console.log('selected row: ', selectedDocketIds)
         const boIds = selectedDocketIds.map(id => boData[id]?.branchid_name || "");
-        console.log("Form data: ", selectedDocketIds, boIds);
+        // console.log("Form data: ", selectedDocketIds, boIds);
 
         const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
         // const requestedBy = loggedInUser.emp_id_second;
@@ -327,7 +327,7 @@ const ROAssign = () => {
                 ro_asigned_by: acceptedEmp
             });
 
-            console.log("Success:", response.data);
+            // console.log("Success:", response.data);
             alert("Selected rows assigned successfully.");
             setROs((prevRos) => prevRos.filter((row) => !selectedDocketIds.includes(row.instakit_no)));
             setSelectedRows({});

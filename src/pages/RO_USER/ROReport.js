@@ -29,7 +29,7 @@ const ROReport = () => {
             const res = await axios.get(`${API_CONFIG.APIURL}/ros/ro-report`, {
                 params: { emp_id_second }
             });
-            console.log('api response : ', res)
+            // console.log('api response : ', res)
             setData(res.data);
         } catch (err) {
             console.error("Failed to fetch RO report:", err);
