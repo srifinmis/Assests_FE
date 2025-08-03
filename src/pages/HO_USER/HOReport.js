@@ -24,23 +24,23 @@ const HOReport = () => {
 
     const { API_CONFIG } = require('../../configuration');
 
-    const fetchReport = async () => {
-    try {
-        const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-        const emp_id_second = loggedInUser.emp_id_second;
+        const fetchReport = async () => {
+        try {
+            const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
+            const emp_id_second = loggedInUser.emp_id_second;
 
-        const res = await axios.get(`${API_CONFIG.APIURL}/ros/ho-report`, {
-            params: { emp_id_second }  // ✅ move to query params
-        });
+            const res = await axios.get(`${API_CONFIG.APIURL}/ros/ho-report`, {
+                params: { emp_id_second }  // ✅ move to query params
+            });
 
-        console.log("response report data: ", res.data);
-        setData(res.data);
-    } catch (err) {
-        console.error("Failed to fetch HO report:", err);
-    } finally {
-        setLoading(false);
-    }
-};
+            console.log("response report data: ", res.data);
+            setData(res.data);
+        } catch (err) {
+            console.error("Failed to fetch HO report:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
 
     const handleDownload = () => {
